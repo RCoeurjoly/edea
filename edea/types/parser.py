@@ -10,22 +10,23 @@ from edea.types.base import KicadExpr
 import edea.types.schematic
 from edea.util import get_all_subclasses
 
-all_classes = get_all_subclasses(KicadExpr)
+
+all_classes: list[KicadExpr] = get_all_subclasses(KicadExpr)
 
 
-def from_list(expr: list[str | list]) -> KicadExpr:
+def from_list(l_expr: list[str | list]) -> KicadExpr:
     """
     Turn an s-expression list into an EDeA dataclass.
     """
     errors = []
     result = None
-    tag_name = expr[0]
+    tag_name = l_expr[0]
     # pass the rest of the list to the first class where the tag name matches
     # and it doesn't throw an error
     for cls in all_classes:
         if tag_name == cls.kicad_expr_tag_name:
             try:
-                result = cls.from_list(expr[1:])
+                result = cls.from_list(l_expr[1:])
             except Exception as e:
                 errors.append(e)
             else:
@@ -34,7 +35,7 @@ def from_list(expr: list[str | list]) -> KicadExpr:
         if len(errors) >= 1:
             raise errors[0]
         else:
-            raise ValueError(f"Unknown KiCad expression starting with '{expr[0]}'")
+            raise ValueError(f"Unknown KiCad expression starting with '{tag_name}'")
     return result
 
 

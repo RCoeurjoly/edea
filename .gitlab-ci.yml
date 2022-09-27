@@ -28,6 +28,10 @@ lint:
   script:
     - poetry run pylint edea
 
+typecheck:
+  script:
+    - poetry run pyright edea/types edea/draw
+
 bandit:
   script:
     - poetry run bandit -r edea

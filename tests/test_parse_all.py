@@ -74,7 +74,7 @@ def test_parse_all_types(sch_path):
                     break
             if not is_version_error:
                 raise err
-            print(f"skipping {sch_path} due to unsupported version: {err}")
+            pytest.skip(f"skipping {sch_path} due to unsupported version: {err}")
         else:
             assert isinstance(sch, Schematic)
 
