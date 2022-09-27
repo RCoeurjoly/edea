@@ -21,3 +21,4 @@ poetry.lock
 format.l
 /empty-module
 /example-module
+/temp-test-output

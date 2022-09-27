@@ -11,9 +11,9 @@ from typing import Literal, Optional
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.base import KicadExpr
+from edea.types.schematic.base import KicadSchExpr
 from edea.types.config import PydanticConfig
-from edea.types.schematic.shapes import Arc, Bezier, Circle, PolyLine, Rectangle
+from edea.types.schematic.shapes import Arc, Circle, Polyline, Rectangle
 
 
 class JustifyHoriz(str, Enum):
@@ -29,7 +29,7 @@ class JustifyVert(str, Enum):
 
 
 @dataclass(config=PydanticConfig)
-class Justify(KicadExpr):
+class Justify(KicadSchExpr):
     horizontal: JustifyHoriz = JustifyHoriz.CENTER
     vertical: JustifyVert = JustifyVert.CENTER
     mirror: bool = False
@@ -72,7 +72,7 @@ class PinGraphicStyle(str, Enum):
 
 
 @dataclass(config=PydanticConfig)
-class Font(KicadExpr):
+class Font(KicadSchExpr):
     size: tuple[float, float] = (1.27, 1.27)
     thickness: Optional[float] = None
     italic: bool = False
@@ -80,38 +80,38 @@ class Font(KicadExpr):
 
 
 @dataclass(config=PydanticConfig)
-class Effects(KicadExpr):
+class Effects(KicadSchExpr):
     font: Font = field(default_factory=Font)
     justify: Justify = field(default_factory=Justify)
     hide: bool = False
 
 
 @dataclass(config=PydanticConfig)
-class PinNumber(KicadExpr):
+class PinNumber(KicadSchExpr):
     text: str = ""
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["number"] = "number"
 
 
 @dataclass(config=PydanticConfig)
-class PinName(KicadExpr):
+class PinName(KicadSchExpr):
     text: str = ""
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["name"] = "name"
 
 
 @dataclass(config=PydanticConfig)
-class SymbolProperty(KicadExpr):
+class SymbolProperty(KicadSchExpr):
     key: str = ""
     value: str = ""
     id: int = 0
-    at: tuple[float, float, float] = (0, 0, 0)
+    at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["property"] = "property"
 
 
 @dataclass(config=PydanticConfig)
-class PinAlternate(KicadExpr):
+class PinAlternate(KicadSchExpr):
     name: str
     electrical_type: PinElectricalType = PinElectricalType.UNSPECIFIED
     graphic_style: PinGraphicStyle = PinGraphicStyle.LINE
@@ -119,10 +119,10 @@ class PinAlternate(KicadExpr):
 
 
 @dataclass(config=PydanticConfig)
-class Pin(KicadExpr):
+class Pin(KicadSchExpr):
     electrical_type: PinElectricalType = PinElectricalType.UNSPECIFIED
     graphic_style: PinGraphicStyle = PinGraphicStyle.LINE
-    at: tuple[float, float, float] = (0, 0, 0)
+    at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     length: float = 0
     hide: bool = False
     name: PinName = field(default_factory=PinName)
@@ -131,7 +131,7 @@ class Pin(KicadExpr):
 
 
 @dataclass(config=PydanticConfig)
-class PinNameSettings(KicadExpr):
+class PinNameSettings(KicadSchExpr):
     offset: Optional[float] = None
     hide: bool = False
 
@@ -153,7 +153,7 @@ class PinNameSettings(KicadExpr):
 
 
 @dataclass(config=PydanticConfig)
-class PinNumberSettings(KicadExpr):
+class PinNumberSettings(KicadSchExpr):
     hide: bool = False
 
     @validator("hide", pre=True)
@@ -166,22 +166,34 @@ class PinNumberSettings(KicadExpr):
 
 
 @dataclass(config=PydanticConfig)
-class SymbolGraphicText(KicadExpr):
+class SymbolGraphicText(KicadSchExpr):
     text: str
-    at: tuple[float, float, float]
+    at: tuple[float, float, Literal[0, 90, 180, 270]]
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["text"] = "text"
 
 
 @dataclass(config=PydanticConfig)
-class IsPower(KicadExpr):
+class IsPower(KicadSchExpr):
     kicad_expr_tag_name: Literal["power"] = "power"
     # holds no data, appears simply as "(power)" with parens.
     # maybe there is a less ugly solution to this?
 
 
 @dataclass(config=PydanticConfig)
-class Symbol(KicadExpr):
+class SubSymbol(KicadSchExpr):
+    name: str
+    polyline: list[Polyline] = field(default_factory=list)
+    text: list[SymbolGraphicText] = field(default_factory=list)
+    rectangle: list[Rectangle] = field(default_factory=list)
+    circle: list[Circle] = field(default_factory=list)
+    arc: list[Arc] = field(default_factory=list)
+    pin: list[Pin] = field(default_factory=list)
+    kicad_expr_tag_name: Literal["symbol"] = "symbol"
+
+
+@dataclass(config=PydanticConfig)
+class LibSymbol(KicadSchExpr):
     name: str
     property: list[SymbolProperty] = field(default_factory=list)
     pin_names: PinNameSettings = field(default_factory=PinNameSettings)
@@ -190,11 +202,10 @@ class Symbol(KicadExpr):
     on_board: bool = True
     power: Optional[IsPower] = None
     pin: list[Pin] = field(default_factory=list)
-    # Symbol is in quotes here to allow for a recursive type
-    symbol: list["Symbol"] = field(default_factory=list)
-    polyline: list[PolyLine] = field(default_factory=list)
-    bezier: list[Bezier] = field(default_factory=list)
+    symbol: list[SubSymbol] = field(default_factory=list)
+    polyline: list[Polyline] = field(default_factory=list)
     text: list[SymbolGraphicText] = field(default_factory=list)
     rectangle: list[Rectangle] = field(default_factory=list)
     circle: list[Circle] = field(default_factory=list)
     arc: list[Arc] = field(default_factory=list)
+    kicad_expr_tag_name: Literal["symbol"] = "symbol"
