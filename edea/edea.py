@@ -13,13 +13,13 @@ from itertools import filterfalse, groupby
 from operator import methodcaller
 from typing import Dict, List, Tuple
 from uuid import uuid4
-from copy import deepcopy
 
 import numpy as np
+import svg
 
 from .bbox import BoundingBox
-from .parser import (Drawable, Expr, Footprint, FPLine, Movable, Polygon,
-                     TStamp, from_str)
+from .parser import (Expr, Movable, TStamp, from_str)
+from drawable import BaseDrawable, FPLine, Polygon, Footprint
 
 # top level types to copy over to the new PCB
 copy_parts = ["footprint", "zone", "via", "segment", "arc", "gr_text", "gr_line", "gr_poly", "gr_arc", "gr_circle",
@@ -129,63 +129,59 @@ class Schematic:
                 Expr("path", f'"/{sheet.uuid}"', Expr("page", f'"{new_page}"')),
             )
 
-    def draw(self) -> list:
+    def draw(self) -> svg.SVG:
         """draw the whole schematic"""
-        svg_header = """<svg version="2.0" viewBox="0 0 297 210" width="297mm" height="210mm" xmlns="http://www.w3.org/2000/svg">"""
-        lines = []
-        lines.append(svg_header)
+        # TODO: paper size
+        canvas = svg.SVG(viewBox=svg.ViewBoxSpec(0, 0, 297 * 100, 210 * 100), elements=[])
 
         for sym in self._sch.symbol:
             sym_name = sym.lib_id[0].strip('"')
+            og = svg.G(id=sym.uuid, elements=[])
 
-            lines.append(f"<!--drawing {sym_name} -->")
+            lib_sym = self._sch.lib_symbols.symbol[sym_name]
 
-            for expr in self._sch.lib_symbols.symbol[sym_name]:
-                # loop the inner symbol once more
-                if isinstance(expr, Expr) and expr.name == "symbol":
-                    # loop the inner symbol
-                    for e in expr:
-                        # flip the y-axis of polylines
-                        if isinstance(e, Expr) and e.name == "polyline":
-                            e = deepcopy(e)
-                            for pt in e.pts:
-                                pt.data[1] = -pt.data[1]
+            inner_group = lib_sym.draw()
 
-                        if isinstance(e, Drawable):
-                            lines.append(e.draw(sym.at))
-                elif isinstance(expr, Drawable) and expr.name not in [
-                    "property"]:  # draw instances which aren't symbols
-                    lines.append(expr.draw(sym.at))
+            t = [svg.Translate(sym.to_dots(sym.at[0]), sym.to_dots(sym.at[1]))]
 
-            for expr in sym:
-                if isinstance(expr, Drawable):
-                    lines.append(expr.draw((0, 0, sym.at[2])))
+            x_scale = 1
+            y_scale = -1
 
-        lines.append("<!--drawing wires -->")
+            if hasattr(sym, "mirror"):
+                if sym.mirror[0] == "x":
+                    y_scale = 1
+                elif sym.mirror[0] == "y":
+                    x_scale = -1
+
+            t.append(svg.Scale(x_scale, y_scale))
+
+            # order of operations is important here, rotate has to happen after mirror
+            if len(sym.at) == 3:
+                t.append(svg.Rotate(sym.at[2]))
+
+            inner_group.transform = t
+            og.elements.append(inner_group)
+
+            for expr in (s for s in sym if isinstance(s, BaseDrawable)):
+                if hasattr(expr, "effects") and "hide" in expr.effects:
+                    continue
+                og.elements.append(expr.draw())
+
+            canvas.elements.append(og)
+
         for wire in self._sch.wire:
-            lines.append(wire.draw(()))
+            canvas.elements.append(wire.draw())
 
-        lines.append("<!--drawing junk -->")
         for j in self._sch.junction:
-            lines.append(j.draw(()))
+            canvas.elements.append(j.draw())
 
-        lines.append("<!--drawing text -->")
         for t in self._sch:
-            if t.name == "text":
-                lines.append(t.draw(()))
+            if t.name in ["text", "label"]:
+                canvas.elements.append(t.draw())
+            elif t.name == "polyline":
+                canvas.elements.append(t.draw())
 
-        lines.append("<!--drawing labels -->")
-        for t in self._sch:
-            if t.name == "label":
-                lines.append(t.draw(()))
-
-        lines.append("<!--drawing polylines -->")
-        for t in self._sch:
-            if t.name == "polyline":
-                lines.append(t.draw(((0,0))))
-
-        lines.append('</svg>')
-        return lines
+        return canvas
 
 
 class PCB:
@@ -280,6 +276,29 @@ class PCB:
 
         # refresh known attributes, etc
         self._pcb.parsed()
+
+    def draw(self) -> svg.SVG:
+        """draw the whole PCB"""
+        # TODO: paper size, currently we're going for 100 dots per mm
+        canvas = svg.SVG(viewBox=svg.ViewBoxSpec(0, 0, 297 * 100, 210 * 100), elements=[])
+
+        # init the layers which will later become groups
+        layers = {}
+        for layer in self._pcb.layers:
+            layers[layer[0][1:-1]] = []
+
+        for element in self._pcb:
+            if isinstance(element, BaseDrawable):
+                canvas.elements.append(element.draw())
+            elif isinstance(element, Expr) and element.name == "zone":
+                if hasattr(element, "layer"):
+                    if hasattr(element, "polygon"):
+                        canvas.elements.append(element.polygon.draw())
+                    if hasattr(element, "filled_polygon"):
+                        # canvas.elements.append(element.filled_polygon.draw())
+                        pass
+
+        return canvas
 
 
 class Project:

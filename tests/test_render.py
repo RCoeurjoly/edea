@@ -9,6 +9,7 @@ import os
 import svg as svg_py
 
 from edea.draw import draw_element, draw_svg
+from edea.edea import PCB
 from edea.types.parser import from_str
 from tests.util import get_path_to_test_file, get_test_output_dir
 
@@ -132,3 +133,13 @@ class TestRendering:
         svg_path = os.path.join(output, "schematic_labels.svg")
         with open(svg_path, "w", encoding="utf-8") as f:
             f.write(svg.as_str())
+
+    def test_draw_pcb(self):
+        with open(
+            "../tests/kicad_projects/ferret/ferret.kicad_pcb", encoding="utf-8"
+        ) as f:
+            pcb = PCB(from_str(f.read()), "ferret", "")
+
+        canvas = pcb.draw()
+        with open("../test_pcb.svg", "w", encoding="utf-8") as f:
+            f.write(str(canvas))
