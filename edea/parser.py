@@ -6,17 +6,14 @@ SPDX-License-Identifier: EUPL-1.2
 from __future__ import annotations
 
 import re
-from copy import deepcopy, copy
 from _operator import methodcaller
-from collections import UserDict, UserList
+from collections import UserList
+from copy import deepcopy, copy
 from dataclasses import dataclass
-from math import acos, cos, degrees, radians, sin, tau
 from typing import Dict, Tuple, Union
 from uuid import UUID, uuid4
 
-import numpy as np
-
-from .bbox import BoundingBox
+from drawable import Pts, Pad, FPLine, Polygon, Footprint, SchematicSymbol, Drawable
 
 Symbol = str
 Number = (int, float)
@@ -53,6 +50,9 @@ drawable_types = [
     "junction",
     "text",
     "label",
+    "segment",
+    "via",
+    "fp_text"
 ]
 lib_symbols = {}
 TOKENIZE_EXPR = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*"|\(|\)|"|[^\s()"]+)')
@@ -199,7 +199,6 @@ class Expr(UserList):
         return c
 
 
-
 @dataclass(init=False)
 class Movable(Expr):
     """Movable is an object with a position"""
@@ -208,367 +207,6 @@ class Movable(Expr):
         """move_xy adds the position offset x and y to the object"""
         self.data[0] += x
         self.data[1] += y
-
-
-@dataclass(init=False)
-class Pts(Movable):
-    """Movable is an object with a position"""
-
-    def move_xy(self, x: float, y: float) -> None:
-        """move_xy adds the position offset x and y to the object"""
-        for point in self.data:
-            if point.name == "xy":
-                point.data[0] += x
-                point.data[1] += y
-
-
-@dataclass(init=False)
-class Pad(Expr):
-    """Pad"""
-
-    def corners(self):
-        """Returns a numpy array containing every corner [x,y]"""
-        if len(self.at) > 2:
-            angle = self.at.data[2] / tau
-        else:
-            angle = 0
-        origin = self.at.data[
-                 0:2
-                 ]  # in this case we explicitly need to access the data list because of the range op
-        # otherwise it would return a list of Expr
-
-        if self[2] in ["rect", "roundrect", "oval", "custom"]:
-            # TODO optimize this, this is called quite often
-
-            points = np.array([[1, 1], [1, -1], [-1, 1], [-1, -1]], dtype=np.float64)
-            if self[2] == "oval":
-                points = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]], dtype=np.float64)
-            w = self.size.data[0] / 2
-            h = self.size.data[1] / 2
-            angle_cos = cos(angle)
-            angle_sin = sin(angle)
-            for i, _ in enumerate(points):
-                points[i] = origin + points[i] * [
-                    (w * angle_cos + h * angle_sin),
-                    (h * angle_cos + w * angle_sin),
-                ]
-
-        elif self[2] == "circle":
-            points = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]], dtype=np.float64)
-            radius = self.size.data[0] / 2
-            for i, _ in enumerate(points):
-                points[i] = origin + points[i] * [radius, radius]
-        else:
-            raise NotImplementedError(f"pad shape {self[2]} is not implemented")
-
-        return points
-
-
-@dataclass(init=False)
-class FPLine(Expr):
-    """FPLine"""
-
-    def corners(self):
-        """corners returns start and end of the FPLine"""
-        points = np.array(
-            [[self.start[0], self.start[1]], [self.end[0], self.end[1]]],
-            dtype=np.float64,
-        )
-        return points
-
-    def bounding_box(self) -> BoundingBox:
-        """bounding_box of the fp_line"""
-        return BoundingBox(self.corners())
-
-
-@dataclass(init=False)
-class Polygon(Expr):
-    """Polygon
-    TODO: Zone polygons are with absolute positions, are there other types?
-    """
-
-    def bounding_box(self) -> BoundingBox:
-        """bounding_box of the polygon"""
-        return BoundingBox(self.corners())
-
-    def corners(self) -> np.array:
-        """corners returns the min and max points of a polygon"""
-        x_points = []
-        y_points = []
-
-        for point in self.pts:
-            if point.name != "xy":
-                raise NotImplementedError(
-                    f"the following polygon format isn't implemented yet: {point}"
-                )
-            x_points.append(point[0])
-            y_points.append(point[1])
-
-        npx = np.array(x_points)
-        npy = np.array(y_points)
-
-        max_x = np.amax(npx)
-        min_x = np.amin(npx)
-        max_y = np.amax(npy)
-        min_y = np.amin(npy)
-
-        return np.array(
-            [
-                [min_x, min_y],
-                [min_x, max_y],
-                [max_x, max_y],
-                [max_x, min_y],
-            ],
-            dtype=np.float64,
-        )
-
-
-@dataclass(init=False)
-class Footprint(Expr):
-    """Footprint"""
-
-    def bounding_box(self) -> BoundingBox:
-        """return the BoundingBox"""
-        box = BoundingBox([])
-        if hasattr(self, "pad"):
-            # check if it's a single pad only
-            if isinstance(self.pad, list):
-                _ = [box.envelop(pad.corners()) for pad in self.pad]
-            else:
-                box.envelop(self.pad.corners())
-
-            if len(self.at.data) > 2:
-                box.rotate(self.at.data[2])
-            box.translate(self.at.data[0:2])
-
-        if hasattr(self, "fp_line"):
-            # check if it's a single line only
-            if isinstance(self.fp_line, list):
-                _ = [box.envelop(pad.corners()) for pad in self.pad]
-            else:
-                box.envelop(self.fp_line.corners())
-
-            if len(self.at.data) > 2:
-                box.rotate(self.at.data[2])
-            box.translate(self.at.data[0:2])
-
-        # TODO(ln): implement other types too, though pads and lines should work well enough
-
-        return box
-
-    def prepend_path(self, path: str):
-        """prepend_path prepends the uuid path to the current one"""
-        # path is always in the format of /<uuid>[/<uuid>]
-        sub = self.path.data[0].strip('"')
-        self.path.data[0] = f'"/{path}{sub}"'
-
-
-@dataclass()
-class Elem(UserDict):
-    """SVG Element"""
-
-    def __init__(self, typ: str, inner=None) -> None:
-        """__init__"""
-        super().__init__()
-        self.typ = typ
-        self.inner = inner
-
-    def append(self, key: str, value: str):
-        """creates and/or appends value to the given key"""
-        if key in self.data:
-            self.data[key].append(value)
-        else:
-            self.data[key] = [value]
-
-    def to_string(self) -> str:
-        """build a string representation of the current svg element"""
-        attrs = []
-        for key, values in self.data.items():
-            joined_vals = " ".join(values)
-            attrs.append(f'{key}="{joined_vals}"')
-        all_attrs = " ".join(attrs)
-        if self.inner is None or self.inner == "":
-            return f"<{self.typ} {all_attrs} />"
-
-        return f"<{self.typ} {all_attrs}>{self.inner}</{self.typ}>"
-
-
-@dataclass(init=False)
-class Drawable(Movable):
-    """
-    Drawable is an object which can be converted to an SVG
-    pin: line with text
-    polyline: symbols drawn with line(s), e.g. the ground symbol
-    rectangle: usually ic symbols
-    """
-
-    svg_precision = 4
-
-    def draw(self, position: Tuple[float, float] | Tuple[float, float, float]):
-        """draw the shape with the given offset"""
-        node = Elem(self.name)
-        self.parse_visual(node, position)
-
-        # if len(position) == 3 and position[2] != 0:
-        #    attrs.append(f'transform="rotate({position[2]})"')
-
-        if self.name == "pin":
-            # raise NotImplementedError(self.name)
-            return None
-        elif self.name == "polyline":
-            for point in self.data[0]:
-                # rounding is necessary because otherwise you get
-                # numbers ending with .9999999999 due to floating point precision :/
-                x = round(position[0] + point.data[0], self.svg_precision)
-                y = round(position[1] + point.data[1], self.svg_precision)
-                node.append("points", f"{x},{y}")
-        elif self.name == "rectangle":
-            node.typ = "rect"
-            xc, yc = [self.start[0], self.end[0]], [self.start[1], self.end[1]]
-            width = max(xc) - min(xc)
-            height = max(yc) - min(yc)
-            x_mid = (self.start[0] + self.end[0]) / 2
-            # y_mid = (self.start[1] + self.end[1]) / 2
-            svgx = min(position[0] + self.start[0], position[0] + self.end[0])
-            # kicad flips the y-axis when going from symbol to schematic for
-            # some reason, hence we are subtracting here
-            svgy = min(position[1] - self.start[1], position[1] - self.end[1])
-
-            node.append("x", f"{round(svgx, self.svg_precision)}")
-            node.append("y", f"{round(svgy, self.svg_precision)}")
-            node.append("width", f"{round(width, self.svg_precision)}")
-            node.append("height", f"{round(height, self.svg_precision)}")
-        elif self.name == "wire":
-            node.typ = "polyline"
-            for point in self.data[0]:
-                node.append(
-                    "points",
-                    f"{point.data[0]},{point.data[1]}",
-                )
-        elif self.name in ["property", "hierarchical_label", "text", "label"]:
-            node.typ = "text"
-            has_effects = hasattr(self, "effects")
-
-            # check if it's hidden
-            if has_effects and "hide" in self.effects:
-                return None
-
-            text = self.data[0].strip('"')
-            if self.name == "property":
-                text = self.data[1].strip(
-                    '"'
-                )  # property is key, value and we only display the value
-
-            anchor = "middle"
-
-            x_mid = self.at[0]
-
-            font_size = 1.27  # default font size
-            if has_effects and hasattr(self.effects, "font"):
-                if hasattr(self.effects.font, "size"):
-                    font_size = self.effects.font.size[0]
-                if hasattr(self.effects, "justify"):
-                    if self.effects.justify[0] == "left":
-                        anchor = "start"
-                        # x_mid -= len(text)/2 * font_size
-                    elif self.effects.justify[0] == "middle":
-                        anchor = "center"
-                    elif self.effects.justify[0] == "right":
-                        anchor = "end"
-                        x_mid += len(text) / 2 * font_size
-
-            node.append("text-anchor", anchor)
-
-            y = self.at[1]
-            if self.name in ["property", "hierarchical_label"]:
-                y += font_size / 2
-
-            if len(position) > 0 and position[0] != 0 and position[1] != 0:
-                x_mid = position[0] + x_mid
-                y = position[1] - y
-
-            node.append("font-family", "monospace")
-
-            node.append("x", f"{x_mid}")
-            node.append("y", f"{y}")
-
-            node.append("font-size", f"{font_size}px")
-            node.inner = text
-        elif self.name == "junction":
-            return f'<circle cx="{self.at[0]}" cy="{self.at[1]}" r="0.5" fill="green" stroke="green" stroke-width="0" />'
-        else:
-            raise NotImplementedError(self.name)
-
-        return node.to_string()
-
-    def parse_visual(self, node: Elem, at) -> None:
-        """parse fill/stroke, if present"""
-        attrs = []
-        if hasattr(self, "stroke"):
-            color, opacity = parse_color(self.stroke.color)
-
-            # in kicad 0 usually means default
-            if opacity == 0:
-                opacity = 1
-
-            stroke_width = self.stroke.width[0]
-            if stroke_width == 0:
-                stroke_width = 0.1524  # kicad default stroke width
-
-            node.append("stroke", f"rgb({color})")
-            node.append("stroke-opacity", f"{opacity}")
-            node.append("stroke-width", f"{stroke_width}")
-
-            match self.stroke.type[0]:
-                case ("default" | "solid"):
-                    pass
-                case "dot":
-                    node.append("stroke-dasharray", "1")
-                case "dash":
-                    node.append("stroke-dasharray", "3 1")
-                case "dash_dot":
-                    node.append("stroke-dasharray", "3 1 1 1")
-                case "dash_dot_dot":
-                    node.append("stroke-dasharray", "3 1 1 1 1 1")
-
-        if hasattr(self, "fill"):
-            match self.fill.type[0]:
-                case "none":
-                    node.append("fill", "none")
-                case "background":
-                    # TODO: figure out how to access theme background
-                    node.append("fill", "none")
-                case "outline":
-                    color, opacity = parse_color(self.stroke.color)
-                    node.append("fill", f"rgb({color})")
-                    node.append("fill-opacity", f"{opacity}")
-
-        if hasattr(self, "at") and len(self.at) > 2 and self.at[2] != 0:
-            angle = self.at[2]
-
-            # TODO: if type is label and angle 180, don't rotate but anchor at end of text instead of start
-
-            if len(at) == 3:
-                angle += at[2]
-
-            angle = angle % 360
-
-            x = self.at[0]
-            y = self.at[1]
-            vector_length = np.sqrt(x ** 2 + y ** 2)
-            if vector_length > 0:
-                original_angle = degrees(acos(x / vector_length))
-            else:
-                original_angle = 0
-            offset_y = vector_length * sin(radians(original_angle - angle))
-            offset_x = vector_length * cos(radians(original_angle - angle))
-            self.at = (offset_x, offset_y, angle)
-            node.append("transform", f"rotate({angle})")
-
-
-def parse_color(color: list):
-    """converts `r g b a` to a tuple of `(r,g,b)` and `alpha`"""
-    return (f"{color[0]},{color[1]},{color[2]}", color[3])
 
 
 @dataclass(init=False)
@@ -620,8 +258,6 @@ def from_str(program: str) -> Expr:
     return expr
 
 
-
-
 def from_tokens(
         tokens: list, index: int, parent: str, grand_parent: str
 ) -> Tuple[int, Union[Expr, int, float, str]]:
@@ -653,6 +289,8 @@ def from_tokens(
             expr = Movable(typ)
         elif typ == "tstamp":
             expr = TStamp(typ)
+        elif typ == "symbol":
+            expr = SchematicSymbol(typ)
         else:
             expr = Expr(typ)
 
@@ -676,5 +314,3 @@ def from_tokens(
             return (index, float(token))
         except ValueError:
             return (index, Symbol(token))
-
-
