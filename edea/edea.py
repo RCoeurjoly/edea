@@ -18,8 +18,7 @@ import numpy as np
 import svg
 
 from .bbox import BoundingBox
-from .parser import (Expr, Movable, TStamp, from_str)
-from drawable import BaseDrawable, FPLine, Polygon, Footprint
+from .parser import BaseDrawable, FPLine, Polygon, Footprint, Expr, Movable, TStamp, from_str
 
 # top level types to copy over to the new PCB
 copy_parts = ["footprint", "zone", "via", "segment", "arc", "gr_text", "gr_line", "gr_poly", "gr_arc", "gr_circle",
