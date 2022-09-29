@@ -14,10 +14,12 @@ from string import Template
 from time import time
 from typing import Dict
 
-from .edea import Schematic, Project
-from .imgdiff import imgdiff
-from .kicad_files import EMPTY_PROJECT
-from .parser import from_str
+from edea.draw import draw_svg
+from edea.edea import Schematic, Project, PCB
+from edea.imgdiff import imgdiff
+from edea.kicad_files import EMPTY_PROJECT
+from edea.parser import from_str
+from edea.types.parser import from_str as from_str_typed
 
 parser = argparse.ArgumentParser(description='Tool to parse, render, and merge KiCad projects.')
 pgroup = parser.add_mutually_exclusive_group()
@@ -28,6 +30,7 @@ pgroup.add_argument('--merge', action='store_true', help='Merge the listed KiCad
 parser.add_argument('--diff', action='store_true', help='Render visual differences of images stored in two different'
                                                         'directories, output the result to a third directory.'
                                                         'The image files must have the same file name.')
+parser.add_argument('--render', action='store_true', help='Render kicad_sch or kicad_pcb to SVG.')
 parser.add_argument('--output', type=str, nargs='?', default=False,
                     help="Specify output directory for merge, or output file for metadata extraction.")
 parser.add_argument('projects', type=str, nargs='+',
@@ -138,8 +141,6 @@ elif args.merge:
     for project_path, obj in files.items():
         log.debug("merging pcbs: %s %s", project_path, obj)
 
-
-
     # write the resulting schematic
     with open(f"{os.path.join(output_path, output_name)}.kicad_sch", "w", encoding="utf-8") as f:
         f.write(str(target_schematic.as_expr()))
@@ -195,6 +196,29 @@ elif args.diff:
 
     with open(os.path.join(output_dir, 'stats.json'), 'wt') as of:
         of.write(json.dumps(stats))
+
+elif args.render:
+    input = args.projects[0]
+    file_name, ext = os.path.splitext(os.path.basename(input))
+    ext = ext.lower()
+
+    if os.path.isdir(args.output):
+        output_file = os.path.join(args.output, file_name, ".svg")
+    else:
+        output_file = args.output
+
+    with open(input, encoding="utf-8") as f:
+        if ext == ".kicad_sch":
+            typed_sch = from_str_typed(f.read())
+            svg = draw_svg(typed_sch)
+        elif ext == ".kicad_pcb":
+            pcb = PCB(from_str(f.read()), "", "")
+            svg = pcb.draw()
+        else:
+            raise NotImplementedError("can only render kicad_sch or kicad_pcb")
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(svg.as_str())
 
 else:
     log.error("only merge and metadata extraction are implemented for now")
