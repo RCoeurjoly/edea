@@ -10,17 +10,17 @@ from pydantic.color import Color
 import svg
 
 from edea.draw.schematic.shapes import kicad_stroke_to_style
-from edea.draw.schematic.symbol import draw_property, draw_lib_symbol, kicad_font_to_css
-
+from edea.draw.schematic.symbol import draw_lib_symbol, draw_property, kicad_font_to_css
 from edea.types.schematic import (
     Bus,
     BusEntry,
-    Junction,
-    Schematic,
-    LibSymbol,
-    LocalLabel,
     GlobalLabel,
     HierarchicalLabel,
+    Junction,
+    LibSymbol,
+    LocalLabel,
+    NoConnect,
+    Schematic,
     SymbolUse,
     Wire,
 )
@@ -72,6 +72,8 @@ def draw_schematic(expr: Schematic, at=(0, 0)) -> svg.G:
 
     bus_entries = [draw_bus_entry(x, at) for x in expr.bus_entry]
 
+    no_connects = [draw_no_connect(x, at) for x in expr.no_connect]
+
     elements = (
         symbols
         + buses
@@ -81,6 +83,7 @@ def draw_schematic(expr: Schematic, at=(0, 0)) -> svg.G:
         + local_labels
         + global_labels
         + hierarchical_labels
+        + no_connects
     )
 
     return svg.G(class_=["schematic"], elements=elements)
@@ -197,3 +200,26 @@ def draw_global_label(expr: GlobalLabel, at=(0, 0)) -> svg.Text:
 
 def draw_hierarchical_label(expr: HierarchicalLabel, at=(0, 0)) -> svg.Text:
     return draw_label_text(expr, at, class_=["label-hierarchical"])
+
+
+def draw_no_connect(expr: NoConnect, at=(0, 0)) -> svg.Path:
+    # half the length of the lines that form the no-connect cross
+    half_l = 0.635
+    mid = (at[0] + expr.at[0], at[1] + expr.at[1])
+    line_a = [
+        (mid[0] - half_l, mid[1] - half_l),
+        (mid[0] + half_l, mid[1] + half_l),
+    ]
+    line_b = [
+        (mid[0] + half_l, mid[1] - half_l),
+        (mid[0] - half_l, mid[1] + half_l),
+    ]
+    return svg.Path(
+        class_=["no-connect"],
+        d=[
+            svg.MoveTo(line_a[0][0], line_a[0][1]),
+            svg.LineTo(line_a[1][0], line_a[1][1]),
+            svg.MoveTo(line_b[0][0], line_b[0][1]),
+            svg.LineTo(line_b[1][0], line_b[1][1]),
+        ],
+    )

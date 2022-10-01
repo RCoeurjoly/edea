@@ -79,6 +79,10 @@ def sch_theme_to_style(theme: SchematicTheme) -> svg.Style:
                 .label-hierarchical {{
                     fill: {theme.label_hier};
                 }}
+                .no-connect {{
+                    stroke: {theme.no_connect};
+                    stroke-width: 0.1524;
+                }}
             """
         )
     )
