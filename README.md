@@ -2,7 +2,6 @@
 
 This is the edea commandline tool and kicad parser python library.
 
-
 ## Running the tool
 
 To run the tool for test & development purposes either enter a venv or use poetry to run it:
@@ -15,7 +14,6 @@ poetry shell
 # now we're inside the venv and can run
 python -m edea
 ```
-
 
 ## Running the tests
 
@@ -44,7 +42,6 @@ getting them.
 git submodule update --init
 # we'd like to parallelize the tests using pytest-xdist to speed things up
 poetry shell
-pip install pytest-xdist
 # run the tests, automatically detecting the optimal number of processes for your machine
 pytest -n auto
 ```
