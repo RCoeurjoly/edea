@@ -6,7 +6,6 @@ SPDX-License-Identifier: EUPL-1.2
 from __future__ import annotations
 
 import re
-from _operator import methodcaller
 from collections import UserList
 from copy import deepcopy, copy
 from dataclasses import dataclass
@@ -14,6 +13,7 @@ from math import tau, cos, sin
 from typing import Dict
 from typing import Tuple, Union
 from uuid import UUID, uuid4
+from _operator import methodcaller
 
 import numpy as np
 import svg
@@ -589,7 +589,8 @@ class Drawable(BaseDrawable):
         node_name = self.name
         if node_name == "pin":
             return None
-        elif node_name in ["polyline", "wire", "gr_poly", "fp_poly", "segment"]:
+
+        if node_name in ["polyline", "wire", "gr_poly", "fp_poly", "segment"]:
             node = svg.Polyline(points=[])
         elif node_name == "rectangle":
             node = svg.Rect()
@@ -605,7 +606,8 @@ class Drawable(BaseDrawable):
         if node_name == "pin":
             # raise NotImplementedError(node_name)
             return None
-        elif node_name == "polyline":
+
+        if node_name == "polyline":
             # list of tuples to list
             node.points = [point for points in self.points_to_dots(self.data[0]) for point in points]
         elif node_name == "rectangle":

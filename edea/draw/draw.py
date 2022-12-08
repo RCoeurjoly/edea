@@ -63,7 +63,7 @@ Drawable = DrawableSchExpr
 
 
 def draw_svg(
-    expr: Drawable, theme: Optional[ThemeName] = ThemeName.KICAD_2022
+        expr: Drawable, theme: Optional[ThemeName] = ThemeName.KICAD_2022
 ) -> svg.SVG:
     """
     Draw a `Drawable` `KicadExpr` as a svg.py `svg.SVG` document. You can

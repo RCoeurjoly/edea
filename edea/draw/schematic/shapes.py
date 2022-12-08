@@ -6,8 +6,8 @@ SPDX-License-Identifier: EUPL-1.2
 import math
 from typing import Optional
 
-from pydantic.color import Color
 import svg
+from pydantic.color import Color
 
 from edea.types.schematic.shapes import (
     Arc,

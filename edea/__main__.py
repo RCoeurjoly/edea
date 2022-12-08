@@ -194,12 +194,12 @@ elif args.diff:
             params.append(file_lists[identifier][idx])
         stats[idx]['difference_pct'] = imgdiff(*tuple(params))
 
-    with open(os.path.join(output_dir, 'stats.json'), 'wt') as of:
+    with open(os.path.join(output_dir, 'stats.json'), 'wt', encoding='utf-8') as of:
         of.write(json.dumps(stats))
 
 elif args.render:
-    input = args.projects[0]
-    file_name, ext = os.path.splitext(os.path.basename(input))
+    input_file = args.projects[0]
+    file_name, ext = os.path.splitext(os.path.basename(input_file))
     ext = ext.lower()
 
     if os.path.isdir(args.output):
@@ -207,7 +207,7 @@ elif args.render:
     else:
         output_file = args.output
 
-    with open(input, encoding="utf-8") as f:
+    with open(input_file, encoding="utf-8") as f:
         if ext == ".kicad_sch":
             typed_sch = from_str_typed(f.read())
             svg = draw_svg(typed_sch)

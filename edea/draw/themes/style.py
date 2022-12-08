@@ -4,7 +4,9 @@ Methods to turn a KicadTheme into a CSS style.
 SPDX-License-Identifier: EUPL-1.2
 """
 from textwrap import dedent
+
 import svg
+
 from edea.draw.themes.types import SchematicTheme
 
 

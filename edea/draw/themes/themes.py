@@ -3,9 +3,9 @@ Provides KiCad themes.
 
 SPDX-License-Identifier: EUPL-1.2
 """
-from enum import Enum
 import json
 import os
+from enum import Enum
 
 from edea.draw.themes.types import KicadTheme
 
@@ -13,6 +13,7 @@ __all__ = ["ThemeName", "get_theme"]
 
 
 class ThemeName(str, Enum):
+    """ ThemeName represents the names of the KiCad Themes (and corresponding files) """
     EAGLE_DARK = "eagle_dark"
     WLIGHT = "wlight"
     MONOKAI = "monokai"
@@ -41,12 +42,11 @@ for filename in os.listdir(themes_folder):
 
         filenames[name] = filename
 
-
-for name in filenames:
-    filename = filenames[name]
+for name, filename in filenames.items():
     with open(os.path.join(themes_folder, filename), encoding="utf8") as f:
         theme_map[name] = KicadTheme(**json.load(f))
 
 
-def get_theme(name: ThemeName) -> KicadTheme:
-    return theme_map[name]
+def get_theme(theme_name: ThemeName) -> KicadTheme:
+    """ get parsed theme by name """
+    return theme_map[theme_name]

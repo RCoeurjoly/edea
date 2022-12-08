@@ -4,6 +4,7 @@ Types for parsing KiCad theme JSON.
 SPDX-License-Identifier: EUPL-1.2
 """
 from __future__ import annotations
+
 import json
 import os
 
@@ -20,7 +21,7 @@ class BaseModel(PydanticBaseModel):
         validate_all = True
 
 
-default = {}
+default: dict
 themes_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "json")
 default_theme_file = os.path.join(themes_folder, "kicad_2022.json")
 with open(default_theme_file) as f:

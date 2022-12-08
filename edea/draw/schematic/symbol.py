@@ -3,8 +3,8 @@ Methods to draw `edea.types.schematic.symbol` types as SVG.
 
 SPDX-License-Identifier: EUPL-1.2
 """
-from typing import Literal, Optional, Union
 from enum import Enum
+from typing import Literal, Optional, Union
 
 import svg
 
@@ -29,13 +29,13 @@ from edea.types.schematic.symbol import (
 
 
 def draw_lib_symbol(
-    expr: LibSymbol,
-    at=(0, 0),
-    rotation: Literal[0, 90, 180, 270] = 0,
-    mirror: Literal["x", "y", None] = None,
-    draw_props=True,
-    draw_pin_nums=True,
-    draw_pin_names=True,
+        expr: LibSymbol,
+        at=(0, 0),
+        rotation: Literal[0, 90, 180, 270] = 0,
+        mirror: Literal["x", "y", None] = None,
+        draw_props=True,
+        draw_pin_nums=True,
+        draw_pin_names=True,
 ) -> svg.G:
     draw_pin_nums = draw_pin_nums and not expr.pin_numbers.hide
     draw_pin_names = draw_pin_names and not expr.pin_names.hide
@@ -73,7 +73,7 @@ def draw_lib_symbol(
         transform.append(svg.Scale(-1, 1))
     if rotation != 0:
         transform.append(svg.Rotate(-rotation))
-    if transform == []:
+    if not transform:
         transform = None
     else:
         transform_origin = f"{at[0]} {at[1]}"
@@ -87,13 +87,13 @@ def draw_lib_symbol(
 
 
 def draw_symbol(
-    expr: Union[SubSymbol, LibSymbol],
-    at: tuple[float, float] = (0, 0),
-    rotation: Literal[0, 90, 180, 270] = 0,
-    mirror=None,
-    draw_pin_nums=True,
-    draw_pin_names=True,
-    pin_name_offset=0.504,
+        expr: Union[SubSymbol, LibSymbol],
+        at: tuple[float, float] = (0, 0),
+        rotation: Literal[0, 90, 180, 270] = 0,
+        mirror=None,
+        draw_pin_nums=True,
+        draw_pin_names=True,
+        pin_name_offset=0.504,
 ) -> list[svg.Element]:
     elements: list[svg.Element] = []
     elements += [draw_rectangle(x, at, flip_y_axis=True) for x in expr.rectangle]
@@ -116,9 +116,9 @@ def draw_symbol(
 
 
 def kicad_justify_h_to_anchor(
-    justify_h: JustifyHoriz,
-    rotation: Literal[0, 90, 180, 270],
-    mirror: Literal["x", "y", None],
+        justify_h: JustifyHoriz,
+        rotation: Literal[0, 90, 180, 270],
+        mirror: Literal["x", "y", None],
 ) -> str:
     # normalize orientation
     orient = Orientation((rotation, mirror))
@@ -166,11 +166,11 @@ def kicad_effects_to_css(expr: Effects) -> str:
 
 
 def draw_property(
-    expr: SymbolProperty,
-    at: tuple[float, float] = (0, 0),
-    rotation: Literal[0, 90, 180, 270] = 0,
-    flip_y_axis=True,
-    mirror: Literal["x", "y", None] = None,
+        expr: SymbolProperty,
+        at: tuple[float, float] = (0, 0),
+        rotation: Literal[0, 90, 180, 270] = 0,
+        flip_y_axis=True,
+        mirror: Literal["x", "y", None] = None,
 ) -> svg.Text:
     x = at[0] + expr.at[0]
     if flip_y_axis:
@@ -204,13 +204,13 @@ def draw_property(
 
 
 def draw_pin(
-    expr: Pin,
-    at: tuple[float, float] = (0, 0),
-    symbol_rotation: Literal[0, 90, 180, 270] = 0,
-    symbol_mirror: Literal["x", "y", None] = None,
-    draw_pin_nums=True,
-    draw_pin_names=True,
-    pin_name_offset=0.504,
+        expr: Pin,
+        at: tuple[float, float] = (0, 0),
+        symbol_rotation: Literal[0, 90, 180, 270] = 0,
+        symbol_mirror: Literal["x", "y", None] = None,
+        draw_pin_nums=True,
+        draw_pin_names=True,
+        pin_name_offset=0.504,
 ) -> svg.G:
     elements: list[svg.Element] = []
     pin_rotation = expr.at[2]
@@ -279,11 +279,11 @@ def draw_pin(
 
 
 def draw_pin_number(
-    expr: PinNumber,
-    at=(0, 0),
-    rotation: Literal[0, 90, 180, 270] = 0,
-    symbol_rotation: Literal[0, 90, 180, 270] = 0,
-    symbol_mirror: Literal["x", "y", None] = None,
+        expr: PinNumber,
+        at=(0, 0),
+        rotation: Literal[0, 90, 180, 270] = 0,
+        symbol_rotation: Literal[0, 90, 180, 270] = 0,
+        symbol_mirror: Literal["x", "y", None] = None,
 ) -> svg.Text:
     style = kicad_font_to_css(expr.effects.font)
     style += "text-anchor:middle;"
@@ -326,7 +326,7 @@ def draw_pin_number(
         case (270, None) | (270, "x"):
             x += 0.25
 
-    if transform == []:
+    if not transform:
         transform = None
     else:
         transform_origin = f"{x} {y}"
@@ -343,14 +343,13 @@ def draw_pin_number(
 
 
 def draw_pin_name(
-    expr: PinName,
-    at=(0, 0),
-    rotation: Literal[0, 90, 180, 270] = 0,
-    symbol_rotation: Literal[0, 90, 180, 270] = 0,
-    symbol_mirror: Literal["x", "y", None] = None,
-    pin_name_offset=0.504,
+        expr: PinName,
+        at=(0, 0),
+        rotation: Literal[0, 90, 180, 270] = 0,
+        symbol_rotation: Literal[0, 90, 180, 270] = 0,
+        symbol_mirror: Literal["x", "y", None] = None,
+        pin_name_offset=0.504,
 ) -> svg.Text:
-
     style = kicad_font_to_css(expr.effects.font)
     style += "dominant-baseline:middle;"
 
@@ -422,7 +421,7 @@ def draw_pin_name(
         case 270:
             y += pin_name_offset + 0.2
 
-    if transform == []:
+    if not transform:
         transform = None
     else:
         transform_origin = f"{x} {y}"

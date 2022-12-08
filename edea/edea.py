@@ -262,8 +262,8 @@ class PCB:
 
             for part in copy_parts:
                 if hasattr(expr, part):
-                    print(f"getting {part}")
-                    sub_expr = expr.__getattr__(part)
+                    # print(f"getting {part}")
+                    sub_expr = getattr(expr, part)
 
                     # if it's a single occurrence we can just append it, otherwise extend the parent
                     if isinstance(sub_expr, list):
