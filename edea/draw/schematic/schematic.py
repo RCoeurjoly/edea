@@ -11,8 +11,19 @@ from pydantic.color import Color
 
 from edea.draw.schematic.shapes import kicad_stroke_to_style
 from edea.draw.schematic.symbol import draw_lib_symbol, draw_property, kicad_font_to_css
-from edea.types.schematic import (Bus, BusEntry, GlobalLabel, HierarchicalLabel, Junction, LibSymbol, LocalLabel,
-                                  NoConnect, Schematic, SymbolUse, Wire, )
+from edea.types.schematic import (
+    Bus,
+    BusEntry,
+    GlobalLabel,
+    HierarchicalLabel,
+    Junction,
+    LibSymbol,
+    LocalLabel,
+    NoConnect,
+    Schematic,
+    SymbolUse,
+    Wire,
+)
 
 
 def draw_schematic(expr: Schematic, at=(0, 0)) -> svg.G:
@@ -64,18 +75,33 @@ def draw_schematic(expr: Schematic, at=(0, 0)) -> svg.G:
     no_connects = [draw_no_connect(x, at) for x in expr.no_connect]
 
     elements = (
-            symbols + buses + bus_entries + wires + junctions + local_labels + global_labels + hierarchical_labels + no_connects)
+        symbols
+        + buses
+        + bus_entries
+        + wires
+        + junctions
+        + local_labels
+        + global_labels
+        + hierarchical_labels
+        + no_connects
+    )
 
     return svg.G(class_=["schematic"], elements=elements)
 
 
-def draw_symbol_use(use: SymbolUse, sym: LibSymbol, at: tuple[float, float] = (0, 0)) -> svg.G:
+def draw_symbol_use(
+    use: SymbolUse, sym: LibSymbol, at: tuple[float, float] = (0, 0)
+) -> svg.G:
     absolute_at = (at[0] + use.at[0], at[1] + use.at[1])
     rotation = use.at[2]
-    drawn_sym = draw_lib_symbol(sym, at=absolute_at, rotation=rotation, mirror=use.mirror, draw_props=False)
+    drawn_sym = draw_lib_symbol(
+        sym, at=absolute_at, rotation=rotation, mirror=use.mirror, draw_props=False
+    )
 
-    props: list[svg.Element] = [draw_property(x, at=at, rotation=rotation, flip_y_axis=False, mirror=use.mirror) for x
-                                in use.property]
+    props: list[svg.Element] = [
+        draw_property(x, at=at, rotation=rotation, flip_y_axis=False, mirror=use.mirror)
+        for x in use.property
+    ]
     elements: list[svg.Element] = [drawn_sym] + props
     return svg.G(class_=["symbol-use"], elements=elements)
 
@@ -83,13 +109,21 @@ def draw_symbol_use(use: SymbolUse, sym: LibSymbol, at: tuple[float, float] = (0
 def draw_wire(expr: Wire, at=(0, 0)) -> svg.Polyline:
     style = kicad_stroke_to_style(expr.stroke)
     points = [(at[0] + xy.x, at[1] + xy.y) for xy in expr.pts.xy]
-    return svg.Polyline(class_=["wire"], style=style, points=[num for pt in points for num in pt], )
+    return svg.Polyline(
+        class_=["wire"],
+        style=style,
+        points=[num for pt in points for num in pt],
+    )
 
 
 def draw_bus(expr: Bus, at=(0, 0)) -> svg.Polyline:
     style = kicad_stroke_to_style(expr.stroke)
     points = [(at[0] + xy.x, at[1] + xy.y) for xy in expr.pts.xy]
-    return svg.Polyline(class_=["bus"], style=style, points=[num for pt in points for num in pt], )
+    return svg.Polyline(
+        class_=["bus"],
+        style=style,
+        points=[num for pt in points for num in pt],
+    )
 
 
 def draw_bus_entry(expr: BusEntry, at=(0, 0)) -> svg.Polyline:
@@ -99,7 +133,11 @@ def draw_bus_entry(expr: BusEntry, at=(0, 0)) -> svg.Polyline:
     x2 = x1 + expr.size[0]
     y2 = y1 + expr.size[1]
     points = [x1, y1, x2, y2]
-    return svg.Polyline(class_=["wire", "bus-entry"], style=style, points=points, )
+    return svg.Polyline(
+        class_=["wire", "bus-entry"],
+        style=style,
+        points=points,
+    )
 
 
 def draw_junction(expr: Junction, at=(0, 0), is_bus_junction=False) -> svg.Circle:
@@ -115,10 +153,18 @@ def draw_junction(expr: Junction, at=(0, 0), is_bus_junction=False) -> svg.Circl
     if is_bus_junction:
         class_.append("junction-bus")
 
-    return svg.Circle(class_=class_, style=style, cx=at[0] + expr.at[0], cy=at[1] + expr.at[1], r=r, )
+    return svg.Circle(
+        class_=class_,
+        style=style,
+        cx=at[0] + expr.at[0],
+        cy=at[1] + expr.at[1],
+        r=r,
+    )
 
 
-def draw_label_text(expr: Union[LocalLabel, GlobalLabel, HierarchicalLabel], at=(0, 0), class_=None) -> svg.Text:
+def draw_label_text(
+    expr: Union[LocalLabel, GlobalLabel, HierarchicalLabel], at=(0, 0), class_=None
+) -> svg.Text:
     offset = 0.4
     style = kicad_font_to_css(expr.effects.font)
     x = at[0] + expr.at[0]
@@ -134,7 +180,14 @@ def draw_label_text(expr: Union[LocalLabel, GlobalLabel, HierarchicalLabel], at=
     elif rotation in [180, 270]:
         x -= offset
 
-    return svg.Text(class_=class_, transform=transform, style=style, text=expr.text, x=x, y=y, )
+    return svg.Text(
+        class_=class_,
+        transform=transform,
+        style=style,
+        text=expr.text,
+        x=x,
+        y=y,
+    )
 
 
 def draw_local_label(expr: LocalLabel, at=(0, 0)) -> svg.Text:
@@ -153,8 +206,20 @@ def draw_no_connect(expr: NoConnect, at=(0, 0)) -> svg.Path:
     # half the length of the lines that form the no-connect cross
     half_l = 0.635
     mid = (at[0] + expr.at[0], at[1] + expr.at[1])
-    line_a = [(mid[0] - half_l, mid[1] - half_l), (mid[0] + half_l, mid[1] + half_l), ]
-    line_b = [(mid[0] + half_l, mid[1] - half_l), (mid[0] - half_l, mid[1] + half_l), ]
-    return svg.Path(class_=["no-connect"],
-                    d=[svg.MoveTo(line_a[0][0], line_a[0][1]), svg.LineTo(line_a[1][0], line_a[1][1]),
-                       svg.MoveTo(line_b[0][0], line_b[0][1]), svg.LineTo(line_b[1][0], line_b[1][1]), ], )
+    line_a = [
+        (mid[0] - half_l, mid[1] - half_l),
+        (mid[0] + half_l, mid[1] + half_l),
+    ]
+    line_b = [
+        (mid[0] + half_l, mid[1] - half_l),
+        (mid[0] - half_l, mid[1] + half_l),
+    ]
+    return svg.Path(
+        class_=["no-connect"],
+        d=[
+            svg.MoveTo(line_a[0][0], line_a[0][1]),
+            svg.LineTo(line_a[1][0], line_a[1][1]),
+            svg.MoveTo(line_b[0][0], line_b[0][1]),
+            svg.LineTo(line_b[1][0], line_b[1][1]),
+        ],
+    )

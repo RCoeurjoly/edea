@@ -21,6 +21,9 @@ pytest-cov = "^4.0.0"
 pyright = "^1.1.283"
 pytest-xdist = "^3.1.0"
 
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

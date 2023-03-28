@@ -4,12 +4,11 @@ Methods for turning strings and lists into EDeA dataclasses.
 SPDX-License-Identifier: EUPL-1.2
 """
 import re
-from edea.types.base import KicadExpr
 
 # we need to import this for get_all_subclasses to work
 import edea.types.schematic
+from edea.types.base import KicadExpr
 from edea.util import get_all_subclasses
-
 
 all_classes: list[KicadExpr] = get_all_subclasses(KicadExpr)
 

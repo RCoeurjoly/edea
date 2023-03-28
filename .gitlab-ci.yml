@@ -24,6 +24,10 @@ test:
   script:
     - poetry run pytest --cov=edea
 
+formatting:
+  script:
+    - poetry run black --check edea
+
 lint:
   script:
     - poetry run pylint edea
@@ -35,7 +39,6 @@ typecheck:
 bandit:
   script:
     - poetry run bandit -r edea
-
 #publish:
 #  script:
 #    - poetry build

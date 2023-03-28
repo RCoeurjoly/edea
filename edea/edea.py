@@ -18,23 +18,45 @@ import numpy as np
 import svg
 
 from .bbox import BoundingBox
-from .parser import BaseDrawable, FPLine, Polygon, Footprint, Expr, Movable, TStamp, from_str
+from .parser import (
+    BaseDrawable,
+    Expr,
+    Footprint,
+    FPLine,
+    Movable,
+    Polygon,
+    TStamp,
+    from_str,
+)
 
 # top level types to copy over to the new PCB
-copy_parts = ["footprint", "zone", "via", "segment", "arc", "gr_text", "gr_line", "gr_poly", "gr_arc", "gr_circle",
-              "gr_curve", "dimension"]
+copy_parts = [
+    "footprint",
+    "zone",
+    "via",
+    "segment",
+    "arc",
+    "gr_text",
+    "gr_line",
+    "gr_poly",
+    "gr_arc",
+    "gr_circle",
+    "gr_curve",
+    "dimension",
+]
 
 
 class VersionError(Exception):
-    """ VersionError
+    """VersionError
     Source file was produced with a KiCad version before 6.0
     """
 
 
 class Schematic:
-    """ Schematic
+    """Schematic
     Representation of a kicad schematic
     """
+
     _sch: Expr
     file_name: str
     name: str
@@ -45,12 +67,13 @@ class Schematic:
         self.file_name = file_name
 
     def as_expr(self) -> Expr:
-        """ return the schematic as an Expr """
+        """return the schematic as an Expr"""
         return self._sch
 
-    def to_sheet(self, sheet_name: str, file_name: str, pos_x=20.0, pos_y=20.0) -> Tuple[BoundingBox, Expr]:
-        """ to_sheet extracts all hierarchical labels and generates a new sheet object from them
-        """
+    def to_sheet(
+        self, sheet_name: str, file_name: str, pos_x=20.0, pos_y=20.0
+    ) -> Tuple[BoundingBox, Expr]:
+        """to_sheet extracts all hierarchical labels and generates a new sheet object from them"""
 
         if hasattr(self._sch, "hierarchical_label"):
             labels = self._sch.hierarchical_label
@@ -69,30 +92,60 @@ class Schematic:
         # build a bounding box so that the next sheet can be placed properly
         box = BoundingBox(np.array([[pos_x, pos_y], [pos_x + height, pos_y + width]]))
 
-        sheet = Expr("sheet", Expr("at", pos_x, pos_y), Expr("size", width, height),
-                     Expr("fields_autoplaced"), from_str("(stroke (width 0) (type solid) (color 0 0 0 0))"),
-                     from_str("(fill (color 0 0 0 0.0000))"), Expr("uuid", uuid4()),
-                     Expr("property", '"Sheet name"', f'"{sheet_name}"', Expr("id", 0), Expr("at", pos_x, pos_y, 0),
-                          from_str("(effects (font (size 1.27 1.27)) (justify left bottom))")),
-                     Expr("property", '"Sheet file"', f'"{file_name}"', Expr("id", 1),
-                          Expr("at", pos_x, pos_y + height + 2.54, 0),
-                          from_str("(effects (font (size 1.27 1.27)) (justify left bottom))")))
+        sheet = Expr(
+            "sheet",
+            Expr("at", pos_x, pos_y),
+            Expr("size", width, height),
+            Expr("fields_autoplaced"),
+            from_str("(stroke (width 0) (type solid) (color 0 0 0 0))"),
+            from_str("(fill (color 0 0 0 0.0000))"),
+            Expr("uuid", uuid4()),
+            Expr(
+                "property",
+                '"Sheet name"',
+                f'"{sheet_name}"',
+                Expr("id", 0),
+                Expr("at", pos_x, pos_y, 0),
+                from_str("(effects (font (size 1.27 1.27)) (justify left bottom))"),
+            ),
+            Expr(
+                "property",
+                '"Sheet file"',
+                f'"{file_name}"',
+                Expr("id", 1),
+                Expr("at", pos_x, pos_y + height + 2.54, 0),
+                from_str("(effects (font (size 1.27 1.27)) (justify left bottom))"),
+            ),
+        )
         i = 0
         for label in labels.values():
             # build a new pin, (at x y angle)
             i += 1
-            sheet.append(Expr("pin", label[0], label.shape[0], Expr("at", pos_x, pos_y + i * 2.54, 0),
-                              from_str("(effects (font (size 1.27 1.27)) (justify right))"), Expr("uuid", uuid4())))
+            sheet.append(
+                Expr(
+                    "pin",
+                    label[0],
+                    label.shape[0],
+                    Expr("at", pos_x, pos_y + i * 2.54, 0),
+                    from_str("(effects (font (size 1.27 1.27)) (justify right))"),
+                    Expr("uuid", uuid4()),
+                )
+            )
 
         return (box, sheet)
 
     @staticmethod
     def empty() -> Schematic:
-        """empty_schematic returns a minimal KiCad schematic
-        """
-        sch = Expr("kicad_sch", Expr("version", 20211123), Expr("generator", "edea"), Expr("uuid", uuid4()),
-                   Expr("paper", "A4"), Expr("lib_symbols"),
-                   Expr("sheet_instances", Expr("path", '"/"', Expr("page", '"1"'))))
+        """empty_schematic returns a minimal KiCad schematic"""
+        sch = Expr(
+            "kicad_sch",
+            Expr("version", 20211123),
+            Expr("generator", "edea"),
+            Expr("uuid", uuid4()),
+            Expr("paper", "A4"),
+            Expr("lib_symbols"),
+            Expr("sheet_instances", Expr("path", '"/"', Expr("page", '"1"'))),
+        )
         return Schematic(sch, "", "")
 
     def append(self, schematics: Dict[str, Schematic]):
@@ -107,7 +160,9 @@ class Schematic:
         for name, schematic in schematics.items():
             max_page: str
             # find the max page number
-            box, sheet = schematic.to_sheet(name, schematic.file_name, pos_x=last_x, pos_y=last_y)
+            box, sheet = schematic.to_sheet(
+                name, schematic.file_name, pos_x=last_x, pos_y=last_y
+            )
 
             last_x += box.width + 20.0  # update where the next sheet should go
             max_height = max(max_height, box.height)
@@ -131,7 +186,9 @@ class Schematic:
     def draw(self) -> svg.SVG:
         """draw the whole schematic"""
         # TODO: paper size
-        canvas = svg.SVG(viewBox=svg.ViewBoxSpec(0, 0, 297 * 100, 210 * 100), elements=[])
+        canvas = svg.SVG(
+            viewBox=svg.ViewBoxSpec(0, 0, 297 * 100, 210 * 100), elements=[]
+        )
 
         for sym in self._sch.symbol:
             sym_name = sym.lib_id[0].strip('"')
@@ -184,9 +241,10 @@ class Schematic:
 
 
 class PCB:
-    """ PCB
+    """PCB
     Representation of a kicad PCB
     """
+
     _pcb: Expr
     file_name: str
     name: str
@@ -197,16 +255,16 @@ class PCB:
         self.file_name = file_name
 
     def as_expr(self) -> Expr:
-        """ return the schematic as an Expr """
+        """return the schematic as an Expr"""
         return self._pcb
 
     def bounding_box(self) -> BoundingBox:
-        """ bounding_box calculates and returns the BoundingBox of a PCB
-        """
+        """bounding_box calculates and returns the BoundingBox of a PCB"""
         flatten = lambda l: sum(map(flatten, l), []) if isinstance(l, list) else [l]
 
         footprints = flatten(
-            self._pcb.apply(Footprint, methodcaller("bounding_box")))  # return value is a list of single element lists
+            self._pcb.apply(Footprint, methodcaller("bounding_box"))
+        )  # return value is a list of single element lists
         polygons = flatten(self._pcb.apply(Polygon, methodcaller("bounding_box")))
         fp_line = flatten(self._pcb.apply(FPLine, methodcaller("bounding_box")))
 
@@ -225,8 +283,7 @@ class PCB:
         return outer
 
     def move(self, x: float, y: float):
-        """ move a pcb with relative coordinates
-        """
+        """move a pcb with relative coordinates"""
         self._pcb.apply(Movable, methodcaller("move_xy", x, y))
 
     def append(self, pcbs: List[Tuple[str, PCB]]):
@@ -279,7 +336,9 @@ class PCB:
     def draw(self) -> svg.SVG:
         """draw the whole PCB"""
         # TODO: paper size, currently we're going for 100 dots per mm
-        canvas = svg.SVG(viewBox=svg.ViewBoxSpec(0, 0, 297 * 100, 210 * 100), elements=[])
+        canvas = svg.SVG(
+            viewBox=svg.ViewBoxSpec(0, 0, 297 * 100, 210 * 100), elements=[]
+        )
 
         # init the layers which will later become groups
         layers = {}
@@ -382,7 +441,9 @@ class Project:
 
             sheet_file = prop[sheet_file_key][1].strip('"')
             if os.path.basename(sheet_file) not in self.fn_to_uuid:
-                with open(os.path.join(dir_name, sheet_file), encoding="utf-8") as sch_file:
+                with open(
+                    os.path.join(dir_name, sheet_file), encoding="utf-8"
+                ) as sch_file:
                     sub = from_str(sch_file.read())
 
                 self._parse_sheet(sub, sheet_file)
@@ -431,8 +492,16 @@ class Project:
             if layer[0].endswith('.Cu"'):
                 copper_layers += 1
 
-        bom = {"count_part": len(parts), "count_unique": len(unique_keys), "parts": bom_parts, "sheets": self.sheets,
-               "area": box.area, "width": box.width, "height": box.height, "copper_layers": copper_layers}
+        bom = {
+            "count_part": len(parts),
+            "count_unique": len(unique_keys),
+            "parts": bom_parts,
+            "sheets": self.sheets,
+            "area": box.area,
+            "width": box.width,
+            "height": box.height,
+            "copper_layers": copper_layers,
+        }
 
         return bom
 
@@ -441,7 +510,12 @@ class Project:
 
         # don't trust the linter, it's telling lies here
         parts = list(
-            filterfalse(lambda sym: sym.property["Reference"][1].startswith('"#') or sym.in_bom is False, sch.symbol, ))
+            filterfalse(
+                lambda sym: sym.property["Reference"][1].startswith('"#')
+                or sym.in_bom is False,
+                sch.symbol,
+            )
+        )
 
         # recurse sub-schematics
         if hasattr(sch, "sheet"):
