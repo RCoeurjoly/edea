@@ -5,7 +5,7 @@ SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
 from enum import Enum
-from typing import Optional, Literal, Union
+from typing import Literal, Optional, Union
 from uuid import UUID, uuid4
 
 from pydantic import validator
@@ -14,7 +14,7 @@ from pydantic.dataclasses import dataclass
 
 from edea.types.config import PydanticConfig
 from edea.types.schematic.base import KicadSchExpr
-from edea.types.schematic.shapes import Pts, Stroke, Fill
+from edea.types.schematic.shapes import Fill, Pts, Stroke
 from edea.types.schematic.symbol import Effects, LibSymbol, SymbolProperty
 
 

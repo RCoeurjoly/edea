@@ -7,8 +7,8 @@ from dataclasses import field
 from enum import Enum
 from typing import Optional
 
-from pydantic.dataclasses import dataclass
 from pydantic.color import Color
+from pydantic.dataclasses import dataclass
 
 from edea.types.config import PydanticConfig
 from edea.types.schematic.base import KicadSchExpr

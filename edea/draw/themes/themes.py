@@ -13,7 +13,8 @@ __all__ = ["ThemeName", "get_theme"]
 
 
 class ThemeName(str, Enum):
-    """ ThemeName represents the names of the KiCad Themes (and corresponding files) """
+    """ThemeName represents the names of the KiCad Themes (and corresponding files)"""
+
     EAGLE_DARK = "eagle_dark"
     WLIGHT = "wlight"
     MONOKAI = "monokai"
@@ -48,5 +49,5 @@ for name, filename in filenames.items():
 
 
 def get_theme(theme_name: ThemeName) -> KicadTheme:
-    """ get parsed theme by name """
+    """get parsed theme by name"""
     return theme_map[theme_name]

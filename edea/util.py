@@ -6,6 +6,7 @@ SPDX-License-Identifier: EUPL-1.2
 
 import re
 
+
 # from https://stackoverflow.com/a/1176023
 def to_snake_case(name):
     """

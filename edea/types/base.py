@@ -13,7 +13,6 @@ from pydantic.fields import ModelField
 
 from edea.util import to_snake_case
 
-
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
 
 

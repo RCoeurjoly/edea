@@ -7,16 +7,15 @@ from __future__ import annotations
 
 import re
 from collections import UserList
-from copy import deepcopy, copy
+from copy import copy, deepcopy
 from dataclasses import dataclass
-from math import tau, cos, sin
-from typing import Dict
-from typing import Tuple, Union
+from math import cos, sin, tau
+from typing import Dict, Tuple, Union
 from uuid import UUID, uuid4
-from _operator import methodcaller
 
 import numpy as np
 import svg
+from _operator import methodcaller
 
 from .bbox import BoundingBox
 
@@ -57,7 +56,7 @@ drawable_types = [
     "label",
     "segment",
     "via",
-    "fp_text"
+    "fp_text",
 ]
 lib_symbols = {}
 TOKENIZE_EXPR = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*"|\(|\)|"|[^\s()"]+)')
@@ -240,7 +239,9 @@ class BaseDrawable(Movable):
             yield self.to_dots(val, places=places)
 
     def point_to_dots(self, pt, places=2, offset=(0.0, 0.0)) -> Tuple[float, float]:
-        return self.to_dots(offset[0] + pt[0], places=places), self.to_dots(offset[0] + pt[1], places=places)
+        return self.to_dots(offset[0] + pt[0], places=places), self.to_dots(
+            offset[0] + pt[1], places=places
+        )
 
     def points_to_dots(self, pts, places=2, offset=(0.0, 0.0)):
         for pt in pts:
@@ -249,7 +250,9 @@ class BaseDrawable(Movable):
     def draw(self) -> None | svg.Polyline | svg.Rect | svg.Text | svg.Circle:
         raise NotImplementedError("should be implemented by the child class")
 
-    def parse_visual(self, node: Union[svg.G | svg.Rect | svg.Circle | svg.Polyline | svg.Ellipse]) -> None:
+    def parse_visual(
+        self, node: Union[svg.G | svg.Rect | svg.Circle | svg.Polyline | svg.Ellipse]
+    ) -> None:
         if hasattr(self, "tstamp"):
             node.id = self.tstamp[0]
 
@@ -295,9 +298,9 @@ class BaseDrawable(Movable):
 
         # add the layer name(s) as css class(es) for interactivity features
         if hasattr(self, "layer"):
-            node.class_ = [self.layer[0][1:-1].replace('.', '_')]
+            node.class_ = [self.layer[0][1:-1].replace(".", "_")]
         elif hasattr(self, "layers"):
-            node.class_ = [name[1:-1].replace('.', '_') for name in self.layers.data]
+            node.class_ = [name[1:-1].replace(".", "_") for name in self.layers.data]
 
         if hasattr(self, "at") and len(self.at) > 2 and self.at[2] != 0:
             # pad angle should be ignored as it refers to the footprint and not the pad directly
@@ -311,7 +314,10 @@ class BaseDrawable(Movable):
 
             # TODO: mirror elements on the back layers along the x axis
 
-            node.transform = [svg.Translate(self.to_dots(self.at[0]), self.to_dots(self.at[1])), svg.Rotate(angle)]
+            node.transform = [
+                svg.Translate(self.to_dots(self.at[0]), self.to_dots(self.at[1])),
+                svg.Rotate(angle),
+            ]
 
     def parse_color(self, color: list):
         """converts `r g b a` to a tuple of `(r,g,b)` and `alpha`"""
@@ -341,8 +347,8 @@ class Pad(BaseDrawable):
         else:
             angle = 0
         origin = self.at.data[
-                 0:2
-                 ]  # in this case we explicitly need to access the data list because of the range op
+            0:2
+        ]  # in this case we explicitly need to access the data list because of the range op
         # otherwise it would return a list of Expr
 
         if self[2] in ["rect", "roundrect", "oval", "custom"]:
@@ -375,14 +381,21 @@ class Pad(BaseDrawable):
         pad_type = self.data[2]
 
         if pad_type == "rect":
-            node = svg.Rect(width=self.to_dots(self.size[0]), height=self.to_dots(self.size[1]))
+            node = svg.Rect(
+                width=self.to_dots(self.size[0]), height=self.to_dots(self.size[1])
+            )
         elif pad_type == "roundrect":
-            node = svg.Rect(width=self.to_dots(self.size[0]), height=self.to_dots(self.size[1]),
-                            rx=self.roundrect_rratio[0])
+            node = svg.Rect(
+                width=self.to_dots(self.size[0]),
+                height=self.to_dots(self.size[1]),
+                rx=self.roundrect_rratio[0],
+            )
         elif pad_type == "custom":
             node = svg.Polyline(points=[])
         elif pad_type == "circle":
-            node = svg.Circle(r=self.to_dots(self.size[0] / 2), fill="red", fill_opacity=0.5)
+            node = svg.Circle(
+                r=self.to_dots(self.size[0] / 2), fill="red", fill_opacity=0.5
+            )
         elif pad_type == "oval":
             node = svg.Ellipse()
         else:
@@ -424,8 +437,7 @@ class FPLine(BaseDrawable):
         self.parse_visual(node)
 
         node.stroke_width = self.to_dots(self.width[0])
-        node.points = [*self.point_to_dots(self.start),
-                       *self.point_to_dots(self.end)]
+        node.points = [*self.point_to_dots(self.start), *self.point_to_dots(self.end)]
         node.stroke = "black"
         node.stroke_linecap = "round"
 
@@ -534,10 +546,14 @@ class Footprint(BaseDrawable):
         fp_group = svg.G(elements=[], id=self.tstamp[0])
 
         if len(self.at) == 3:
-            fp_group.transform = [svg.Translate(self.to_dots(self.at[0]), self.to_dots(self.at[1])),
-                                  svg.Rotate(self.at[2])]
+            fp_group.transform = [
+                svg.Translate(self.to_dots(self.at[0]), self.to_dots(self.at[1])),
+                svg.Rotate(self.at[2]),
+            ]
         else:
-            fp_group.transform = [svg.Translate(self.to_dots(self.at[0]), self.to_dots(self.at[1]))]
+            fp_group.transform = [
+                svg.Translate(self.to_dots(self.at[0]), self.to_dots(self.at[1]))
+            ]
         for element in self.data:
             if isinstance(element, BaseDrawable):
                 node = element.draw()
@@ -567,7 +583,11 @@ class SchematicSymbol(BaseDrawable):
 
         for element in (e for e in self.data if isinstance(e, BaseDrawable)):
             # skip hidden expressions
-            if hasattr(element, "effects") and "hide" in element.effects or element.name == "property":
+            if (
+                hasattr(element, "effects")
+                and "hide" in element.effects
+                or element.name == "property"
+            ):
                 continue
             sym_group.elements.append(element.draw())
 
@@ -594,7 +614,13 @@ class Drawable(BaseDrawable):
             node = svg.Polyline(points=[])
         elif node_name == "rectangle":
             node = svg.Rect()
-        elif node_name in ["property", "hierarchical_label", "text", "label", "fp_text"]:
+        elif node_name in [
+            "property",
+            "hierarchical_label",
+            "text",
+            "label",
+            "fp_text",
+        ]:
             node = svg.Text()
         elif node_name in ["junction", "via"]:
             node = svg.Circle()
@@ -609,7 +635,11 @@ class Drawable(BaseDrawable):
 
         if node_name == "polyline":
             # list of tuples to list
-            node.points = [point for points in self.points_to_dots(self.data[0]) for point in points]
+            node.points = [
+                point
+                for points in self.points_to_dots(self.data[0])
+                for point in points
+            ]
         elif node_name == "rectangle":
             xc, yc = [self.start[0], self.end[0]], [self.start[1], self.end[1]]
             width = max(xc) - min(xc)
@@ -624,8 +654,16 @@ class Drawable(BaseDrawable):
         elif node_name == "wire":
             node.class_ = ["wire"]
             for point in self.data[0]:
-                node.points.extend([self.to_dots(point.data[0]), self.to_dots(point.data[1])])
-        elif node_name in ["property", "hierarchical_label", "text", "label", "fp_text"]:
+                node.points.extend(
+                    [self.to_dots(point.data[0]), self.to_dots(point.data[1])]
+                )
+        elif node_name in [
+            "property",
+            "hierarchical_label",
+            "text",
+            "label",
+            "fp_text",
+        ]:
             has_effects = hasattr(self, "effects")
 
             # check if it's hidden
@@ -680,8 +718,12 @@ class Drawable(BaseDrawable):
             node.stroke_width = 0
         elif node_name == "segment":
             node.stroke_width = self.to_dots(self.width[0])
-            node.points = [self.to_dots(self.start[0]), self.to_dots(self.start[1]), self.to_dots(self.end[0]),
-                           self.to_dots(self.end[1])]
+            node.points = [
+                self.to_dots(self.start[0]),
+                self.to_dots(self.start[1]),
+                self.to_dots(self.end[0]),
+                self.to_dots(self.end[1]),
+            ]
             node.stroke = "black"
             node.stroke_linecap = "round"
         elif node_name == "via":
@@ -749,7 +791,7 @@ def from_str(program: str) -> Expr:
 
 
 def from_tokens(
-        tokens: list, index: int, parent: str, grand_parent: str
+    tokens: list, index: int, parent: str, grand_parent: str
 ) -> Tuple[int, Union[Expr, int, float, str]]:
     """Read an expression from a sequence of tokens."""
     if len(tokens) == index:

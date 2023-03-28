@@ -5,7 +5,7 @@ SPDX-License-Identifier: EUPL-1.2
 """
 from __future__ import annotations
 
-from math import sin, cos, tau
+from math import cos, sin, tau
 
 import numpy as np
 

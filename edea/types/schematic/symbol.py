@@ -11,8 +11,8 @@ from typing import Literal, Optional
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.schematic.base import KicadSchExpr
 from edea.types.config import PydanticConfig
+from edea.types.schematic.base import KicadSchExpr
 from edea.types.schematic.shapes import Arc, Circle, Polyline, Rectangle
 
 

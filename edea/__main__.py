@@ -15,29 +15,59 @@ from time import time
 from typing import Dict
 
 from edea.draw import draw_svg
-from edea.edea import Schematic, Project, PCB
+from edea.edea import PCB, Project, Schematic
 from edea.imgdiff import imgdiff
 from edea.kicad_files import EMPTY_PROJECT
 from edea.parser import from_str
 from edea.types.parser import from_str as from_str_typed
 
-parser = argparse.ArgumentParser(description='Tool to parse, render, and merge KiCad projects.')
+parser = argparse.ArgumentParser(
+    description="Tool to parse, render, and merge KiCad projects."
+)
 pgroup = parser.add_mutually_exclusive_group()
-pgroup.add_argument('--extract-meta', help='Extract metadata from KiCad project and output to stdout or to json file.',
-                    action='store_true')
-pgroup.add_argument('--merge', action='store_true', help='Merge the listed KiCad projects into a single project ('
-                                                         'specify target directory with the output argument).')
-parser.add_argument('--diff', action='store_true', help='Render visual differences of images stored in two different'
-                                                        'directories, output the result to a third directory.'
-                                                        'The image files must have the same file name.')
-parser.add_argument('--render', action='store_true', help='Render kicad_sch or kicad_pcb to SVG.')
-parser.add_argument('--output', type=str, nargs='?', default=False,
-                    help="Specify output directory for merge, or output file for metadata extraction.")
-parser.add_argument('projects', type=str, nargs='+',
-                    help='Path(s) to the KiCad Project directory used as input.')
-parser.add_argument('-adir', type=str, nargs='?', default=None, help='Visual diff input directory A')
-parser.add_argument('-bdir', type=str, nargs='?', default=None, help='Visual diff input directory B')
-parser.add_argument('-odir', type=str, nargs='?', default=None, help='Visual diff output directory')
+pgroup.add_argument(
+    "--extract-meta",
+    help="Extract metadata from KiCad project and output to stdout or to json file.",
+    action="store_true",
+)
+pgroup.add_argument(
+    "--merge",
+    action="store_true",
+    help="Merge the listed KiCad projects into a single project ("
+    "specify target directory with the output argument).",
+)
+parser.add_argument(
+    "--diff",
+    action="store_true",
+    help="Render visual differences of images stored in two different"
+    "directories, output the result to a third directory."
+    "The image files must have the same file name.",
+)
+parser.add_argument(
+    "--render", action="store_true", help="Render kicad_sch or kicad_pcb to SVG."
+)
+parser.add_argument(
+    "--output",
+    type=str,
+    nargs="?",
+    default=False,
+    help="Specify output directory for merge, or output file for metadata extraction.",
+)
+parser.add_argument(
+    "projects",
+    type=str,
+    nargs="+",
+    help="Path(s) to the KiCad Project directory used as input.",
+)
+parser.add_argument(
+    "-adir", type=str, nargs="?", default=None, help="Visual diff input directory A"
+)
+parser.add_argument(
+    "-bdir", type=str, nargs="?", default=None, help="Visual diff input directory B"
+)
+parser.add_argument(
+    "-odir", type=str, nargs="?", default=None, help="Visual diff output directory"
+)
 
 args = parser.parse_args()
 
@@ -55,14 +85,14 @@ if args.extract_meta:
         sys.exit(7)  # argument list too long
 
     project_path = args.projects[0]
-    if project_path.endswith('.kicad_pro'):
+    if project_path.endswith(".kicad_pro"):
         path, _ = os.path.splitext(project_path)
         root_schematic = path + ".kicad_sch"
         root_pcb = path + ".kicad_pcb"
     elif os.path.isdir(project_path):
         path_lead, project_name = os.path.split(os.path.normpath(project_path))
-        root_schematic = os.path.join(project_path, project_name + '.kicad_sch')
-        root_pcb = os.path.join(project_path, project_name + '.kicad_pcb')
+        root_schematic = os.path.join(project_path, project_name + ".kicad_sch")
+        root_pcb = os.path.join(project_path, project_name + ".kicad_pcb")
     else:
         log.error("No KiCad project directory or project file provided")
         sys.exit(22)  # invalid argument
@@ -94,7 +124,7 @@ elif args.merge:
 
     for path in args.projects:
         # detect whether it points to a project file or a project directory
-        if path.endswith('.kicad_pro'):
+        if path.endswith(".kicad_pro"):
             path_lead, _ = os.path.splitext(path)
             project_name = os.path.basename(path_lead)
             project_path = os.path.dirname(path)
@@ -102,7 +132,10 @@ elif args.merge:
             _, project_name = os.path.split(os.path.normpath(path))
             project_path = path
         else:
-            log.error("%s doesn't point to a kicad project file or kicad project directory", path)
+            log.error(
+                "%s doesn't point to a kicad project file or kicad project directory",
+                path,
+            )
             sys.exit(2)  # no such file or directory
 
         if project_path not in files:
@@ -115,7 +148,10 @@ elif args.merge:
 
             # append another instance of the project
             files[project_path].append(
-                {"project_name": project_name, "name": f"{project_name} {len(files[project_path]) + 1}"},
+                {
+                    "project_name": project_name,
+                    "name": f"{project_name} {len(files[project_path]) + 1}",
+                },
             )
 
     parsed_schematics: Dict[str, Schematic] = {}
@@ -125,14 +161,18 @@ elif args.merge:
         log.debug("merging schematic: %s %s", project_path, obj)
 
         # parse the schematic once, append as many times as needed
-        root_schematic = os.path.join(project_path, obj[0]["project_name"] + '.kicad_sch')
+        root_schematic = os.path.join(
+            project_path, obj[0]["project_name"] + ".kicad_sch"
+        )
         with open(root_schematic, encoding="utf-8") as f:
             expr = from_str(f.read())
 
             for instance in obj:
                 name = instance["name"]
-                project_name = instance['project_name']
-                parsed_schematics[name] = Schematic(expr, name, f"{project_name}.kicad_sch")
+                project_name = instance["project_name"]
+                parsed_schematics[name] = Schematic(
+                    expr, name, f"{project_name}.kicad_sch"
+                )
 
     # TODO: get the sub-schematic uuid here and apply it to the right PCB first
     target_schematic.append(parsed_schematics)
@@ -142,7 +182,9 @@ elif args.merge:
         log.debug("merging pcbs: %s %s", project_path, obj)
 
     # write the resulting schematic
-    with open(f"{os.path.join(output_path, output_name)}.kicad_sch", "w", encoding="utf-8") as f:
+    with open(
+        f"{os.path.join(output_path, output_name)}.kicad_sch", "w", encoding="utf-8"
+    ) as f:
         f.write(str(target_schematic.as_expr()))
 
     # copy over all the schematics from the modules
@@ -156,7 +198,9 @@ elif args.merge:
     # TODO: write merged PCB file to the output
 
     # generate project file
-    with open(f"{os.path.join(output_path, output_name)}.kicad_pro", "w", encoding="utf-8") as f:
+    with open(
+        f"{os.path.join(output_path, output_name)}.kicad_pro", "w", encoding="utf-8"
+    ) as f:
         s = Template(EMPTY_PROJECT)
         f.write(s.substitute(project_name=output_name))
 
@@ -173,28 +217,36 @@ elif args.diff:
         "B": [],
     }
 
-    for dirlabel, dirpath in [('a', input_dir_a), ('b', input_dir_b)]:
+    for dirlabel, dirpath in [("a", input_dir_a), ("b", input_dir_b)]:
         with os.scandir(dirpath) as dir_iterator:
             for entry in dir_iterator:
-                if entry.is_file() and (entry.name.endswith('.png') or entry.name.endswith('.svg')):
+                if entry.is_file() and (
+                    entry.name.endswith(".png") or entry.name.endswith(".svg")
+                ):
                     file_lists[dirlabel].append(entry.name)
 
-    common_files = set(file_lists['a']).intersection(file_lists['b'])
+    common_files = set(file_lists["a"]).intersection(file_lists["b"])
 
     stats = []
 
     for fn in common_files:
-        for dirlabel, dirpath in [('A', input_dir_a), ('B', input_dir_b), ('o', output_dir)]:
-            file_lists[dirlabel].append(os.path.join(dirpath, fn if dirlabel != 'o' else fn[:-4] + '.png'))
-        stats.append({'fn': fn})
+        for dirlabel, dirpath in [
+            ("A", input_dir_a),
+            ("B", input_dir_b),
+            ("o", output_dir),
+        ]:
+            file_lists[dirlabel].append(
+                os.path.join(dirpath, fn if dirlabel != "o" else fn[:-4] + ".png")
+            )
+        stats.append({"fn": fn})
 
     for idx in range(len(common_files)):
         params = []
-        for identifier in 'ABo':
+        for identifier in "ABo":
             params.append(file_lists[identifier][idx])
-        stats[idx]['difference_pct'] = imgdiff(*tuple(params))
+        stats[idx]["difference_pct"] = imgdiff(*tuple(params))
 
-    with open(os.path.join(output_dir, 'stats.json'), 'wt', encoding='utf-8') as of:
+    with open(os.path.join(output_dir, "stats.json"), "wt", encoding="utf-8") as of:
         of.write(json.dumps(stats))
 
 elif args.render:
