@@ -60,6 +60,13 @@ class Polyline(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig)
+class Bezier(KicadSchExpr):
+    pts: Pts = field(default_factory=Pts)
+    stroke: Stroke = field(default_factory=Stroke)
+    fill: Fill = field(default_factory=Fill)
+
+
+@dataclass(config=PydanticConfig)
 class Rectangle(KicadSchExpr):
     start: tuple[float, float]
     end: tuple[float, float]
