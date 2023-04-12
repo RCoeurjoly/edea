@@ -296,11 +296,13 @@ class BusAlias(KicadSchExpr):
 
 @dataclass(config=PydanticConfig)
 class Schematic(KicadSchExpr):
-    version: int = 20211123
+    version: Literal["20211123"] = "20211123"
 
     @validator("version")
-    def check_version(cls, v):
-        if v != 20211123:
+    @classmethod
+    def check_version(cls, v) -> Literal["20211123"]:
+        v = str(v)
+        if v != "20211123":
             raise ValueError(
                 f"Only the stable KiCad 6 schematic file format, i.e. version '20211123', "
                 f"is supported. Got '{v}'."
