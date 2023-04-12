@@ -13,7 +13,7 @@ from pydantic.dataclasses import dataclass
 
 from edea.types.config import PydanticConfig
 from edea.types.schematic.base import KicadSchExpr
-from edea.types.schematic.shapes import Arc, Circle, Polyline, Rectangle
+from edea.types.schematic.shapes import Arc, Bezier, Circle, Polyline, Rectangle
 
 
 class JustifyHoriz(str, Enum):
@@ -189,6 +189,7 @@ class SubSymbol(KicadSchExpr):
     circle: list[Circle] = field(default_factory=list)
     arc: list[Arc] = field(default_factory=list)
     pin: list[Pin] = field(default_factory=list)
+    bezier: list[Bezier] = field(default_factory=list)
     kicad_expr_tag_name: Literal["symbol"] = "symbol"
 
 
