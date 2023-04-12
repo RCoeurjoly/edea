@@ -13,16 +13,15 @@ pyvips = "^2.2.1"
 pydantic = "^1.10.2"
 "svg.py" = "^1.4.1"
 
-[tool.poetry.dev-dependencies]
-pylint = "^2.15.8"
-pytest = "^7.2.0"
-bandit = "^1.7.4"
-pytest-cov = "^4.0.0"
-pyright = "^1.1.283"
-pytest-xdist = "^3.1.0"
-
 [tool.poetry.group.dev.dependencies]
+bandit = "^1.7.4"
 black = "^23.1.0"
+hypothesis = "^6.71.0"
+pylint = "^2.15.8"
+pyright = "^1.1.283"
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+pytest-xdist = "^3.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
