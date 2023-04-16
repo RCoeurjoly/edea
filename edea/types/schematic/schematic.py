@@ -12,71 +12,11 @@ from pydantic import validator
 from pydantic.color import Color
 from pydantic.dataclasses import dataclass
 
+from edea.types.common import Image, Paper, PaperStandard, TitleBlock, VersionError
 from edea.types.config import PydanticConfig
 from edea.types.schematic.base import KicadSchExpr
 from edea.types.schematic.shapes import Fill, Pts, Stroke
 from edea.types.schematic.symbol import Effects, LibSymbol, SymbolProperty
-
-
-class PaperFormat(str, Enum):
-    A0 = "A0"
-    A1 = "A1"
-    A2 = "A2"
-    A3 = "A3"
-    A4 = "A4"
-    A5 = "A5"
-    A = "A"
-    B = "B"
-    C = "C"
-    D = "D"
-    E = "E"
-    US_LETTER = "USLetter"
-    US_LEGAL = "USLegal"
-    US_LEDGER = "USLedger"
-
-
-class PaperOrientation(str, Enum):
-    LANDSCAPE = ""
-    PORTRAIT = "portrait"
-
-
-@dataclass(config=PydanticConfig)
-class PaperUser(KicadSchExpr):
-    format: Literal["User"] = "User"
-    width: float = 0
-    height: float = 0
-    kicad_expr_tag_name: Literal["paper"] = "paper"
-
-    def as_dimensions_mm(self) -> tuple[float, float]:
-        return (self.width, self.height)
-
-
-@dataclass(config=PydanticConfig)
-class Paper(KicadSchExpr):
-    format: PaperFormat = PaperFormat.A4
-    orientation: PaperOrientation = PaperOrientation.LANDSCAPE
-
-    def as_dimensions_mm(self) -> tuple[float, float]:
-        lookup = {
-            PaperFormat.A5: (148, 210),
-            PaperFormat.A4: (210, 297),
-            PaperFormat.A3: (297, 420),
-            PaperFormat.A2: (420, 594),
-            PaperFormat.A1: (594, 841),
-            PaperFormat.A0: (841, 1189),
-            PaperFormat.A: (8.5 * 25.4, 11 * 25.4),
-            PaperFormat.B: (11 * 25.4, 17 * 25.4),
-            PaperFormat.C: (17 * 25.4, 22 * 25.4),
-            PaperFormat.D: (22 * 25.4, 34 * 25.4),
-            PaperFormat.E: (34 * 25.4, 44 * 25.4),
-            PaperFormat.US_LETTER: (8.5 * 25.4, 11 * 25.4),
-            PaperFormat.US_LEGAL: (8.5 * 25.4, 14 * 25.4),
-            PaperFormat.US_LEDGER: (11 * 25.4, 17 * 25.4),
-        }
-        width, height = lookup[self.format]
-        if self.orientation == PaperOrientation.LANDSCAPE:
-            width, height = (height, width)
-        return (width, height)
 
 
 @dataclass(config=PydanticConfig)
@@ -186,22 +126,6 @@ class LibSymbols(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig)
-class TitleBlockComment(KicadSchExpr):
-    number: int = 1
-    text: str = ""
-    kicad_expr_tag_name: Literal["comment"] = "comment"
-
-
-@dataclass(config=PydanticConfig)
-class TitleBlock(KicadSchExpr):
-    title: str = ""
-    date: str = ""
-    rev: str = ""
-    company: str = ""
-    comment: list[TitleBlockComment] = field(default_factory=list)
-
-
-@dataclass(config=PydanticConfig)
 class SheetPath(KicadSchExpr):
     path: str = "/"
     page: str = "1"
@@ -281,14 +205,6 @@ class Bus(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig)
-class Image(KicadSchExpr):
-    at: tuple[float, float]
-    scale: Optional[float] = None
-    uuid: UUID = field(default_factory=uuid4)
-    data: list[str] = field(default_factory=list)
-
-
-@dataclass(config=PydanticConfig)
 class BusAlias(KicadSchExpr):
     name: str
     members: list[str] = field(default_factory=list)
@@ -303,7 +219,7 @@ class Schematic(KicadSchExpr):
     def check_version(cls, v) -> Literal["20211123"]:
         v = str(v)
         if v != "20211123":
-            raise ValueError(
+            raise VersionError(
                 f"Only the stable KiCad 6 schematic file format, i.e. version '20211123', "
                 f"is supported. Got '{v}'."
             )
@@ -312,7 +228,7 @@ class Schematic(KicadSchExpr):
     generator: str = "edea"
     uuid: UUID = field(default_factory=uuid4)
     title_block: Optional[TitleBlock] = None
-    paper: Union[Paper, PaperUser] = field(default_factory=Paper)
+    paper: Paper = field(default_factory=PaperStandard)
     lib_symbols: LibSymbols = field(default_factory=LibSymbols)
     sheet: list[Sheet] = field(default_factory=list)
     symbol: list[SymbolUse] = field(default_factory=list)

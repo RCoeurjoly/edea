@@ -4,13 +4,14 @@ s-expression related dataclasses.
 
 SPDX-License-Identifier: EUPL-1.2
 """
+from collections import UserDict
 from typing import Literal, Type, TypeVar, Union, get_origin
 
 from pydantic import ValidationError
 from pydantic.color import Color
 from pydantic.dataclasses import dataclass
-from pydantic.fields import ModelField
 
+from edea.types.pcb.layers import layer_names, layer_types
 from edea.util import to_snake_case
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
@@ -24,7 +25,7 @@ class KicadExpr:
         """
         The name that KiCad uses for this in its s-expression format. By
         default this is computed from the Python class name converted to
-        snake_case but it can be be overriden.
+        snake_case but it can be overridden.
         """
         return to_snake_case(cls.__name__)
 
@@ -37,18 +38,18 @@ class KicadExpr:
         """
         parsed_args, parsed_kwargs = _get_args(expr)
 
-        fields: dict[str, ModelField] = cls.__pydantic_model__.__fields__  # type: ignore
+        if cls.kicad_expr_tag_name in ["kicad_sch", "kicad_pcb"]:
+            if len(expr) <= 4:
+                raise EOFError(f"Invalid {cls.kicad_expr_tag_name} file")
+            if "version" in parsed_kwargs:
+                cls.check_version(parsed_kwargs["version"][0][0])
 
-        # this is a bit hacky. we instantiate a schematic with just the version
-        # because we want to validate the file format version before anything else.
-        # what's a better way to do this? maybe make `from_list` lazy?
-        if cls.kicad_expr_tag_name == "kicad_sch" and "version" in parsed_kwargs:
-            cls(version=parsed_kwargs["version"][0][0])  # type: ignore
+        fields = Fields(cls)
 
         kwargs = {}
         for kw in parsed_kwargs:
-            field_type = fields[kw].type_
-            field_type_outer = get_origin(fields[kw].outer_type_)
+            field_type = fields.type_of(kw)
+            field_type_outer = fields.outer_type_of(kw)
             exp = parsed_kwargs[kw]
 
             if is_kicad_expr(field_type):
@@ -58,13 +59,13 @@ class KicadExpr:
                 else:
                     if len(exp) != 1:
                         raise ValueError(
-                            f"Expecting only one item but got {len(exp)}: {exp}"
+                            f"Expecting only one item for {field_type} but got {len(exp)}: {exp[:5]}..."
                         )
                     kwargs[kw] = field_type.from_list(exp[0])
             else:
                 if len(exp) != 1:
                     raise ValueError(
-                        f"Expecting only one item but got {len(exp)}: {exp}"
+                        f"Expecting only one item for {field_type} but got {len(exp)}: {exp[:5]}.."
                     )
                 # if it's not one of our dataclasses most often we just want to pass
                 # the first and only item to `field_type` but sometimes we want to
@@ -104,15 +105,19 @@ class KicadExpr:
                 else:
                     if len(exp[0]) != 1:
                         raise ValueError(
-                            f"Expecting only one item but got {len(exp[0])}: {exp[0]}"
+                            f"Expecting only one item but got {len(exp[0])}: {exp[:5]}"
                         )
 
                     if field_type_outer is Literal:
                         kwargs[kw] = exp[0][0]
                     else:
                         kwargs[kw] = field_type(exp[0][0])
-
         return cls(*parsed_args, **kwargs)
+
+    @classmethod
+    def check_version(cls, v):
+        """This should be implemented by subclasses to check the file format version"""
+        raise NotImplementedError
 
 
 def is_kicad_expr(t):
@@ -129,8 +134,18 @@ def _get_args(expr: list[list | str]) -> tuple[list[str], dict]:
     args = []
     index = 0
     for arg in expr:
-        # once we hit a list we start treating it as kwargs
-        if isinstance(arg, list):
+        """
+        once we hit a list we start treating it as kwargs,
+        UNLESS it's a layer list.
+        The `layers` field in the KiCad PCB file is as follows:
+        (layers
+            (0 "F.Cu" signal)
+            (31 "B.Cu" signal)
+            ...
+        )
+        So we avoid treating it as a kwarg.
+        """
+        if isinstance(arg, list) and not is_parsable_as_layer(arg):
             break
         index += 1
         args.append(arg)
@@ -154,5 +169,28 @@ def _get_args(expr: list[list | str]) -> tuple[list[str], dict]:
             kwargs[kw].append(arg)
         else:
             kwargs[kw] = [arg]
+    return args, kwargs
 
-    return (args, kwargs)
+
+class Fields(UserDict):
+    """Add some convenience methods to the fields dict"""
+
+    def __init__(self, cls: Type[KicadExprClass]):
+        self.cls = cls
+        super().__init__(cls.__pydantic_model__.__fields__)  # type: ignore
+
+    def type_of(self, name):
+        try:
+            return self[name].type_
+        except KeyError:
+            raise KeyError(f"Found unknown field `{name}` while parsing `{self.cls}`")
+
+    def outer_type_of(self, name):
+        return get_origin(self[name].outer_type_)
+
+
+def is_parsable_as_layer(value: list):
+    if not isinstance(value, list) or not 3 <= len(value) <= 4:
+        # A layer must be a list of 3 or 4 items.
+        return False
+    return value[0].isdigit() and value[1] in layer_names and value[2] in layer_types

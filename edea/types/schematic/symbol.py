@@ -11,37 +11,10 @@ from typing import Literal, Optional
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
+from edea.types.common import Effects
 from edea.types.config import PydanticConfig
 from edea.types.schematic.base import KicadSchExpr
 from edea.types.schematic.shapes import Arc, Bezier, Circle, Polyline, Rectangle
-
-
-class JustifyHoriz(str, Enum):
-    LEFT = "left"
-    CENTER = ""
-    RIGHT = "right"
-
-
-class JustifyVert(str, Enum):
-    TOP = "top"
-    CENTER = ""
-    BOTTOM = "bottom"
-
-
-@dataclass(config=PydanticConfig)
-class Justify(KicadSchExpr):
-    horizontal: JustifyHoriz = JustifyHoriz.CENTER
-    vertical: JustifyVert = JustifyVert.CENTER
-    mirror: bool = False
-
-    # allow for e.g. (justify bottom) on its own
-    @root_validator(pre=True)
-    def allow_vertical_as_first_arg(cls, values):
-        h = values.get("horizontal")
-        if (h not in list(JustifyHoriz)) and (h in list(JustifyVert)):
-            values["vertical"] = h
-            values["horizontal"] = JustifyHoriz.CENTER
-        return values
 
 
 class PinElectricalType(str, Enum):
@@ -69,21 +42,6 @@ class PinGraphicStyle(str, Enum):
     OUTPUT_LOW = "output_low"
     EDGE_CLOCK_HIGH = "edge_clock_high"
     NON_LOGIC = "non_logic"
-
-
-@dataclass(config=PydanticConfig)
-class Font(KicadSchExpr):
-    size: tuple[float, float] = (1.27, 1.27)
-    thickness: Optional[float] = None
-    italic: bool = False
-    bold: bool = False
-
-
-@dataclass(config=PydanticConfig)
-class Effects(KicadSchExpr):
-    font: Font = field(default_factory=Font)
-    justify: Justify = field(default_factory=Justify)
-    hide: bool = False
 
 
 @dataclass(config=PydanticConfig)

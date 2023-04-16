@@ -6,6 +6,7 @@ SPDX-License-Identifier: EUPL-1.2
 import re
 
 # we need to import this for get_all_subclasses to work
+import edea.types.pcb
 import edea.types.schematic
 from edea.types.base import KicadExpr
 from edea.util import get_all_subclasses
@@ -40,7 +41,7 @@ def from_list(l_expr: list[str | list]) -> KicadExpr:
 
 def _tokens_to_list(tokens: list, index: int = 0):
     if len(tokens) == index:
-        raise SyntaxError("unexpected EOF")
+        raise EOFError("unexpected EOF")
     token = tokens[index]
     index += 1
 

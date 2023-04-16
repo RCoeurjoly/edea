@@ -785,6 +785,8 @@ class Net(Expr):
 
 def from_str(program: str) -> Expr:
     """Parse KiCAD s-expr from a string"""
+    if not program:
+        raise EOFError("Empty file!")
     tokens = TOKENIZE_EXPR.findall(program)
     _, expr = from_tokens(tokens, 0, "", "")
     return expr
