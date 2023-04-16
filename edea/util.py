@@ -7,10 +7,10 @@ SPDX-License-Identifier: EUPL-1.2
 import re
 
 
-# from https://stackoverflow.com/a/1176023
 def to_snake_case(name):
     """
     Converts from CamelCase to snake_case.
+    From https://stackoverflow.com/a/1176023
     """
     name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     name = re.sub("__([A-Z])", r"_\1", name)

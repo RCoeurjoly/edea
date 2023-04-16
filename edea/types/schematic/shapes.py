@@ -10,6 +10,7 @@ from typing import Optional
 from pydantic.color import Color
 from pydantic.dataclasses import dataclass
 
+from edea.types.common import Pts
 from edea.types.config import PydanticConfig
 from edea.types.schematic.base import KicadSchExpr
 
@@ -39,17 +40,6 @@ class Stroke(KicadSchExpr):
 @dataclass(config=PydanticConfig)
 class Fill(KicadSchExpr):
     type: FillType = FillType.NONE
-
-
-@dataclass(config=PydanticConfig)
-class XY(KicadSchExpr):
-    x: float
-    y: float
-
-
-@dataclass(config=PydanticConfig)
-class Pts(KicadSchExpr):
-    xy: list[XY] = field(default_factory=list)
 
 
 @dataclass(config=PydanticConfig)

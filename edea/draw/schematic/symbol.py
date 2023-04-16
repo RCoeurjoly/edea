@@ -14,11 +14,8 @@ from edea.draw.schematic.shapes import (
     draw_polyline,
     draw_rectangle,
 )
+from edea.types.common import Effects, Font, JustifyHoriz, JustifyVert
 from edea.types.schematic.symbol import (
-    Effects,
-    Font,
-    JustifyHoriz,
-    JustifyVert,
     LibSymbol,
     Pin,
     PinName,
