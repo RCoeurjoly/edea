@@ -13,12 +13,13 @@ variables:
 cache:
   paths:
     - .cache/pip
-    - venv/
+    - .venv
     - .hypothesis
 
 before_script:
   - python --version # For debugging
   - pip install poetry
+  - poetry config virtualenvs.in-project true
   - poetry install
 
 test:
