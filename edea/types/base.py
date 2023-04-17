@@ -4,8 +4,10 @@ s-expression related dataclasses.
 
 SPDX-License-Identifier: EUPL-1.2
 """
-from collections import UserDict
-from typing import Literal, Type, TypeVar, Union, get_origin
+
+from dataclasses import fields as get_dataclass_fields
+from types import UnionType
+from typing import Literal, Type, TypeVar, Union, get_args, get_origin
 
 from pydantic import ValidationError
 from pydantic.color import Color
@@ -36,7 +38,7 @@ class KicadExpr:
         you omit the tag name in the s-expression so e.g. for
         `(symbol "foo" (pin 1))` you would pass `["foo", ["pin", 1]]` to this method.
         """
-        parsed_args, parsed_kwargs = _get_args(expr)
+        parsed_args, parsed_kwargs = _split_args(expr)
 
         if cls.kicad_expr_tag_name in ["kicad_sch", "kicad_pcb"]:
             if len(expr) <= 4:
@@ -44,74 +46,16 @@ class KicadExpr:
             if "version" in parsed_kwargs:
                 cls.check_version(parsed_kwargs["version"][0][0])
 
-        fields = Fields(cls)
+        field_types = {}
+        for f in get_dataclass_fields(cls):
+            field_types[f.name] = f.type
 
         kwargs = {}
         for kw in parsed_kwargs:
-            field_type = fields.type_of(kw)
-            field_type_outer = fields.outer_type_of(kw)
-            exp = parsed_kwargs[kw]
+            if kw not in field_types:
+                raise ValueError(f"Encountered unknown field: '{kw}' for '{cls}'")
+            kwargs[kw] = _parse_as(field_types[kw], parsed_kwargs[kw])
 
-            if is_kicad_expr(field_type):
-                # if our type says it's a list we give it the args as a list
-                if field_type_outer is list:
-                    kwargs[kw] = [field_type.from_list(e) for e in exp]
-                else:
-                    if len(exp) != 1:
-                        raise ValueError(
-                            f"Expecting only one item for {field_type} but got {len(exp)}: {exp[:5]}..."
-                        )
-                    kwargs[kw] = field_type.from_list(exp[0])
-            else:
-                if len(exp) != 1:
-                    raise ValueError(
-                        f"Expecting only one item for {field_type} but got {len(exp)}: {exp[:5]}.."
-                    )
-                # if it's not one of our dataclasses most often we just want to pass
-                # the first and only item to `field_type` but sometimes we want to
-                # make a tuple or something similar from the list of args
-                # e.g. `["start", 1.0, 1.0]` -> `{"start": tuple([1.0, 1.0])}`
-                if field_type_outer is tuple:
-                    kwargs[kw] = tuple(exp[0])
-                elif field_type_outer is list:
-                    kwargs[kw] = list(exp[0])
-                elif field_type is Color:
-                    kwargs[kw] = Color(exp[0])
-
-                # union types are tried till we find one that doesn't produce a
-                # validation error
-                # XXX this does not yet support unions that include `tuple`,
-                # `list`, `Color` or `Literal`
-                elif field_type_outer is Union:
-                    errors = []
-                    sub_fields = fields[kw].sub_fields
-                    if sub_fields is None:
-                        raise ValueError("Expecting sub_fields in Union")
-                    for sf in sub_fields:
-                        try:
-                            # would be nice to not repeat logic from above here
-                            sft = sf.type_
-                            if is_kicad_expr(sft):
-                                kwargs[kw] = sft.from_list(exp[0])
-                            else:
-                                kwargs[kw] = sft(exp[0][0])
-                        except (ValidationError, TypeError) as e:
-                            errors.append(e)
-                        else:
-                            break
-                    if kw not in kwargs:
-                        raise errors[0]
-
-                else:
-                    if len(exp[0]) != 1:
-                        raise ValueError(
-                            f"Expecting only one item but got {len(exp[0])}: {exp[:5]}"
-                        )
-
-                    if field_type_outer is Literal:
-                        kwargs[kw] = exp[0][0]
-                    else:
-                        kwargs[kw] = field_type(exp[0][0])
         return cls(*parsed_args, **kwargs)
 
     @classmethod
@@ -120,11 +64,63 @@ class KicadExpr:
         raise NotImplementedError
 
 
-def is_kicad_expr(t):
+def is_kicad_expr(t) -> bool:
     return isinstance(t, type) and issubclass(t, KicadExpr)
 
 
-def _get_args(expr: list[list | str]) -> tuple[list[str], dict]:
+def _parse_as(annotation: Type, exp: list[list | str]):
+    """
+    Parse an s-expression list as a particular type.
+    """
+    origin = get_origin(annotation)
+    sub_types = get_args(annotation)
+
+    if origin is list:
+        sub = sub_types[0]
+        if is_kicad_expr(sub):
+            return [sub.from_list(e) for e in exp]
+        _assert_len_one(annotation, exp)
+        return exp[0]
+    elif is_kicad_expr(annotation):
+        _assert_len_one(annotation, exp)
+        return annotation.from_list(exp[0])
+    elif origin is tuple:
+        _assert_len_one(annotation, exp)
+        # XXX you can't have tuples of `KicadExpr`
+        return tuple(exp[0])
+    elif annotation is Color:
+        _assert_len_one(annotation, exp)
+        return Color(exp[0])  # type: ignore [return-value]
+    elif (origin is Union) or (origin is UnionType):
+        # union types are tried till we find one that doesn't produce a
+        # validation error
+        errors = []
+        for sub in sub_types:
+            try:
+                return _parse_as(sub, exp)
+            except (ValidationError, TypeError) as e:
+                errors.append(e)
+        if len(errors) > 0:
+            raise errors[0]
+        else:
+            raise Exception("Unknown error with parsing union type")
+
+    _assert_len_one(annotation, exp[0])
+
+    if origin is Literal:
+        return exp[0][0]
+
+    return annotation(exp[0][0])
+
+
+def _assert_len_one(annotation, exp):
+    if len(exp) != 1:
+        raise ValueError(
+            f"Expecting only one item for '{annotation}' but got {len(exp)}: {exp[:5]}"
+        )
+
+
+def _split_args(expr: list[list | str]) -> tuple[list[str], dict]:
     """
     Turn an s-expression list into something resembling python args and
     keyword args.
@@ -145,7 +141,7 @@ def _get_args(expr: list[list | str]) -> tuple[list[str], dict]:
         )
         So we avoid treating it as a kwarg.
         """
-        if isinstance(arg, list) and not is_parsable_as_layer(arg):
+        if isinstance(arg, list) and not _is_parsable_as_layer(arg):
             break
         index += 1
         args.append(arg)
@@ -172,24 +168,7 @@ def _get_args(expr: list[list | str]) -> tuple[list[str], dict]:
     return args, kwargs
 
 
-class Fields(UserDict):
-    """Add some convenience methods to the fields dict"""
-
-    def __init__(self, cls: Type[KicadExprClass]):
-        self.cls = cls
-        super().__init__(cls.__pydantic_model__.__fields__)  # type: ignore
-
-    def type_of(self, name):
-        try:
-            return self[name].type_
-        except KeyError:
-            raise KeyError(f"Found unknown field `{name}` while parsing `{self.cls}`")
-
-    def outer_type_of(self, name):
-        return get_origin(self[name].outer_type_)
-
-
-def is_parsable_as_layer(value: list):
+def _is_parsable_as_layer(value: list):
     if not isinstance(value, list) or not 3 <= len(value) <= 4:
         # A layer must be a list of 3 or 4 items.
         return False
