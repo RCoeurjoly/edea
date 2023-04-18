@@ -1,5 +1,4 @@
 from dataclasses import field
-from datetime import datetime
 from enum import Enum
 from typing import Literal, Optional
 from uuid import UUID, uuid4
@@ -7,12 +6,11 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Pts
+from edea.types.common import Effects, Pts
 from edea.types.config import PydanticConfig
+from edea.types.pcb_layers import CanonicalLayerName
 
-from ..common import Effects
 from .common import (
-    CanonicalLayerName,
     Group,
     IsKeepEndLayers,
     IsRemoveUnusedLayers,

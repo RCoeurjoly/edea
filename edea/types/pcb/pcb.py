@@ -5,7 +5,7 @@ SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import root_validator, validator
@@ -13,10 +13,10 @@ from pydantic.dataclasses import dataclass
 
 from edea.types.common import Image, Paper, PaperStandard, TitleBlock, VersionError
 from edea.types.config import PydanticConfig
+from edea.types.pcb_layers import CanonicalLayerName
 
 from .base import KicadPcbExpr
 from .common import (
-    CanonicalLayerName,
     Group,
     IsKeepEndLayers,
     IsRemoveUnusedLayers,

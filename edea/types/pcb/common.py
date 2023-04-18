@@ -10,7 +10,7 @@ from pydantic.dataclasses import dataclass
 from edea.types.common import Pts
 from edea.types.config import PydanticConfig
 
-from .layers import CanonicalLayerName, LayerType
+from edea.types.pcb_layers import CanonicalLayerName, LayerType
 from .base import KicadPcbExpr
 
 
