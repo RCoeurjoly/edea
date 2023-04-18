@@ -13,7 +13,7 @@ from pydantic import ValidationError
 from pydantic.color import Color
 from pydantic.dataclasses import dataclass
 
-from edea.types.pcb.layers import layer_names, layer_types
+from edea.types.pcb_layers import layer_names, layer_types
 from edea.util import to_snake_case
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
