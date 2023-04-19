@@ -1,25 +1,37 @@
-import os
-from hypothesis import given, infer, settings, HealthCheck
+from _pytest.monkeypatch import MonkeyPatch
+from hypothesis import given, infer, strategies
 
 from edea.types.pcb import Pcb
 from edea.types.schematic import Schematic
 
-
-@settings(suppress_health_check=[HealthCheck.too_slow] if "CI" in os.environ else [])
-@given(sch=infer)
-def test_create_sch(sch: Schematic):
-    """
-    Just tests whether we can create arbitrary `Schematic` instances using
-    hypothesis inference
-    """
-    assert sch is not None
+original_lists = strategies.lists
 
 
-@settings(suppress_health_check=[HealthCheck.too_slow] if "CI" in os.environ else [])
-@given(pcb=infer)
-def test_create_pcb(pcb: Pcb):
+def shorter_lists(*args, **kwargs):
     """
-    Just tests whether we can create arbitrary `Pcb` instances using hypothesis
-    inference
+    Generate two list items max to keep the sizes of generated examples in
+    check.
     """
-    assert pcb is not None
+    kwargs["min_size"] = 0
+    kwargs["max_size"] = 2
+    return original_lists(*args, **kwargs)
+
+
+with MonkeyPatch.context() as mp:
+    mp.setattr(strategies, "lists", shorter_lists)
+
+    @given(infer)
+    def test_create_sch(expr: Schematic):
+        """
+        Just tests whether we can create arbitrary `Schematic` instances using
+        hypothesis inference
+        """
+        assert expr is not None
+
+    @given(infer)
+    def test_create_pcb(expr: Pcb):
+        """
+        Just tests whether we can create arbitrary `Pcb` instances using hypothesis
+        inference
+        """
+        assert expr is not None
