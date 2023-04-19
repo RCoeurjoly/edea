@@ -41,7 +41,7 @@ def from_list(l_expr: SExprList) -> KicadExpr:
     return result
 
 
-def _tokens_to_list(tokens: list, index: int = 0):
+def _tokens_to_list(tokens: list[str], index: int) -> tuple[int, str | SExprList]:
     if len(tokens) == index:
         raise EOFError("unexpected EOF")
     token = tokens[index]
@@ -51,7 +51,7 @@ def _tokens_to_list(tokens: list, index: int = 0):
         typ = tokens[index]
         index += 1
 
-        expr = [typ]
+        expr: SExprList = [typ]
         while tokens[index] != ")":
             index, sub_expr = _tokens_to_list(tokens, index)
             expr.append(sub_expr)
@@ -72,13 +72,15 @@ def _tokens_to_list(tokens: list, index: int = 0):
 _TOKENIZE_EXPR = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*"|\(|\)|"|[^\s()"]+)')
 
 
-def from_str_to_list(text) -> list:
-    tokens = _TOKENIZE_EXPR.findall(text)
+def from_str_to_list(text: str) -> SExprList:
+    tokens: list[str] = _TOKENIZE_EXPR.findall(text)
     _, expr = _tokens_to_list(tokens, 0)
+    if isinstance(expr, str):
+        raise ValueError(f"Expected an expression but only got a string: {expr}")
     return expr
 
 
-def from_str(text) -> KicadExpr:
+def from_str(text: str) -> KicadExpr:
     """
     Turn a string containing KiCad s-expressions into an EDeA dataclass.
     """
