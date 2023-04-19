@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Literal, Optional, Union
 from uuid import UUID, uuid4
 
-from pydantic import root_validator, validator
+from pydantic import root_validator
 from pydantic.dataclasses import dataclass
 
 from edea.types.base import KicadExpr
@@ -79,10 +79,6 @@ class PolygonArc(KicadExpr):
     start: tuple[float, float]
     mid: tuple[float, float]
     end: tuple[float, float]
-
-    @validator("start", "mid", "end", pre=True)
-    def validate_pts(cls, v):
-        return [float(x) for x in v]
 
     kicad_expr_tag_name: Literal["arc"] = "arc"
 
