@@ -59,7 +59,8 @@ def draw_lib_symbol(
 
     # we don't want the background fill to be drawn over anything else
     elements.sort(
-        key=lambda x: (x.class_ is None) or ("fill-background" not in x.class_)  # type: ignore
+        key=lambda x: (x.class_ is None)  # type: ignore [return-value]
+        or ("fill-background" not in x.class_)  # type: ignore [return-value]
     )
 
     transform = []

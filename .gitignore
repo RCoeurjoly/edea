@@ -23,3 +23,4 @@ format.l
 /example-module
 /temp-test-output
 .hypothesis
+.ruff-cache

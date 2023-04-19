@@ -5,7 +5,7 @@ SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import validator
@@ -220,8 +220,8 @@ class Schematic(KicadSchExpr):
         v = str(v)
         if v != "20211123":
             raise VersionError(
-                f"Only the stable KiCad 6 schematic file format, i.e. version '20211123', "
-                f"is supported. Got '{v}'."
+                "Only the stable KiCad 6 schematic file format, i.e. version"
+                f" '20211123', is supported. Got '{v}'."
             )
         return v
 

@@ -11,13 +11,7 @@ from tests.util import get_path_to_test_project
 
 from edea.edea import Project
 
-test_projects = {
-    "ferret": {
-        "count_part": 134,
-        "count_unique": 115,
-        "copper_layers": 4
-    }
-}
+test_projects = {"ferret": {"count_part": 134, "count_unique": 115, "copper_layers": 4}}
 
 
 class TestMetadata:

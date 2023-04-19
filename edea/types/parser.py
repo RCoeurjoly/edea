@@ -5,9 +5,10 @@ SPDX-License-Identifier: EUPL-1.2
 """
 import re
 
-# we need to import this for get_all_subclasses to work
-import edea.types.pcb
-import edea.types.schematic
+# we need to import these unused modules for get_all_subclasses to work
+import edea.types.pcb  # noqa F401
+import edea.types.schematic  # noqa: F401
+
 from edea.types.base import KicadExpr
 from edea.util import get_all_subclasses
 

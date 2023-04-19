@@ -28,11 +28,12 @@ test:
 
 formatting:
   script:
-    - poetry run black --check edea
+    - poetry run black --check edea tests --exclude tests/kicad_projects
 
 lint:
   script:
-    - poetry run pylint edea
+    - poetry run ruff edea/types edea/draw tests
+    - poetry run pylint edea tests
 
 typecheck:
   script:
@@ -41,6 +42,7 @@ typecheck:
 bandit:
   script:
     - poetry run bandit -r edea
+
 #publish:
 #  script:
 #    - poetry build

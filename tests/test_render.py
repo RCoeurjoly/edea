@@ -29,7 +29,8 @@ class TestRendering:
 
     def test_draw_rect_stroke(self):
         expr = from_str(
-            "(rectangle (start -5.08 5.08) (end 5.08 -1.905) (stroke (width 0.254) (type default) (color 120 85 0 0.5)) (fill (type background))))"
+            "(rectangle (start -5.08 5.08) (end 5.08 -1.905) (stroke (width 0.254)"
+            "(type default) (color 120 85 0 0.5)) (fill (type background))))"
         )
 
         drawn = draw_element(expr, at=(20, 10))
@@ -49,7 +50,8 @@ class TestRendering:
 
     def test_draw_polyline(self):
         expr = from_str(
-            "(polyline (pts (xy -1.524 0.508) (xy 1.524 0.508)) (stroke (width 0) (type default) (color 0 0 0 0)) (fill (type none)))"
+            "(polyline (pts (xy -1.524 0.508) (xy 1.524 0.508)) (stroke (width 0)"
+            "(type default) (color 0 0 0 0)) (fill (type none)))"
         )
 
         assert draw_element(expr) == svg_py.Polyline(
@@ -59,7 +61,9 @@ class TestRendering:
 
     def test_draw_polyline_stroke(self):
         expr = from_str(
-            "(polyline (pts (xy -1.524 0.508) (xy 1.524 0.508)) (stroke (width 0.3048) (type default) (color 0 50 0 0.2)) (fill (type outline)))"
+            "(polyline (pts (xy -1.524 0.508) (xy 1.524 0.508))"
+            "(stroke (width 0.3048) (type default) (color 0 50 0 0.2))"
+            "(fill (type outline)))"
         )
 
         drawn = draw_element(expr, at=(12, 0))
@@ -80,7 +84,10 @@ class TestRendering:
         assert "fill-outline" in drawn.class_
 
     def test_draw_rect_direction(self):
-        """kicad draws rects in any direction. SVG needs width and height to be positive."""
+        """
+        KiCad draws rects in any direction. SVG needs width and height to be
+        positive.
+        """
         expr = from_str(
             """
               (rectangle (start 74.93 20.32) (end 45.72 -7.62)
@@ -141,6 +148,6 @@ class TestRendering:
         ) as f:
             pcb = PCB(parse_from_str(f.read()), "ferret", "")
 
-        canvas = pcb.draw()
-        #with open("../test_pcb.svg", "w", encoding="utf-8") as f:
+        pcb.draw()
+        # with open("../test_pcb.svg", "w", encoding="utf-8") as f:
         #    f.write(str(canvas))
