@@ -9,13 +9,14 @@ import re
 import edea.types.pcb  # noqa F401
 import edea.types.schematic  # noqa: F401
 
+from edea.types.s_expr import SExprList
 from edea.types.base import KicadExpr
 from edea.util import get_all_subclasses
 
 all_classes: list[KicadExpr] = get_all_subclasses(KicadExpr)
 
 
-def from_list(l_expr: list[str | list]) -> KicadExpr:
+def from_list(l_expr: SExprList) -> KicadExpr:
     """
     Turn an s-expression list into an EDeA dataclass.
     """

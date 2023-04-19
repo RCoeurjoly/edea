@@ -14,6 +14,7 @@ from pydantic.color import Color
 from pydantic.dataclasses import dataclass
 
 from edea.types.pcb_layers import layer_names, layer_types
+from edea.types.s_expr import SExprList
 from edea.util import to_snake_case
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
@@ -32,7 +33,7 @@ class KicadExpr:
         return to_snake_case(cls.__name__)
 
     @classmethod
-    def from_list(cls: Type[KicadExprClass], expr: list[list | str]) -> KicadExprClass:
+    def from_list(cls: Type[KicadExprClass], expr: SExprList) -> KicadExprClass:
         """
         Turn an s-expression list of arguments into an EDeA dataclass. Note that
         you omit the tag name in the s-expression so e.g. for
@@ -68,7 +69,7 @@ def is_kicad_expr(t) -> bool:
     return isinstance(t, type) and issubclass(t, KicadExpr)
 
 
-def _parse_as(annotation: Type, exp: list[list | str]):
+def _parse_as(annotation: Type, exp: SExprList):
     """
     Parse an s-expression list as a particular type.
     """
@@ -120,7 +121,7 @@ def _assert_len_one(annotation, exp):
         )
 
 
-def _split_args(expr: list[list | str]) -> tuple[list[str], dict]:
+def _split_args(expr: SExprList) -> tuple[list[str], dict]:
     """
     Turn an s-expression list into something resembling python args and
     keyword args.
