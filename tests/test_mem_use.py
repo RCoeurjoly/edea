@@ -8,11 +8,9 @@ from edea.parser import from_str
 from tests.util import get_path_to_test_project
 
 test_projects = {
-    "ferret": {
-        "parse_time": 2.0, # gitlab ci runner is really slow
-        "total_mem": 38.5
-    }
+    "ferret": {"parse_time": 2.0, "total_mem": 38.5}  # gitlab ci runner is really slow
 }
+
 
 # https://stackoverflow.com/a/53705610
 def get_obj_size(obj):
@@ -29,7 +27,11 @@ def get_obj_size(obj):
 
         # Filter object that are already marked.
         # Using dict notation will prevent repeated objects.
-        new_refr = {o_id: o for o_id, o in all_refr if o_id not in marked and not isinstance(o, type)}
+        new_refr = {
+            o_id: o
+            for o_id, o in all_refr
+            if o_id not in marked and not isinstance(o, type)
+        }
 
         # The new obj_q will be the ones that were not marked,
         # and we will update marked with their ids so we will

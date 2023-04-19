@@ -14,9 +14,8 @@ from pydantic import Field
 
 class BaseModel(PydanticBaseModel):
     class Config:
-        # don't error on extra fields
-        # there are some that we haven't accounted for that don't seem to be in kicad_2022
-        # e.g. "footprint_text_front"
+        # don't error on extra fields. there are some that we haven't accounted
+        # for that don't seem to be in kicad_2022 e.g. "footprint_text_front"
         extra = "ignore"
         # validate our defaults
         validate_all = True

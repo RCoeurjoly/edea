@@ -59,16 +59,16 @@ def draw_schematic(expr: Schematic, at=(0, 0)) -> svg.G:
         junctions.append(draw_junction(j, at, is_bus_junction=is_bus_junction))
 
     local_labels = []
-    for l in expr.label:
-        local_labels.append(draw_local_label(l, at))
+    for label in expr.label:
+        local_labels.append(draw_local_label(label, at))
 
     global_labels = []
-    for l in expr.global_label:
-        global_labels.append(draw_global_label(l, at))
+    for label in expr.global_label:
+        global_labels.append(draw_global_label(label, at))
 
     hierarchical_labels = []
-    for l in expr.hierarchical_label:
-        hierarchical_labels.append(draw_hierarchical_label(l, at))
+    for label in expr.hierarchical_label:
+        hierarchical_labels.append(draw_hierarchical_label(label, at))
 
     bus_entries = [draw_bus_entry(x, at) for x in expr.bus_entry]
 

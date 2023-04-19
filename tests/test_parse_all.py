@@ -8,7 +8,6 @@ import os
 import re
 import pytest
 
-from pydantic import ValidationError
 
 from edea.edea import Project, VersionError as OriginalVersionError
 from edea.types.parser import from_str
@@ -40,7 +39,7 @@ def test_parse_all(kicad_file_pair):
         pro.parse()
     except OriginalVersionError as e:
         print(f"skipping {sch_path} due to old format: {e}")
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         print(f"project {sch_path} appears to be incomplete")
     except AttributeError as e:
         # some minimal files don't have a uuid, but they're not interesting anyway.
@@ -72,11 +71,9 @@ def test_parse_all_types(sch_path):
         try:
             sch = from_str(f.read())
         except VersionError as e:
-            pytest.skip(
-                f"skipping {sch_path} due to: {e}")
+            pytest.skip(f"skipping {sch_path} due to: {e}")
         except EOFError as e:
-            pytest.skip(
-                f"skipping {sch_path} due to: {e}")
+            pytest.skip(f"skipping {sch_path} due to: {e}")
         else:
             assert isinstance(sch, Schematic)
 
@@ -87,10 +84,8 @@ def test_parse_all_pcb(pcb_path):
         try:
             pcb = from_str(f.read())
         except VersionError as e:
-            pytest.skip(
-                f"skipping {pcb_path} due to: {e}")
+            pytest.skip(f"skipping {pcb_path} due to: {e}")
         except EOFError as e:
-            pytest.skip(
-                f"skipping {pcb_path} due to: {e}")
+            pytest.skip(f"skipping {pcb_path} due to: {e}")
         else:
             assert isinstance(pcb, Pcb)

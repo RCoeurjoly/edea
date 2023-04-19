@@ -11,13 +11,7 @@ from edea.edea import PCB
 from edea.parser import from_str
 from tests.util import get_path_to_test_project
 
-test_projects = {
-    "ferret": {
-        "count_part": 134,
-        "count_unique": 115,
-        "area": 26205.075
-    }
-}
+test_projects = {"ferret": {"count_part": 134, "count_unique": 115, "area": 26205.075}}
 
 
 class TestPCB:

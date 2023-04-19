@@ -1,7 +1,7 @@
 from collections import UserList
 from dataclasses import field
 from enum import Enum
-from typing import Literal, Optional, get_args
+from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import root_validator, validator
@@ -39,17 +39,18 @@ class Layers(KicadPcbExpr, UserList):
         ...
     )
 
-    We have two options either complicate the parser to handle this, or handle the construction of the list ourselves.
-    We've chosen the latter.
+    We have two options either complicate the parser to handle this, or handle
+    the construction of the list ourselves. We've chosen the latter.
     """
 
     data: list[Layer] = field(default_factory=list)
 
     def __init__(self, *args):
         super().__init__()
-        # Setting the self.data to a list of Layer objects, will make instances of this class
-        # act as a list of Layer objects without the need to access the self.data attribute.
-        self.data = [Layer(*a) for a in args]  # type: ignore
+        # Setting the self.data to a list of Layer objects, will make instances
+        # of this class act as a list of Layer objects without the need to
+        # access the self.data attribute.
+        self.data = [Layer(*a) for a in args]
 
 
 @dataclass(config=PydanticConfig)
@@ -181,7 +182,8 @@ class Hatch(str, Enum):
 class Zone(KicadPcbExpr):
     """
     :param layers: some zones have `layers` instead of `layer`.
-        But it's always guaranteed to have all the layers in the `layers` list after initialization.
+        But it's always guaranteed to have all the layers in the `layers` list
+        after initialization.
     """
 
     locked: bool = False
