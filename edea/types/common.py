@@ -103,7 +103,6 @@ class Pts(KicadExpr):
 class Image(KicadExpr):
     at: tuple[float, float]
     scale: Optional[float] = None
-    layer: Optional[str] = None
     uuid: UUID = field(default_factory=uuid4)
     data: list[str] = field(default_factory=list)
 
