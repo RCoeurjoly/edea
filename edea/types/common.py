@@ -92,10 +92,6 @@ class XY(KicadExpr):
     x: float
     y: float
 
-    @validator("x", "y", pre=True)
-    def validate_xy(cls, v):
-        return float(v)
-
 
 @dataclass(config=PydanticConfig)
 class Pts(KicadExpr):
