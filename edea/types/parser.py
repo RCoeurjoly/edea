@@ -41,7 +41,7 @@ def from_list(l_expr: SExprList) -> KicadExpr:
     return result
 
 
-def _tokens_to_list(tokens: list[str], index: int) -> tuple[int, str | SExprList]:
+def _tokens_to_list(tokens: tuple[str, ...], index: int) -> tuple[int, str | SExprList]:
     if len(tokens) == index:
         raise EOFError("unexpected EOF")
     token = tokens[index]
@@ -73,7 +73,7 @@ _TOKENIZE_EXPR = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*"|\(|\)|"|[^\s()"]+)')
 
 
 def from_str_to_list(text: str) -> SExprList:
-    tokens: list[str] = _TOKENIZE_EXPR.findall(text)
+    tokens: tuple[str, ...] = tuple(_TOKENIZE_EXPR.findall(text))
     _, expr = _tokens_to_list(tokens, 0)
     if isinstance(expr, str):
         raise ValueError(f"Expected an expression but only got a string: {expr}")
