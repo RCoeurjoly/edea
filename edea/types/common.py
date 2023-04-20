@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Literal, Optional, Union
 from uuid import UUID, uuid4
 
-from pydantic import root_validator, validator
+from pydantic import root_validator
 from pydantic.dataclasses import dataclass
 
 from edea.types.base import KicadExpr
@@ -80,10 +80,6 @@ class PolygonArc(KicadExpr):
     mid: tuple[float, float]
     end: tuple[float, float]
 
-    @validator("start", "mid", "end", pre=True)
-    def validate_pts(cls, v):
-        return [float(x) for x in v]
-
     kicad_expr_tag_name: Literal["arc"] = "arc"
 
 
@@ -91,10 +87,6 @@ class PolygonArc(KicadExpr):
 class XY(KicadExpr):
     x: float
     y: float
-
-    @validator("x", "y", pre=True)
-    def validate_xy(cls, v):
-        return float(v)
 
 
 @dataclass(config=PydanticConfig)
@@ -107,7 +99,6 @@ class Pts(KicadExpr):
 class Image(KicadExpr):
     at: tuple[float, float]
     scale: Optional[float] = None
-    layer: Optional[str] = None
     uuid: UUID = field(default_factory=uuid4)
     data: list[str] = field(default_factory=list)
 

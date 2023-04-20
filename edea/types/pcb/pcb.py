@@ -11,7 +11,13 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Image, Paper, PaperStandard, TitleBlock, VersionError
+from edea.types.common import (
+    Image as BaseImage,
+    Paper,
+    PaperStandard,
+    TitleBlock,
+    VersionError,
+)
 from edea.types.config import PydanticConfig
 from edea.types.pcb_layers import CanonicalLayerName
 
@@ -215,6 +221,11 @@ class Target(KicadPcbExpr):
     width: float
     layer: CanonicalLayerName
     tstamp: Optional[UUID] = None
+
+
+@dataclass(config=PydanticConfig)
+class Image(BaseImage, KicadPcbExpr):
+    layer: CanonicalLayerName = "F.Cu"
 
 
 @dataclass(config=PydanticConfig)
