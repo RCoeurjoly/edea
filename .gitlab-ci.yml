@@ -48,7 +48,7 @@ test-long-running:
     - web
   script:
     - git submodule update --init
-    - poetry run pytest --cov=edea
+    - poetry run pytest -k 'test_parse_pcb' -k 'test_parse_types'
 
 #publish:
 #  script:
