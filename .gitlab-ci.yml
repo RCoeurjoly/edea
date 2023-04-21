@@ -43,6 +43,13 @@ bandit:
   script:
     - poetry run bandit -r edea
 
+test-long-running:
+  only:
+    - web
+  script:
+    - git submodule update --init
+    - poetry run pytest --cov=edea
+
 #publish:
 #  script:
 #    - poetry build
