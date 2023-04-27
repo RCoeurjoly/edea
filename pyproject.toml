@@ -17,12 +17,13 @@ pydantic = "^1.10.2"
 bandit = "^1.7.4"
 black = "^23.1.0"
 hypothesis = "^6.71.0"
-pylint = "^2.15.8"
+pylint = "^2.17.2"
 pyright = "^1.1.283"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
 pytest-xdist = "^3.1.0"
 ruff = "^0.0.261"
+pylint-pydantic = "^0.1.8"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

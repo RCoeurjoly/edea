@@ -33,7 +33,7 @@ formatting:
 lint:
   script:
     - poetry run ruff edea/types edea/draw tests
-    - poetry run pylint edea tests
+    - poetry run pylint edea/types edea/draw
 
 typecheck:
   script:

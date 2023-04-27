@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Pts
+from edea.types.common import Effects, Pts
 from edea.types.config import PydanticConfig
 
 from edea.types.pcb_layers import CanonicalLayerName, LayerType
@@ -235,3 +235,18 @@ class IsKeepEndLayers(KicadPcbExpr):
     kicad_expr_tag_name: Literal["keep_end_layers"] = "keep_end_layers"
     # holds no data, appears simply as "(keep_end_layers)" with parens.
     # maybe there is a less ugly solution to this?
+
+
+@dataclass(config=PydanticConfig)
+class BaseTextBox(KicadPcbExpr):
+    text: str
+    layer: CanonicalLayerName
+    tstmap: UUID
+    effects: Effects
+    locked: bool = False
+    start: Optional[tuple[float, float]] = None
+    end: Optional[tuple[float, float]] = None
+    pts: Optional[Pts] = None
+    angle: Optional[float] = None
+    stroke: Optional[TextStroke] = None
+    hide: bool = False

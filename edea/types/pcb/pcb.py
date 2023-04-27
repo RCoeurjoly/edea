@@ -74,6 +74,7 @@ class StackUpLayer(KicadPcbExpr):
     def validate_name(cls, v):
         if v is None:
             return "dielectric"
+        return None
 
 
 @dataclass(config=PydanticConfig)

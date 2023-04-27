@@ -130,17 +130,16 @@ def _split_args(expr: list[list | str]) -> tuple[list[str], dict]:
     args = []
     index = 0
     for arg in expr:
-        """
-        once we hit a list we start treating it as kwargs,
-        UNLESS it's a layer list.
-        The `layers` field in the KiCad PCB file is as follows:
-        (layers
-            (0 "F.Cu" signal)
-            (31 "B.Cu" signal)
-            ...
-        )
-        So we avoid treating it as a kwarg.
-        """
+        # Once we hit a list we start treating it as kwargs, UNLESS it's a
+        # layer list. The `layers` field in the KiCad PCB file is as follows:
+        #
+        # (layers
+        #     (0 "F.Cu" signal)
+        #     (31 "B.Cu" signal)
+        #     ...
+        # )
+        #
+        # So we avoid treating it as a kwarg.
         if isinstance(arg, list) and not _is_parsable_as_layer(arg):
             break
         index += 1
