@@ -24,7 +24,7 @@ class BaseModel(PydanticBaseModel):
 default: dict
 themes_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "json")
 default_theme_file = os.path.join(themes_folder, "kicad_2022.json")
-with open(default_theme_file) as f:
+with open(default_theme_file, encoding="utf8") as f:
     default = json.load(f)
 
 

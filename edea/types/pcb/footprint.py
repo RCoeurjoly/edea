@@ -11,6 +11,7 @@ from edea.types.config import PydanticConfig
 from edea.types.pcb_layers import CanonicalLayerName
 
 from .common import (
+    BaseTextBox,
     Group,
     IsKeepEndLayers,
     IsRemoveUnusedLayers,
@@ -97,18 +98,7 @@ class FootprintText(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig)
-class FootprintTextBox(KicadPcbExpr):
-    text: str
-    layer: CanonicalLayerName
-    tstmap: UUID
-    effects: Effects
-    locked: bool = False
-    start: Optional[tuple[float, float]] = None
-    end: Optional[tuple[float, float]] = None
-    pts: Optional[Pts] = None
-    angle: Optional[float] = None
-    stroke: Optional[TextStroke] = None
-    hide: bool = False
+class FootprintTextBox(BaseTextBox):
     kicad_expr_tag_name: Literal["fp_text_box"] = "fp_text_box"
 
 
@@ -269,6 +259,7 @@ class FootprintPad(KicadPcbExpr):
     def validate_zone_connect(cls, v):
         if v is not None:
             return int(v)
+        return None
 
 
 @dataclass(config=PydanticConfig)

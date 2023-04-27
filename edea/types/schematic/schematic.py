@@ -92,6 +92,7 @@ class LocalLabel(KicadSchExpr):
 
 
 class LabelShape(str, Enum):
+    # pylint: disable=duplicate-code
     INPUT = "input"
     OUTPUT = "output"
     BIDIRECTIONAL = "bidirectional"

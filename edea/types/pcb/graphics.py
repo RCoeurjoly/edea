@@ -5,12 +5,11 @@ from uuid import UUID, uuid4
 
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Pts
+from edea.types.common import Effects, Pts
 from edea.types.config import PydanticConfig
 
-from ..common import Effects
 from .base import KicadPcbExpr
-from .common import CanonicalLayerName, PositionIdentifier, TextStroke
+from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier
 
 
 @dataclass(config=PydanticConfig)
@@ -25,18 +24,7 @@ class GraphicalText(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig)
-class GraphicalTextBox(KicadPcbExpr):
-    text: str = ""
-    locked: bool = False
-    effects: Effects = field(default_factory=Effects)
-    layer: Optional[CanonicalLayerName] = None
-    tstmap: Optional[UUID] = None
-    start: Optional[tuple[float, float]] = None
-    end: Optional[tuple[float, float]] = None
-    pts: Optional[Pts] = None
-    angle: Optional[float] = None
-    stroke: Optional[TextStroke] = None
-    hide: bool = False
+class GraphicalTextBox(BaseTextBox):
     kicad_expr_tag_name: Literal["gr_text_box"] = "gr_text_box"
 
 

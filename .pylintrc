@@ -46,7 +46,7 @@ limit-inference-results=100
 
 # List of plugins (as comma separated values of python module names) to load,
 # usually to register additional checkers.
-load-plugins=
+load-plugins=pylint_pydantic
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -83,14 +83,28 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=raw-checker-failed,
+disable=
+        abstract-method,
+        # pydantic_plugin doesn't seem to fix this for validators of
+        # dataclasses
+        bad-classmethod-argument,
         bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead
+        broad-exception-caught,
+        broad-exception-raised,
+        consider-using-dict-items,
+        fixme,
+        missing-class-docstring,
+        missing-function-docstring,
+        missing-module-docstring,
+        no-else-raise,
+        no-else-return,
+        no-name-in-module,
+        too-few-public-methods,
+        too-many-arguments,
+        too-many-instance-attributes,
+        too-many-locals,
+        too-many-return-statements,
+        unused-import,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -228,7 +242,8 @@ good-names=i,
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
-good-names-rgxs=
+# accept all 1-2 letter names
+good-names-rgxs=.|..
 
 # Include a hint for the correct naming format with invalid-name.
 include-naming-hint=no
@@ -341,7 +356,7 @@ ignore-comments=yes
 ignore-docstrings=yes
 
 # Imports are removed from the similarity computation
-ignore-imports=no
+ignore-imports=yes
 
 # Signatures are removed from the similarity computation
 ignore-signatures=no
@@ -584,10 +599,9 @@ known-third-party=enchant
 # Couples of modules and preferred modules, separated by a comma.
 preferred-modules=
 
-
 [EXCEPTIONS]
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "BaseException, Exception".
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
