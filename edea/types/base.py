@@ -131,21 +131,24 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
     return [[field.name] + _serialize_as(field.type, value)]
 
 
-def _serialize_as(annotation: Type, values) -> SExprList:
+def _serialize_as(annotation: Type, value) -> SExprList:
     origin = get_origin(annotation)
     sub_types = get_args(annotation)
 
     if origin is tuple:
         r = []
         for i, sub in enumerate(sub_types):
-            r.append(_value_to_str(sub, values[i]))
+            r.append(_value_to_str(sub, value[i]))
         return r
     elif origin is list:
         sub = sub_types[0]
-        return [_value_to_str(sub, v) for v in values]
+        return [_value_to_str(sub, v) for v in value]
     elif is_kicad_expr(annotation):
-        return values.to_list()
-    return [_value_to_str(annotation, values)]
+        return value.to_list()
+    if origin is Union or origin is UnionType:
+        return _serialize_as(type(value), value)
+
+    return [_value_to_str(annotation, value)]
 
 
 def _value_to_str(annotation: Type, value) -> str:
