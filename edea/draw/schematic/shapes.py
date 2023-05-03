@@ -7,7 +7,6 @@ import math
 from typing import Optional
 
 import svg
-from pydantic.color import Color
 
 from edea.types.schematic.shapes import (
     Arc,
@@ -25,15 +24,14 @@ def kicad_fill_to_class(t: FillType) -> str:
 
 def kicad_stroke_to_style(expr: Stroke) -> Optional[str]:
     # for kicad color is the default if its all 0s
-    color = expr.color
-    stroke = None if color == Color((0, 0, 0, 0.0)) else color.as_rgb()
+    stroke = None if expr.color == (0, 0, 0, 0.0) else expr.color
     stroke_width = None if expr.width == 0 else expr.width
 
     # we use css style instead of attributes so they don't get overriden by the
     # document css
     style = ""
     if stroke is not None:
-        style += f"stroke:{stroke};"
+        style += f"stroke:rgba{stroke};"
 
     if stroke_width is not None:
         style += f"stroke-width:{stroke_width};"

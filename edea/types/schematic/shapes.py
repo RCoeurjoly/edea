@@ -7,7 +7,7 @@ from dataclasses import field
 from enum import Enum
 from typing import Optional
 
-from pydantic.color import Color
+from edea.types.color import Color
 from pydantic.dataclasses import dataclass
 
 from edea.types.common import Pts
@@ -34,7 +34,7 @@ class StrokeType(str, Enum):
 class Stroke(KicadSchExpr):
     width: float = 0
     type: StrokeType = StrokeType.DEFAULT
-    color: Color = Color((0, 0, 0, 0.0))
+    color: Color = (0, 0, 0, 0.0)
 
 
 @dataclass(config=PydanticConfig)

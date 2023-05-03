@@ -7,7 +7,6 @@ from math import isclose
 from typing import Optional, Union
 
 import svg
-from pydantic.color import Color
 
 from edea.draw.schematic.shapes import kicad_stroke_to_style
 from edea.draw.schematic.symbol import draw_lib_symbol, draw_property, kicad_font_to_css
@@ -146,8 +145,8 @@ def draw_junction(expr: Junction, at=(0, 0), is_bus_junction=False) -> svg.Circl
         r = expr.diameter / 2
 
     style = None
-    if expr.color != Color((0, 0, 0, 0)):
-        style = f"fill:{expr.color.as_rgb()};"
+    if expr.color != (0, 0, 0, 0.0):
+        style = f"fill:rgba{expr.color};"
 
     class_ = ["junction"]
     if is_bus_junction:

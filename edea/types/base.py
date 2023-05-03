@@ -10,7 +10,6 @@ from types import UnionType
 from typing import Literal, Type, TypeVar, Union, get_args, get_origin
 
 from pydantic import ValidationError
-from pydantic.color import Color
 from pydantic.dataclasses import dataclass
 
 from edea.types.pcb_layers import layer_names, layer_types
@@ -89,9 +88,6 @@ def _parse_as(annotation: Type, exp: SExprList):
         _assert_len_one(annotation, exp)
         # XXX you can't have tuples of `KicadExpr`
         return tuple(exp[0])
-    elif annotation is Color:
-        _assert_len_one(annotation, exp)
-        return Color(exp[0])  # type: ignore [return-value]
     elif (origin is Union) or (origin is UnionType):
         # union types are tried till we find one that doesn't produce a
         # validation error
