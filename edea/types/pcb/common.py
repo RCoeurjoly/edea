@@ -14,13 +14,13 @@ from edea.types.pcb_layers import CanonicalLayerName, LayerType
 from .base import KicadPcbExpr
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Property(KicadPcbExpr):
     key: str
     value: str = ""
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Layer(KicadPcbExpr):
     ordinal: int
     name: CanonicalLayerName
@@ -28,7 +28,7 @@ class Layer(KicadPcbExpr):
     user_name: Optional[str] = None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Layers(KicadPcbExpr, UserList):
     """
     This is constructed differently to other KicadExpr which are lists.
@@ -53,7 +53,7 @@ class Layers(KicadPcbExpr, UserList):
         self.data = [Layer(*a) for a in args]
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PositionIdentifier(KicadPcbExpr):
     x: float = 0
     y: float = 0
@@ -76,7 +76,7 @@ class PositionIdentifier(KicadPcbExpr):
         return args
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class TextStroke(KicadPcbExpr):
     width: float
     type: Literal["dash", "dash_dot", "dash_dot_dot", "dot", "default", "solid"]
@@ -84,18 +84,18 @@ class TextStroke(KicadPcbExpr):
     kicad_expr_tag_name: Literal["stroke"] = "stroke"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class ConnectionPads(KicadPcbExpr):
     type: Optional[Literal["yes", "no", "full", "thru_hole_only"]] = None
     clearance: float = 0
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FilledAreaThickness(KicadPcbExpr):
     no: bool
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class ZoneKeepOutSettings(KicadPcbExpr):
     tracks: Literal["allowed", "not_allowed"]
     vias: Literal["allowed", "not_allowed"]
@@ -123,7 +123,7 @@ class ZoneFillHatchBorderAlgorithm(str, Enum):
     HatchThickness = "hatch_thickness"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class ZoneFillSettings(KicadPcbExpr):
     yes: bool = False
     island_removal_mode: Optional[ZoneFillIslandRemovalMode] = None
@@ -144,14 +144,14 @@ class ZoneFillSettings(KicadPcbExpr):
     radius: Optional[float] = None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class IsIsland(KicadPcbExpr):
     kicad_expr_tag_name: Literal["island"] = "island"
     # holds no data, appears simply as "(island)" with parens.
     # maybe there is a less ugly solution to this?
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class ZoneFillPolygon(KicadPcbExpr):
     layer: CanonicalLayerName
     pts: Pts = field(default_factory=Pts)
@@ -159,14 +159,14 @@ class ZoneFillPolygon(KicadPcbExpr):
     kicad_expr_tag_name: Literal["filled_polygon"] = "filled_polygon"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class ZoneFillSegment(KicadPcbExpr):
     layer: CanonicalLayerName
     pts: Pts
     kicad_expr_tag_name: Literal["filled_segments"] = "filled_segments"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class ZonePolygon(KicadPcbExpr):
     pts: Pts = field(default_factory=Pts)
     kicad_expr_tag_name: Literal["polygon"] = "polygon"
@@ -178,7 +178,7 @@ class Hatch(str, Enum):
     None_ = "none"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Zone(KicadPcbExpr):
     """
     :param layers: some zones have `layers` instead of `layer`.
@@ -215,7 +215,7 @@ class Zone(KicadPcbExpr):
             self.layers = [self.layer]
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Group(KicadPcbExpr):
     name: str
     locked: bool = False
@@ -223,14 +223,14 @@ class Group(KicadPcbExpr):
     members: list[UUID] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class IsRemoveUnusedLayers(KicadPcbExpr):
     kicad_expr_tag_name: Literal["remove_unused_layers"] = "remove_unused_layers"
     # holds no data, appears simply as "(remove_unused_layers)" with parens.
     # maybe there is a less ugly solution to this?
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class IsKeepEndLayers(KicadPcbExpr):
     kicad_expr_tag_name: Literal["keep_end_layers"] = "keep_end_layers"
     # holds no data, appears simply as "(keep_end_layers)" with parens.

@@ -12,7 +12,7 @@ from .base import KicadPcbExpr
 from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalText(KicadPcbExpr):
     text: str = ""
     locked: bool = False
@@ -23,12 +23,12 @@ class GraphicalText(KicadPcbExpr):
     kicad_expr_tag_name: Literal["gr_text"] = "gr_text"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalTextBox(BaseTextBox):
     kicad_expr_tag_name: Literal["gr_text_box"] = "gr_text_box"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalLine(KicadPcbExpr):
     locked: bool = False
     start: tuple[float, float] = (0, 0)
@@ -41,7 +41,7 @@ class GraphicalLine(KicadPcbExpr):
     kicad_expr_tag_name: Literal["gr_line"] = "gr_line"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalRectangle(KicadPcbExpr):
     locked: bool = False
     start: tuple[float, float] = (0, 0)
@@ -53,7 +53,7 @@ class GraphicalRectangle(KicadPcbExpr):
     kicad_expr_tag_name: Literal["gr_rect"] = "gr_rect"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalCircle(KicadPcbExpr):
     locked: bool = False
     center: tuple[float, float] = (0, 0)
@@ -66,7 +66,7 @@ class GraphicalCircle(KicadPcbExpr):
     kicad_expr_tag_name: Literal["gr_circle"] = "gr_circle"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalArc(KicadPcbExpr):
     locked: bool = False
     start: tuple[float, float] = (0, 0)
@@ -79,7 +79,7 @@ class GraphicalArc(KicadPcbExpr):
     kicad_expr_tag_name: Literal["gr_arc"] = "gr_arc"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalPolygon(KicadPcbExpr):
     locked: bool = False
     width: float = 0
@@ -91,7 +91,7 @@ class GraphicalPolygon(KicadPcbExpr):
     kicad_expr_tag_name: Literal["gr_poly"] = "gr_poly"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalBezier(KicadPcbExpr):
     locked: bool = False
     width: float = 0
@@ -101,7 +101,7 @@ class GraphicalBezier(KicadPcbExpr):
     kicad_expr_tag_name: Literal["bezier"] = "bezier"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalCurve(GraphicalBezier):
     """
     This isn't documented in the Kicad docs, but it is in some files.
@@ -111,7 +111,7 @@ class GraphicalCurve(GraphicalBezier):
     kicad_expr_tag_name: Literal["gr_curve"] = "gr_curve"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalBoundingBox(KicadPcbExpr):
     locked: bool = False
     start: tuple[float, float] = (0, 0)
@@ -132,7 +132,7 @@ class DimensionFormatUnitsFormat(str, Enum):
     WrapSuffix = "2"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class DimensionFormat(KicadPcbExpr):
     units: DimensionFormatUnits
     units_format: DimensionFormatUnitsFormat
@@ -157,7 +157,7 @@ class DimensionStyleTextFrame(str, Enum):
     RoundedRectangle = "3"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class DimensionStyle(KicadPcbExpr):
     thickness: float = 0.0
     arrow_length: float = 0.0
@@ -171,7 +171,7 @@ class DimensionStyle(KicadPcbExpr):
     kicad_expr_tag_name: Literal["style"] = "style"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalDimension(KicadPcbExpr):
     locked: bool = False
     type: Literal["aligned", "leader", "center", "orthogonal", "radial"] = "aligned"

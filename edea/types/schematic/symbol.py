@@ -44,21 +44,21 @@ class PinGraphicStyle(str, Enum):
     NON_LOGIC = "non_logic"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PinNumber(KicadSchExpr):
     text: str = ""
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["number"] = "number"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PinName(KicadSchExpr):
     text: str = ""
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["name"] = "name"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SymbolProperty(KicadSchExpr):
     key: str = ""
     value: str = ""
@@ -68,7 +68,7 @@ class SymbolProperty(KicadSchExpr):
     kicad_expr_tag_name: Literal["property"] = "property"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PinAlternate(KicadSchExpr):
     name: str
     electrical_type: PinElectricalType = PinElectricalType.UNSPECIFIED
@@ -76,7 +76,7 @@ class PinAlternate(KicadSchExpr):
     kicad_expr_tag_name: Literal["alternate"] = "alternate"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Pin(KicadSchExpr):
     electrical_type: PinElectricalType = PinElectricalType.UNSPECIFIED
     graphic_style: PinGraphicStyle = PinGraphicStyle.LINE
@@ -88,7 +88,7 @@ class Pin(KicadSchExpr):
     alternate: list[PinAlternate] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PinNameSettings(KicadSchExpr):
     offset: Optional[float] = None
     hide: bool = False
@@ -110,7 +110,7 @@ class PinNameSettings(KicadSchExpr):
     kicad_expr_tag_name: Literal["pin_names"] = "pin_names"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PinNumberSettings(KicadSchExpr):
     hide: bool = False
 
@@ -123,7 +123,7 @@ class PinNumberSettings(KicadSchExpr):
     kicad_expr_tag_name: Literal["pin_numbers"] = "pin_numbers"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SymbolGraphicText(KicadSchExpr):
     text: str
     at: tuple[float, float, Literal[0, 90, 180, 270]]
@@ -131,14 +131,14 @@ class SymbolGraphicText(KicadSchExpr):
     kicad_expr_tag_name: Literal["text"] = "text"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class IsPower(KicadSchExpr):
     kicad_expr_tag_name: Literal["power"] = "power"
     # holds no data, appears simply as "(power)" with parens.
     # maybe there is a less ugly solution to this?
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SubSymbol(KicadSchExpr):
     name: str
     polyline: list[Polyline] = field(default_factory=list)
@@ -151,7 +151,7 @@ class SubSymbol(KicadSchExpr):
     kicad_expr_tag_name: Literal["symbol"] = "symbol"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class LibSymbol(KicadSchExpr):
     name: str
     property: list[SymbolProperty] = field(default_factory=list)
