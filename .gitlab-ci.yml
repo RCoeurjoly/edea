@@ -1,4 +1,4 @@
-image: python:3.10
+image: registry.gitlab.com/edea-dev/ci-runner:latest
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -17,9 +17,7 @@ cache:
     - .hypothesis
 
 before_script:
-  - python --version # For debugging
-  - pip install poetry
-  - poetry config virtualenvs.in-project true
+  - python3 --version # For debugging
   - poetry install
 
 test:
@@ -49,7 +47,6 @@ test-long-running:
   script:
     - git submodule update --init
     - poetry run pytest -k 'parse_all_pcb' -k 'parse_all_types'
-
 #publish:
 #  script:
 #    - poetry build

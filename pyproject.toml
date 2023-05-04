@@ -12,6 +12,8 @@ Pillow = "^9.3.0"
 pyvips = "^2.2.1"
 pydantic = "^1.10.2"
 "svg.py" = "^1.4.1"
+svgpathtools = "^1.6.0"
+defusedxml = "^0.7.1"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"

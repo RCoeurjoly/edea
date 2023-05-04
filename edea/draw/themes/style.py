@@ -7,7 +7,48 @@ from textwrap import dedent
 
 import svg
 
-from edea.draw.themes.types import SchematicTheme
+from edea.draw.themes.types import BoardTheme, SchematicTheme
+
+
+def board_theme_to_style(theme: BoardTheme) -> svg.Style:
+    style_str = dedent(
+        """
+            .kicad_svg_layer {
+                stroke: white;
+                fill: white;
+                stroke-opacity: 0.8;
+                fill-opacity: 0.8;
+            }
+            .stroked-text {
+                fill-opacity: 0;
+            }
+            """
+    )
+
+    for key, value in theme.dict().items():
+        if key == "copper":
+            style_str += "\n".join(
+                [
+                    dedent(
+                        f"""
+                .kicad_svg_layer.copper.{key} {{
+                   stroke: {value};
+                   fill: {value};
+                }}"""
+                    )
+                    for key, value in value.items()
+                ]
+            )
+        else:
+            style_str += dedent(
+                f"""
+                .kicad_svg_layer.{key} {{
+                   stroke: {value};
+                   fill: {value};
+                }}"""
+            )
+
+    return svg.Style(text=style_str)
 
 
 def sch_theme_to_style(theme: SchematicTheme) -> svg.Style:

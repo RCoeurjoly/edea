@@ -14,7 +14,7 @@ from string import Template
 from time import time
 from typing import Dict
 
-from edea.draw import draw_svg
+from edea.draw import draw_sch_expr
 from edea.edea import PCB, Project, Schematic
 from edea.imgdiff import imgdiff
 from edea.kicad_files import EMPTY_PROJECT
@@ -262,7 +262,7 @@ elif args.render:
     with open(input_file, encoding="utf-8") as f:
         if ext == ".kicad_sch":
             typed_sch = from_str_typed(f.read())
-            svg = draw_svg(typed_sch)
+            svg = draw_sch_expr(typed_sch)
         elif ext == ".kicad_pcb":
             pcb = PCB(from_str(f.read()), "", "")
             svg = pcb.draw()
