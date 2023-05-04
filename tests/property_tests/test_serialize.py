@@ -6,6 +6,9 @@ from edea.types.parser import from_list, from_str
 from edea.types.serializer import to_list, from_list_to_str
 
 from .utils import any_kicad_expr_from_module
+from .config import configure_hypothesis
+
+configure_hypothesis()
 
 
 @given(any_kicad_expr_from_module(common))
