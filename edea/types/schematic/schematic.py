@@ -9,7 +9,7 @@ from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import validator
-from pydantic.color import Color
+from edea.types.color import Color
 from pydantic.dataclasses import dataclass
 
 from edea.types.common import Image, Paper, PaperStandard, TitleBlock, VersionError
@@ -71,7 +71,7 @@ class Wire(KicadSchExpr):
 class Junction(KicadSchExpr):
     at: tuple[float, float]
     diameter: float = 0
-    color: Color = Color((0, 0, 0, 0))
+    color: Color = (0, 0, 0, 0.0)
     uuid: UUID = field(default_factory=uuid4)
 
 
