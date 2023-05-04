@@ -30,33 +30,33 @@ class StrokeType(str, Enum):
     SOLID = "solid"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Stroke(KicadSchExpr):
     width: float = 0
     type: StrokeType = StrokeType.DEFAULT
     color: Color = (0, 0, 0, 0.0)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Fill(KicadSchExpr):
     type: FillType = FillType.NONE
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Polyline(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=Fill)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Bezier(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=Fill)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Rectangle(KicadSchExpr):
     start: tuple[float, float]
     end: tuple[float, float]
@@ -64,7 +64,7 @@ class Rectangle(KicadSchExpr):
     fill: Fill = field(default_factory=Fill)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Circle(KicadSchExpr):
     center: tuple[float, float]
     radius: float
@@ -72,14 +72,14 @@ class Circle(KicadSchExpr):
     fill: Fill = field(default_factory=Fill)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Radius(KicadSchExpr):
     at: tuple[float, float]
     length: float
     angles: tuple[float, float]
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Arc(KicadSchExpr):
     start: tuple[float, float]
     mid: tuple[float, float]

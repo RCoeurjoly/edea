@@ -19,7 +19,7 @@ from edea.types.schematic.shapes import Fill, Pts, Stroke
 from edea.types.schematic.symbol import Effects, LibSymbol, SymbolProperty
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PinAssignment(KicadSchExpr):
     number: str
     uuid: UUID = field(default_factory=uuid4)
@@ -27,7 +27,7 @@ class PinAssignment(KicadSchExpr):
     kicad_expr_tag_name: Literal["pin"] = "pin"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class DefaultInstance(KicadSchExpr):
     reference: str
     unit: int = 1
@@ -35,14 +35,14 @@ class DefaultInstance(KicadSchExpr):
     footprint: str = ""
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class IsFieldsAutoplaced(KicadSchExpr):
     kicad_expr_tag_name: Literal["fields_autoplaced"] = "fields_autoplaced"
     # holds no data, appears simply as "(fields_autoplaced)" with parens.
     # maybe there is a less ugly solution to this?
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SymbolUse(KicadSchExpr):
     lib_id: str
     lib_name: Optional[str] = None
@@ -60,14 +60,14 @@ class SymbolUse(KicadSchExpr):
     kicad_expr_tag_name: Literal["symbol"] = "symbol"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Wire(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     uuid: UUID = field(default_factory=uuid4)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Junction(KicadSchExpr):
     at: tuple[float, float]
     diameter: float = 0
@@ -75,13 +75,13 @@ class Junction(KicadSchExpr):
     uuid: UUID = field(default_factory=uuid4)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class NoConnect(KicadSchExpr):
     at: tuple[float, float]
     uuid: UUID = field(default_factory=uuid4)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class LocalLabel(KicadSchExpr):
     text: str
     at: tuple[float, float, Literal[0, 90, 180, 270]]
@@ -100,7 +100,7 @@ class LabelShape(str, Enum):
     PASSIVE = "passive"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class GlobalLabel(KicadSchExpr):
     text: str
     at: tuple[float, float, Literal[0, 90, 180, 270]]
@@ -111,7 +111,7 @@ class GlobalLabel(KicadSchExpr):
     fields_autoplaced: Optional[IsFieldsAutoplaced] = None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class HierarchicalLabel(KicadSchExpr):
     text: str
     at: tuple[float, float, Literal[0, 90, 180, 270]]
@@ -121,24 +121,24 @@ class HierarchicalLabel(KicadSchExpr):
     fields_autoplaced: Optional[IsFieldsAutoplaced] = None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class LibSymbols(KicadSchExpr):
     symbol: list[LibSymbol] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SheetPath(KicadSchExpr):
     path: str = "/"
     page: str = "1"
     kicad_expr_tag_name: Literal["path"] = "path"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SheetInstances(KicadSchExpr):
     path: list[SheetPath] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SymbolInstancesPath(KicadSchExpr):
     path: str
     reference: str
@@ -148,12 +148,12 @@ class SymbolInstancesPath(KicadSchExpr):
     kicad_expr_tag_name: Literal["path"] = "path"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SymbolInstances(KicadSchExpr):
     path: list[SymbolInstancesPath] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PolyLineTopLevel(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
@@ -162,13 +162,13 @@ class PolyLineTopLevel(KicadSchExpr):
     kicad_expr_tag_name: Literal["polyline"] = "polyline"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FillColor(KicadSchExpr):
     color: Color = Color((0, 0, 0, 0))
     kicad_expr_tag_name: Literal["fill"] = "fill"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class SheetPin(KicadSchExpr):
     name: str
     shape: LabelShape = LabelShape.BIDIRECTIONAL
@@ -178,7 +178,7 @@ class SheetPin(KicadSchExpr):
     kicad_expr_tag_name: Literal["pin"] = "pin"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Sheet(KicadSchExpr):
     at: tuple[float, float]
     size: tuple[float, float]
@@ -190,7 +190,7 @@ class Sheet(KicadSchExpr):
     fields_autoplaced: Optional[IsFieldsAutoplaced] = None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class BusEntry(KicadSchExpr):
     at: tuple[float, float]
     size: tuple[float, float]
@@ -198,20 +198,20 @@ class BusEntry(KicadSchExpr):
     uuid: UUID = field(default_factory=uuid4)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Bus(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     uuid: UUID = field(default_factory=uuid4)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class BusAlias(KicadSchExpr):
     name: str
     members: list[str] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Schematic(KicadSchExpr):
     version: Literal["20211123"] = "20211123"
 

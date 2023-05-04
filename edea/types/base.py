@@ -5,13 +5,15 @@ s-expression related dataclasses.
 SPDX-License-Identifier: EUPL-1.2
 """
 
-from dataclasses import fields as get_dataclass_fields
+import dataclasses
 from types import UnionType
 from typing import Literal, Type, TypeVar, Union, get_args, get_origin
 
 from pydantic import ValidationError
 from pydantic.dataclasses import dataclass
 
+from edea.types.meta import get_meta
+from edea.types.number import is_number, number_to_str
 from edea.types.pcb_layers import layer_names, layer_types
 from edea.types.s_expr import SExprList
 from edea.util import to_snake_case
@@ -47,7 +49,7 @@ class KicadExpr:
                 cls.check_version(parsed_kwargs["version"][0][0])
 
         field_types = {}
-        for f in get_dataclass_fields(cls):
+        for f in dataclasses.fields(cls):
             field_types[f.name] = f.type
 
         kwargs = {}
@@ -58,14 +60,98 @@ class KicadExpr:
 
         return cls(*parsed_args, **kwargs)
 
+    def to_list(self) -> SExprList:
+        sexpr = []
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            sexpr += _serialize_field(field, value)
+        return sexpr
+
     @classmethod
     def check_version(cls, v):
         """This should be implemented by subclasses to check the file format version"""
         raise NotImplementedError
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        for field in dataclasses.fields(self):
+            v_self = getattr(self, field.name)
+            v_other = getattr(other, field.name)
+            origin = get_origin(field.type)
+            if is_number(field.type):
+                if number_to_str(v_self) != number_to_str(v_other):
+                    return False
+            elif origin is tuple:
+                sub_types = get_args(field.type)
+                for i, sub in enumerate(sub_types):
+                    if is_number(sub):
+                        if number_to_str(v_self[i]) != number_to_str(v_other[i]):
+                            return False
+                    elif v_self[i] != v_other[i]:
+                        return False
+            elif v_self != v_other:
+                return False
+        return True
+
 
 def is_kicad_expr(t) -> bool:
     return isinstance(t, type) and issubclass(t, KicadExpr)
+
+
+def _serialize_field(field: dataclasses.Field, value) -> SExprList:
+    if field.name == "kicad_expr_tag_name" or value is None or value == []:
+        return []
+
+    if get_meta(field, "kicad_omits_default"):
+        # KiCad doesn't put anything in the s-expression if this field is at
+        # its default value, so we don't either.
+        default = field.default
+        default_factory = field.default_factory
+        if default_factory is not dataclasses.MISSING:
+            default = default_factory()
+        if value == default:
+            return []
+
+    if get_meta(field, "kicad_no_kw"):
+        # It's just the value, not an expression, i.e. a positional argument.
+        return [_value_to_str(field.type, value)]
+
+    if get_meta(field, "kicad_kw_bool"):
+        # It's a keyword who's presence signifies a boolean `True`, e.g. hide is
+        # `hide=True`. Here we just return the keyword so just "hide" in our
+        # example.
+        return [field.name] if value else []
+
+    origin = get_origin(field.type)
+    sub_types = get_args(field.type)
+    if origin is list and is_kicad_expr(sub_types[0]):
+        return [[field.name] + v.to_list() for v in value]
+
+    return [[field.name] + _serialize_as(field.type, value)]
+
+
+def _serialize_as(annotation: Type, values) -> SExprList:
+    origin = get_origin(annotation)
+    sub_types = get_args(annotation)
+
+    if origin is tuple:
+        r = []
+        for i, sub in enumerate(sub_types):
+            r.append(_value_to_str(sub, values[i]))
+        return r
+    elif origin is list:
+        sub = sub_types[0]
+        return [_value_to_str(sub, v) for v in values]
+    elif is_kicad_expr(annotation):
+        return values.to_list()
+    return [_value_to_str(annotation, values)]
+
+
+def _value_to_str(annotation: Type, value) -> str:
+    if is_number(annotation):
+        return number_to_str(value)
+    return str(value)
 
 
 def _parse_as(annotation: Type, exp: SExprList):
@@ -142,6 +228,9 @@ def _split_args(expr: SExprList) -> tuple[list[str], dict]:
         index += 1
         args.append(arg)
 
+    if index == len(expr):
+        return (args, {})
+
     kwarg_list = []
     for kwarg in expr[index:]:
         if isinstance(kwarg, list):
@@ -161,7 +250,7 @@ def _split_args(expr: SExprList) -> tuple[list[str], dict]:
             kwargs[kw].append(arg)
         else:
             kwargs[kw] = [arg]
-    return args, kwargs
+    return (args, kwargs)
 
 
 def _is_parsable_as_layer(value: list):

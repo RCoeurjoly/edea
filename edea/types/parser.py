@@ -65,7 +65,10 @@ def _tokens_to_list(tokens: tuple[str, ...], index: int) -> tuple[int, str | SEx
         raise SyntaxError("unexpected )")
 
     if token.startswith('"') and token.endswith('"'):
-        token = token.strip('"')
+        token = token.removeprefix('"').removesuffix('"')
+        token = token.replace("\\\\", "\\")
+        token = token.replace('\\"', '"')
+
     return (index, token)
 
 

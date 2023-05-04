@@ -1,5 +1,4 @@
 from dataclasses import field
-from enum import Enum
 from typing import Literal, Optional, Union
 from uuid import UUID, uuid4
 
@@ -8,9 +7,11 @@ from pydantic.dataclasses import dataclass
 
 from edea.types.base import KicadExpr
 from edea.types.config import PydanticConfig
+from edea.types.str_enum import StrEnum
+from edea.types.meta import make_meta as m
 
 
-class PaperFormat(str, Enum):
+class PaperFormat(StrEnum):
     A0 = "A0"
     A1 = "A1"
     A2 = "A2"
@@ -27,26 +28,29 @@ class PaperFormat(str, Enum):
     US_LEDGER = "USLedger"
 
 
-class PaperOrientation(str, Enum):
+class PaperOrientation(StrEnum):
     LANDSCAPE = ""
     PORTRAIT = "portrait"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PaperUser(KicadExpr):
-    format: Literal["User"] = "User"
-    width: float = 0
-    height: float = 0
+    format: Literal["User"] = field(default="User", metadata=m("kicad_no_kw"))
+    width: float = field(default=0, metadata=m("kicad_no_kw"))
+    height: float = field(default=0, metadata=m("kicad_no_kw"))
     kicad_expr_tag_name: Literal["paper"] = "paper"
 
     def as_dimensions_mm(self) -> tuple[float, float]:
         return (self.width, self.height)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PaperStandard(KicadExpr):
-    format: PaperFormat = PaperFormat.A4
-    orientation: PaperOrientation = PaperOrientation.LANDSCAPE
+    format: PaperFormat = field(default=PaperFormat.A4, metadata=m("kicad_no_kw"))
+    orientation: PaperOrientation = field(
+        default=PaperOrientation.LANDSCAPE, metadata=m("kicad_no_kw")
+    )
+    kicad_expr_tag_name: Literal["paper"] = "paper"
 
     def as_dimensions_mm(self) -> tuple[float, float]:
         lookup = {
@@ -74,7 +78,7 @@ class PaperStandard(KicadExpr):
 Paper = Union[PaperUser, PaperStandard]
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PolygonArc(KicadExpr):
     start: tuple[float, float]
     mid: tuple[float, float]
@@ -83,19 +87,19 @@ class PolygonArc(KicadExpr):
     kicad_expr_tag_name: Literal["arc"] = "arc"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class XY(KicadExpr):
-    x: float
-    y: float
+    x: float = field(metadata=m("kicad_no_kw"))
+    y: float = field(metadata=m("kicad_no_kw"))
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Pts(KicadExpr):
     xy: list[XY] = field(default_factory=list)
     arc: list[PolygonArc] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Image(KicadExpr):
     at: tuple[float, float]
     scale: Optional[float] = None
@@ -103,14 +107,14 @@ class Image(KicadExpr):
     data: list[str] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class TitleBlockComment(KicadExpr):
     number: int = 1
     text: str = ""
     kicad_expr_tag_name: Literal["comment"] = "comment"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class TitleBlock(KicadExpr):
     title: str = ""
     date: str = ""
@@ -119,23 +123,27 @@ class TitleBlock(KicadExpr):
     comment: list[TitleBlockComment] = field(default_factory=list)
 
 
-class JustifyHoriz(str, Enum):
+class JustifyHoriz(StrEnum):
     LEFT = "left"
-    CENTER = ""
+    CENTER = "center"
     RIGHT = "right"
 
 
-class JustifyVert(str, Enum):
+class JustifyVert(StrEnum):
     TOP = "top"
-    CENTER = ""
+    CENTER = "center"
     BOTTOM = "bottom"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Justify(KicadExpr):
-    horizontal: JustifyHoriz = JustifyHoriz.CENTER
-    vertical: JustifyVert = JustifyVert.CENTER
-    mirror: bool = False
+    horizontal: JustifyHoriz = field(
+        default=JustifyHoriz.CENTER, metadata=m("kicad_no_kw", "kicad_omits_default")
+    )
+    vertical: JustifyVert = field(
+        default=JustifyVert.CENTER, metadata=m("kicad_no_kw", "kicad_omits_default")
+    )
+    mirror: bool = field(default=False, metadata=m("kicad_kw_bool"))
 
     @root_validator(pre=True)
     def validate(cls, fields: dict):
@@ -151,23 +159,22 @@ class Justify(KicadExpr):
                 correct_fields["vertical"] = v
             elif v == "mirror":
                 correct_fields["mirror"] = True
-
         return correct_fields
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Font(KicadExpr):
     size: tuple[float, float] = (1.27, 1.27)
-    thickness: Optional[float] = None
-    italic: bool = False
-    bold: bool = False
+    thickness: Optional[float] = field(default=None, metadata=m("kicad_omits_default"))
+    italic: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    bold: bool = field(default=False, metadata=m("kicad_kw_bool"))
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Effects(KicadExpr):
     font: Font = field(default_factory=Font)
-    justify: Justify = field(default_factory=Justify)
-    hide: bool = False
+    justify: Justify = field(default_factory=Justify, metadata=m("kicad_omits_default"))
+    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
 
 
 class VersionError(ValueError):

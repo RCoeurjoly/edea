@@ -47,18 +47,18 @@ from .graphics import (
 )
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class General(KicadPcbExpr):
     thickness: float = 0
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class StackUpLayerThickness(KicadPcbExpr):
     value: float
     locked: bool = False
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class StackUpLayer(KicadPcbExpr):
     name: Optional[str]
     # This is an arbitrary string, not a `CanonicalLayer`.
@@ -77,7 +77,7 @@ class StackUpLayer(KicadPcbExpr):
         return None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Stackup(KicadPcbExpr):
     layer: list[StackUpLayer] = field(default_factory=list)
     copper_finish: Optional[str] = "None"
@@ -96,7 +96,7 @@ class PlotOutputFormat(str, Enum):
     PDF = "5"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class PlotSettings(KicadPcbExpr):
     layerselection: str
     disableapertmacros: bool
@@ -143,7 +143,7 @@ class PlotSettings(KicadPcbExpr):
     kicad_expr_tag_name: Literal["pcbplotparams"] = "pcbplotparams"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Setup(KicadPcbExpr):
     pcbplotparams: PlotSettings
     stackup: Optional[Stackup] = None
@@ -155,13 +155,13 @@ class Setup(KicadPcbExpr):
     grid_origin: Optional[tuple[float, float]] = (0.0, 0.0)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Net(KicadPcbExpr):
     oridinal: int
     name: str
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Segment(KicadPcbExpr):
     locked: bool = False
     start: tuple[float, float] = (0, 0)
@@ -172,14 +172,14 @@ class Segment(KicadPcbExpr):
     tstamp: UUID = field(default_factory=uuid4)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class IsFreeVia(KicadPcbExpr):
     kicad_expr_tag_name: Literal["free"] = "free"
     # holds no data, appears simply as "(free)" with parens.
     # maybe there is a less ugly solution to this?
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Via(KicadPcbExpr):
     type: Optional[Literal["blind", "micro", "through"]] = "through"
     locked: bool = False
@@ -202,7 +202,7 @@ class Via(KicadPcbExpr):
         return fields
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Arc(KicadPcbExpr):
     locked: bool = False
     start: tuple[float, float] = (0, 0)
@@ -214,7 +214,7 @@ class Arc(KicadPcbExpr):
     layer: CanonicalLayerName = "F.Cu"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Target(KicadPcbExpr):
     type: str
     at: PositionIdentifier
@@ -224,12 +224,12 @@ class Target(KicadPcbExpr):
     tstamp: Optional[UUID] = None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Image(BaseImage, KicadPcbExpr):
     layer: CanonicalLayerName = "F.Cu"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Pcb(KicadPcbExpr):
     setup: Setup
     version: Literal["20211014"] = "20211014"

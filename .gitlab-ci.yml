@@ -46,7 +46,9 @@ test-long-running:
     - web
   script:
     - git submodule update --init
-    - poetry run pytest -k 'parse_all_pcb' -k 'parse_all_types'
+    - poetry run pytest -k 'parse_all_pcb'
+    - poetry run pytest -k 'parse_all_types'
+
 #publish:
 #  script:
 #    - poetry build

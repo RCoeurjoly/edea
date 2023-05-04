@@ -35,7 +35,7 @@ from .graphics import (
 )
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintAttributes(KicadPcbExpr):
     type: Optional[Literal["smd", "through_hole"]] = "smd"
     board_only: bool = False
@@ -75,7 +75,7 @@ class ZoneConnection(str, Enum):
     SolidFill = "2"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintText(KicadPcbExpr):
     type: Literal["reference", "value", "user"] = "user"
     text: str = field(default_factory=str)
@@ -97,12 +97,12 @@ class FootprintText(KicadPcbExpr):
         return fields
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintTextBox(BaseTextBox):
     kicad_expr_tag_name: Literal["fp_text_box"] = "fp_text_box"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintLine(KicadPcbExpr):
     start: tuple[float, float]
     end: tuple[float, float]
@@ -114,7 +114,7 @@ class FootprintLine(KicadPcbExpr):
     kicad_expr_tag_name: Literal["fp_line"] = "fp_line"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintRectangle(KicadPcbExpr):
     start: tuple[float, float]
     end: tuple[float, float]
@@ -127,7 +127,7 @@ class FootprintRectangle(KicadPcbExpr):
     kicad_expr_tag_name: Literal["fp_rect"] = "fp_rect"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintCircle(KicadPcbExpr):
     center: tuple[float, float]
     end: tuple[float, float]
@@ -140,7 +140,7 @@ class FootprintCircle(KicadPcbExpr):
     kicad_expr_tag_name: Literal["fp_circle"] = "fp_circle"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintArc(KicadPcbExpr):
     start: tuple[float, float]
     mid: tuple[float, float]
@@ -153,7 +153,7 @@ class FootprintArc(KicadPcbExpr):
     kicad_expr_tag_name: Literal["fp_arc"] = "fp_arc"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintPolygon(KicadPcbExpr):
     layer: CanonicalLayerName
     width: float
@@ -165,7 +165,7 @@ class FootprintPolygon(KicadPcbExpr):
     kicad_expr_tag_name: Literal["fp_poly"] = "fp_poly"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintCurve(KicadPcbExpr):
     layer: CanonicalLayerName
     width: float
@@ -176,7 +176,7 @@ class FootprintCurve(KicadPcbExpr):
     kicad_expr_tag_name: Literal["fp_curve"] = "fp_curve"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintPadDrill(KicadPcbExpr):
     oval: bool = False
     diameter: Optional[float] = None
@@ -189,13 +189,13 @@ class FootprintPadDrill(KicadPcbExpr):
         return v == "oval"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintPadOptions(KicadPcbExpr):
     clearance: Literal["outline", "convexhull"]
     anchor: Literal["rect", "circle"]
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintPadPrimitives(KicadPcbExpr):
     width: Optional[float] = None
     fill: bool = False
@@ -212,14 +212,14 @@ class FootprintPadPrimitives(KicadPcbExpr):
     kicad_expr_tag_name: Literal["primitives"] = "primitives"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintPadRectDelta(KicadPcbExpr):
     x: float
     y: float
     kicad_expr_tag_name: Literal["rect_delta"] = "rect_delta"
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintPad(KicadPcbExpr):
     number: str
     type: Literal["thru_hole", "smd", "connect", "connect", "np_thru_hole"]
@@ -262,12 +262,12 @@ class FootprintPad(KicadPcbExpr):
         return None
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class FootprintModelCoord(KicadPcbExpr):
     xyz: tuple[float, float, float] = (0.0, 0.0, 0.0)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Footprint3dModel(KicadPcbExpr):
     file: str
     hide: bool = False
@@ -286,7 +286,7 @@ class Footprint3dModel(KicadPcbExpr):
 AutoplaceCost = Literal["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class Footprint(KicadPcbExpr):
     library_link: str
     locked: bool = False
