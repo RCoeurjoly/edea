@@ -9,18 +9,16 @@ configure_hypothesis()
 
 
 @given(infer)
-def test_create_sch(expr: Schematic):
+def test_create_sch(_: Schematic):
     """
     Just tests whether we can create arbitrary `Schematic` instances using
     hypothesis inference.
     """
-    assert expr is not None
 
 
 @given(infer)
-def test_create_pcb(expr: Pcb):
+def test_create_pcb(_: Pcb):
     """
     Just tests whether we can create arbitrary `Pcb` instances using hypothesis
     inference.
     """
-    assert expr is not None
