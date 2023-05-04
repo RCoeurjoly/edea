@@ -7,6 +7,7 @@ from typing import Optional, Union
 
 import svg
 
+from edea.draw.pcb import draw_pcb
 from edea.draw.schematic import (
     draw_bus,
     draw_bus_entry,
@@ -27,6 +28,8 @@ from edea.draw.schematic.shapes import (
 )
 from edea.draw.themes import ThemeName, get_theme
 from edea.draw.themes.style import sch_theme_to_style
+from edea.types import parser
+from edea.types.pcb import pcb
 from edea.types.schematic import (
     Bus,
     BusEntry,
@@ -38,6 +41,7 @@ from edea.types.schematic import (
     NoConnect,
     Schematic,
     Wire,
+    schematic,
 )
 from edea.types.schematic.shapes import Arc, Circle, Polyline, Rectangle
 
@@ -62,7 +66,7 @@ DrawableSchExpr = Union[
 Drawable = DrawableSchExpr
 
 
-def draw_svg(
+def draw_sch_expr(
     expr: Drawable, theme: Optional[ThemeName] = ThemeName.KICAD_2022
 ) -> svg.SVG:
     """
@@ -130,5 +134,15 @@ def draw_element(expr: Drawable, at: tuple[float, float] = (0, 0)) -> svg.Elemen
             return draw_schematic(expr, at)
         case Wire():
             return draw_wire(expr, at)
+        case _:
+            raise TypeError(f"Cannot draw item of type '{type(expr)}'.")
+
+
+def draw_svg_from_file_content(content: str, theme: ThemeName = ThemeName.KICAD_2022):
+    match expr := parser.from_str(content):
+        case schematic.Schematic():
+            return draw_sch_expr(expr, theme).as_str()
+        case pcb.Pcb():
+            return draw_pcb(content, theme)
         case _:
             raise TypeError(f"Cannot draw item of type '{type(expr)}'.")

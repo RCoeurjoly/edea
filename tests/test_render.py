@@ -3,15 +3,14 @@ SVG Rendering tests
 
 SPDX-License-Identifier: EUPL-1.2
 """
-from math import isclose
 import os
+import re
+from math import isclose
 
 import svg as svg_py
 
-from edea.draw import draw_element, draw_svg
-from edea.edea import PCB
+from edea.draw import draw_element, draw_sch_expr, draw_svg_from_file_content
 from edea.types.parser import from_str
-from edea.parser import from_str as parse_from_str
 from tests.util import get_path_to_test_file, get_test_output_dir
 
 
@@ -108,7 +107,7 @@ class TestRendering:
         with open(sch_path, encoding="utf-8") as f:
             sch = from_str(f.read())
 
-        svg = draw_svg(sch)
+        svg = draw_sch_expr(sch)
         assert isinstance(svg, svg_py.SVG)
 
         output = get_test_output_dir()
@@ -121,7 +120,7 @@ class TestRendering:
         with open(sch_path, encoding="utf-8") as f:
             sch = from_str(f.read())
 
-        svg = draw_svg(sch)
+        svg = draw_sch_expr(sch)
         assert isinstance(svg, svg_py.SVG)
 
         output = get_test_output_dir()
@@ -134,7 +133,7 @@ class TestRendering:
         with open(sch_path, encoding="utf-8") as f:
             sch = from_str(f.read())
 
-        svg = draw_svg(sch)
+        svg = draw_sch_expr(sch)
         assert isinstance(svg, svg_py.SVG)
 
         output = get_test_output_dir()
@@ -142,12 +141,40 @@ class TestRendering:
         with open(svg_path, "w", encoding="utf-8") as f:
             f.write(svg.as_str())
 
+
+class TestDrawingFromFiles:
+    def test_draw_sch(self):
+        with open(
+            get_path_to_test_file("ferret/ferret.kicad_sch"), encoding="utf-8"
+        ) as f:
+            content = f.read()
+        svg = draw_svg_from_file_content(content)
+
+        with open(
+            get_path_to_test_file("ferret/ferret.kicad_sch.svg"), encoding="utf-8"
+        ) as f:
+            expected = f.read()
+
+        # remove title tags because they contain the date
+        svg = re.sub(r"<title>.*</title>", "", svg)
+        expected = re.sub(r"<title>.*</title>", "", expected)
+
+        assert svg == expected
+
     def test_draw_pcb(self):
         with open(
-            "tests/kicad_projects/ferret/ferret.kicad_pcb", encoding="utf-8"
+            get_path_to_test_file("ferret/ferret.kicad_pcb"), encoding="utf-8"
         ) as f:
-            pcb = PCB(parse_from_str(f.read()), "ferret", "")
+            content = f.read()
+        svg = draw_svg_from_file_content(content)
 
-        pcb.draw()
-        # with open("../test_pcb.svg", "w", encoding="utf-8") as f:
-        #    f.write(str(canvas))
+        with open(
+            get_path_to_test_file("ferret/ferret.kicad_pcb.svg"), encoding="utf-8"
+        ) as f:
+            expected = f.read()
+
+        # remove title tags because they contain the date
+        svg = re.sub(r"<title>.*</title>", "", svg)
+        expected = re.sub(r"<title>.*</title>", "", expected)
+
+        assert svg == expected

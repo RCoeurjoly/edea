@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" width="297mm" height="210mm"><style >
+svg {
+    background-color: rgb(255, 255, 255);
+}
+rect, polyline, circle, path {
+    stroke: rgb(132, 0, 0);
+    stroke-opacity: 1.0;
+    stroke-width: 0.1524;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.fill-none {
+    fill: none;
+}
+.fill-background {
+    fill: rgb(255, 255, 194);
+    fill-opacity: 0.6;
+}
+.fill-outline {
+    fill: rgb(132, 0, 0);
+    fill-opacity: 1;
+}
+polyline.wire {
+    stroke: rgb(0, 132, 0);
+    stroke-width: 0.1524;
+}
+polyline.bus {
+    stroke: rgb(0, 0, 132);
+    stroke-width: 0.3048;
+}
+text.property {
+    fill: rgb(132, 0, 132);
+}
+text.property.prop-reference {
+    fill: rgb(0, 132, 132);
+}
+text.property.prop-value {
+    fill: rgb(0, 132, 132);
+}
+text.pin-number {
+    fill: rgb(132, 0, 0);
+}
+text.pin-name {
+    fill: rgb(0, 132, 132);
+}
+circle.junction {
+    stroke: none;
+    fill: rgb(0, 132, 0);
+}
+circle.junction.junction-bus {
+    fill: rgb(0, 0, 132);
+}
+.pin-line {
+    stroke: rgb(132, 0, 0);
+    stroke-width: 0.1524;
+}
+.label-local {
+    fill: rgb(0, 0, 0);
+}
+.label-global {
+    fill: rgb(132, 0, 0);
+}
+.label-hierarchical {
+    fill: rgb(132, 132, 0);
+}
+.no-connect {
+    stroke: rgb(0, 0, 132);
+    stroke-width: 0.1524;
+}
+</style><g class="schematic"><g class="symbol-use"><g class="symbol"><circle class="fill-none" style="stroke-width:1.27;" cx="35.56" cy="175.26" r="1.27"/><g class="pin"><line class="pin-line" transform="rotate(-90 35.56 179.07)" x1="35.56" y1="179.07" x2="38.1" y2="179.07"/></g></g><text class="property prop-reference" style="text-anchor:start;font-size:0.5mm;dominant-baseline:middle;" x="38.1" y="176.4538">H102</text><text class="property prop-value" style="text-anchor:start;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="38.1" y="177.5968">MountingHole_Pad</text><text class="property prop-footprint" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="35.56" y="176.53">MountingHole:MountingHole_3.2mm_M3_ISO14580_Pad</text><text class="property prop-datasheet" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="35.56" y="176.53">~</text><text class="property prop-mpn" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="35.56" y="176.53">DNP</text></g><g class="symbol-use"><g class="symbol"><polyline class="fill-none" points="35.56 179.07 35.56 180.34 36.830000000000005 180.34 35.56 181.60999999999999 34.29 180.34 35.56 180.34"/><g class="pin"><line class="pin-line" transform="rotate(-270 35.56 179.07)" x1="35.56" y1="179.07" x2="35.56" y2="179.07"/></g></g><text class="property prop-reference" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="35.56" y="185.42">#PWR0102</text><text class="property prop-value" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;" x="35.687" y="183.4642">GND</text><text class="property prop-footprint" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="35.56" y="179.07"/><text class="property prop-datasheet" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="35.56" y="179.07"/></g><g class="symbol-use"><g class="symbol"><circle class="fill-none" style="stroke-width:1.27;" cx="24.13" cy="175.26" r="1.27"/><g class="pin"><line class="pin-line" transform="rotate(-90 24.13 179.07)" x1="24.13" y1="179.07" x2="26.669999999999998" y2="179.07"/></g></g><text class="property prop-reference" style="text-anchor:start;font-size:0.5mm;dominant-baseline:middle;" x="26.67" y="176.4538">H101</text><text class="property prop-value" style="text-anchor:start;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="26.67" y="177.5968">MountingHole_Pad</text><text class="property prop-footprint" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="24.13" y="176.53">MountingHole:MountingHole_3.2mm_M3_ISO14580_Pad</text><text class="property prop-datasheet" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="24.13" y="176.53">~</text><text class="property prop-mpn" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="24.13" y="176.53">DNP</text></g><g class="symbol-use"><g class="symbol"><polyline class="fill-none" points="24.13 179.07 24.13 180.34 25.4 180.34 24.13 181.60999999999999 22.86 180.34 24.13 180.34"/><g class="pin"><line class="pin-line" transform="rotate(-270 24.13 179.07)" x1="24.13" y1="179.07" x2="24.13" y2="179.07"/></g></g><text class="property prop-reference" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="24.13" y="185.42">#PWR0101</text><text class="property prop-value" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;" x="24.257" y="183.4642">GND</text><text class="property prop-footprint" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="24.13" y="179.07"/><text class="property prop-datasheet" style="text-anchor:middle;font-size:0.5mm;dominant-baseline:middle;visibility:hidden;" x="24.13" y="179.07"/></g><polyline class="wire" points="101.6 105.41 85.09 105.41"/><polyline class="wire" points="85.09 107.95 99.06 107.95"/><polyline class="wire" points="109.22 118.11 109.22 95.25"/><polyline class="wire" points="118.11 82.55 85.09 82.55"/><polyline class="wire" points="175.26 105.41 175.26 125.73"/><polyline class="wire" points="85.09 85.09 118.11 85.09"/><polyline class="wire" points="91.44 66.04 91.44 43.18"/><polyline class="wire" points="85.09 72.39 99.06 72.39"/><polyline class="wire" points="177.8 53.34 177.8 72.39"/><polyline class="wire" points="166.37 82.55 191.77 82.55"/><polyline class="wire" points="175.26 74.93 191.77 74.93"/><polyline class="wire" points="118.11 87.63 85.09 87.63"/><polyline class="wire" points="99.06 128.27 177.8 128.27"/><polyline class="wire" points="92.71 68.58 85.09 68.58"/><polyline class="wire" points="172.72 101.6 191.77 101.6"/><polyline class="wire" points="104.14 123.19 172.72 123.19"/><polyline class="wire" points="177.8 128.27 177.8 107.95"/><polyline class="wire" points="101.6 125.73 101.6 105.41"/><polyline class="wire" points="85.09 80.01 118.11 80.01"/><polyline class="wire" points="104.14 101.6 104.14 123.19"/><polyline class="wire" points="170.18 99.06 191.77 99.06"/><polyline class="wire" points="191.77 105.41 175.26 105.41"/><polyline class="wire" points="191.77 87.63 157.48 87.63"/><polyline class="wire" points="175.26 125.73 101.6 125.73"/><polyline class="wire" points="99.06 107.95 99.06 128.27"/><polyline class="wire" points="168.91 80.01 157.48 80.01"/><polyline class="wire" points="101.6 55.88 175.26 55.88"/><polyline class="wire" points="166.37 45.72 92.71 45.72"/><polyline class="wire" points="85.09 66.04 91.44 66.04"/><polyline class="wire" points="109.22 95.25 85.09 95.25"/><polyline class="wire" points="170.18 120.65 170.18 99.06"/><polyline class="wire" points="191.77 80.01 168.91 80.01"/><polyline class="wire" points="175.26 55.88 175.26 74.93"/><polyline class="wire" points="99.06 72.39 99.06 53.34"/><polyline class="wire" points="101.6 74.93 101.6 55.88"/><polyline class="wire" points="157.48 82.55 166.37 82.55"/><polyline class="wire" points="157.48 92.71 191.77 92.71"/><polyline class="wire" points="167.64 95.25 167.64 118.11"/><polyline class="wire" points="106.68 99.06 106.68 120.65"/><polyline class="wire" points="166.37 82.55 166.37 45.72"/><polyline class="wire" points="85.09 99.06 106.68 99.06"/><polyline class="wire" points="106.68 120.65 170.18 120.65"/><polyline class="wire" points="177.8 72.39 191.77 72.39"/><polyline class="wire" points="168.91 43.18 168.91 80.01"/><polyline class="wire" points="177.8 107.95 191.77 107.95"/><polyline class="wire" points="172.72 123.19 172.72 101.6"/><polyline class="wire" points="91.44 43.18 168.91 43.18"/><polyline class="wire" points="85.09 101.6 104.14 101.6"/><polyline class="wire" points="191.77 95.25 167.64 95.25"/><polyline class="wire" points="167.64 118.11 109.22 118.11"/><polyline class="wire" points="85.09 74.93 101.6 74.93"/><polyline class="wire" points="99.06 53.34 177.8 53.34"/><polyline class="wire" points="92.71 45.72 92.71 68.58"/><circle class="junction" cx="166.37" cy="82.55" r="0.5"/><circle class="junction" cx="168.91" cy="80.01" r="0.5"/></g></svg>
