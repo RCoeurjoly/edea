@@ -9,11 +9,12 @@ from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import validator
-from edea.types.color import Color
 from pydantic.dataclasses import dataclass
 
+from edea.types.color import Color
 from edea.types.common import Image, Paper, PaperStandard, TitleBlock, VersionError
 from edea.types.config import PydanticConfig
+from edea.types.meta import make_meta as m
 from edea.types.schematic.base import KicadSchExpr
 from edea.types.schematic.shapes import Fill, Pts, Stroke
 from edea.types.schematic.symbol import Effects, LibSymbol, SymbolProperty
@@ -36,13 +37,6 @@ class DefaultInstance(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class IsFieldsAutoplaced(KicadSchExpr):
-    kicad_expr_tag_name: Literal["fields_autoplaced"] = "fields_autoplaced"
-    # holds no data, appears simply as "(fields_autoplaced)" with parens.
-    # maybe there is a less ugly solution to this?
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class SymbolUse(KicadSchExpr):
     lib_id: str
     lib_name: Optional[str] = None
@@ -56,7 +50,7 @@ class SymbolUse(KicadSchExpr):
     default_instance: Optional[DefaultInstance] = None
     property: list[SymbolProperty] = field(default_factory=list)
     pin: list[PinAssignment] = field(default_factory=list)
-    fields_autoplaced: Optional[IsFieldsAutoplaced] = None
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     kicad_expr_tag_name: Literal["symbol"] = "symbol"
 
 
@@ -85,7 +79,7 @@ class NoConnect(KicadSchExpr):
 class LocalLabel(KicadSchExpr):
     text: str
     at: tuple[float, float, Literal[0, 90, 180, 270]]
-    fields_autoplaced: Optional[IsFieldsAutoplaced] = None
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     kicad_expr_tag_name: Literal["label"] = "label"
@@ -108,7 +102,7 @@ class GlobalLabel(KicadSchExpr):
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     property: list[SymbolProperty] = field(default_factory=list)
-    fields_autoplaced: Optional[IsFieldsAutoplaced] = None
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -118,7 +112,7 @@ class HierarchicalLabel(KicadSchExpr):
     shape: LabelShape = LabelShape.BIDIRECTIONAL
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
-    fields_autoplaced: Optional[IsFieldsAutoplaced] = None
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -187,7 +181,7 @@ class Sheet(KicadSchExpr):
     uuid: UUID = field(default_factory=uuid4)
     property: list[SymbolProperty] = field(default_factory=list)
     pin: list[SheetPin] = field(default_factory=list)
-    fields_autoplaced: Optional[IsFieldsAutoplaced] = None
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
 
 
 @dataclass(config=PydanticConfig, eq=False)

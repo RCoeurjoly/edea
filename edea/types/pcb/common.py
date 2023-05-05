@@ -9,8 +9,9 @@ from pydantic.dataclasses import dataclass
 
 from edea.types.common import Effects, Pts
 from edea.types.config import PydanticConfig
-
+from edea.types.meta import make_meta as m
 from edea.types.pcb_layers import CanonicalLayerName, LayerType
+
 from .base import KicadPcbExpr
 
 
@@ -145,17 +146,10 @@ class ZoneFillSettings(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class IsIsland(KicadPcbExpr):
-    kicad_expr_tag_name: Literal["island"] = "island"
-    # holds no data, appears simply as "(island)" with parens.
-    # maybe there is a less ugly solution to this?
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class ZoneFillPolygon(KicadPcbExpr):
     layer: CanonicalLayerName
     pts: Pts = field(default_factory=Pts)
-    island: Optional[IsIsland] = None
+    island: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     kicad_expr_tag_name: Literal["filled_polygon"] = "filled_polygon"
 
 
@@ -221,20 +215,6 @@ class Group(KicadPcbExpr):
     locked: bool = False
     id: UUID = field(default_factory=uuid4)
     members: list[UUID] = field(default_factory=list)
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class IsRemoveUnusedLayers(KicadPcbExpr):
-    kicad_expr_tag_name: Literal["remove_unused_layers"] = "remove_unused_layers"
-    # holds no data, appears simply as "(remove_unused_layers)" with parens.
-    # maybe there is a less ugly solution to this?
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class IsKeepEndLayers(KicadPcbExpr):
-    kicad_expr_tag_name: Literal["keep_end_layers"] = "keep_end_layers"
-    # holds no data, appears simply as "(keep_end_layers)" with parens.
-    # maybe there is a less ugly solution to this?
 
 
 @dataclass(config=PydanticConfig)

@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
+from edea.types.meta import make_meta as m
 from edea.types.common import Effects, Pts
 from edea.types.config import PydanticConfig
 from edea.types.pcb_layers import CanonicalLayerName
@@ -13,8 +14,6 @@ from edea.types.pcb_layers import CanonicalLayerName
 from .common import (
     BaseTextBox,
     Group,
-    IsKeepEndLayers,
-    IsRemoveUnusedLayers,
     KicadPcbExpr,
     Layer,
     PositionIdentifier,
@@ -231,8 +230,8 @@ class FootprintPad(KicadPcbExpr):
     drill: Optional[FootprintPadDrill] = None
     layers: list[str] = field(default_factory=list)
     property: list[Property] = field(default_factory=list)
-    remove_unused_layers: Optional[IsRemoveUnusedLayers] = None
-    keep_end_layers: Optional[IsKeepEndLayers] = None
+    remove_unused_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    keep_end_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     roundrect_rratio: Optional[float] = None
     chamfer: Optional[
         list[Literal["top_left", "top_right", "bottom_left", "bottom_right"]]
