@@ -7,8 +7,25 @@ from pydantic.dataclasses import dataclass
 
 from edea.types.base import KicadExpr
 from edea.types.config import PydanticConfig
-from edea.types.str_enum import StrEnum
 from edea.types.meta import make_meta as m
+from edea.types.str_enum import StrEnum
+from edea.types.color import Color
+
+
+class StrokeType(StrEnum):
+    DEFAULT = "default"
+    DASH = "dash"
+    DASH_DOT = "dash_dot"
+    DASH_DOT_DOT = "dash_dot_dot"
+    DOT = "dot"
+    SOLID = "solid"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class Stroke(KicadExpr):
+    width: float = 0
+    type: StrokeType = StrokeType.DEFAULT
+    color: Color = (0, 0, 0, 0.0)
 
 
 class PaperFormat(StrEnum):

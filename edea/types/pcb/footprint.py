@@ -6,8 +6,8 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
+from edea.types.common import Effects, Pts, Stroke
 from edea.types.meta import make_meta as m
-from edea.types.common import Effects, Pts
 from edea.types.config import PydanticConfig
 from edea.types.pcb_layers import CanonicalLayerName
 
@@ -18,7 +18,6 @@ from .common import (
     Layer,
     PositionIdentifier,
     Property,
-    TextStroke,
     Zone,
 )
 from .graphics import (
@@ -108,7 +107,7 @@ class FootprintLine(KicadPcbExpr):
     layer: CanonicalLayerName
     width: float
     tstamp: UUID
-    stroke: Optional[TextStroke] = None
+    stroke: Optional[Stroke] = None
     locked: bool = False
     kicad_expr_tag_name: Literal["fp_line"] = "fp_line"
 
@@ -120,7 +119,7 @@ class FootprintRectangle(KicadPcbExpr):
     layer: CanonicalLayerName
     width: float
     tstamp: UUID
-    stroke: Optional[TextStroke] = None
+    stroke: Optional[Stroke] = None
     fill: Optional[Literal["solid", "none"]] = None
     locked: bool = False
     kicad_expr_tag_name: Literal["fp_rect"] = "fp_rect"
@@ -133,7 +132,7 @@ class FootprintCircle(KicadPcbExpr):
     layer: CanonicalLayerName
     width: float
     tstamp: UUID
-    stroke: Optional[TextStroke] = None
+    stroke: Optional[Stroke] = None
     fill: Optional[Literal["solid", "none"]] = None
     locked: bool = False
     kicad_expr_tag_name: Literal["fp_circle"] = "fp_circle"
@@ -147,7 +146,7 @@ class FootprintArc(KicadPcbExpr):
     layer: CanonicalLayerName
     width: float
     tstamp: UUID
-    stroke: Optional[TextStroke] = None
+    stroke: Optional[Stroke] = None
     locked: bool = False
     kicad_expr_tag_name: Literal["fp_arc"] = "fp_arc"
 
@@ -157,7 +156,7 @@ class FootprintPolygon(KicadPcbExpr):
     layer: CanonicalLayerName
     width: float
     tstamp: UUID
-    stroke: Optional[TextStroke] = None
+    stroke: Optional[Stroke] = None
     pts: Pts = field(default_factory=Pts)
     fill: Optional[Literal["solid", "none"]] = None
     locked: bool = False
@@ -170,7 +169,7 @@ class FootprintCurve(KicadPcbExpr):
     width: float
     tstamp: UUID
     pts: Pts
-    stroke: Optional[TextStroke] = None
+    stroke: Optional[Stroke] = None
     locked: bool = False
     kicad_expr_tag_name: Literal["fp_curve"] = "fp_curve"
 
