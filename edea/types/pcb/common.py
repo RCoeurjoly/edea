@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Effects, Pts
+from edea.types.common import Effects, Pts, Stroke
 from edea.types.config import PydanticConfig
 from edea.types.meta import make_meta as m
 from edea.types.pcb_layers import CanonicalLayerName, LayerType
@@ -75,14 +75,6 @@ class PositionIdentifier(KicadPcbExpr):
             args["angle"] = None
             args["unlocked"] = True
         return args
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class TextStroke(KicadPcbExpr):
-    width: float
-    type: Literal["dash", "dash_dot", "dash_dot_dot", "dot", "default", "solid"]
-    color: tuple[float, float, float, float]
-    kicad_expr_tag_name: Literal["stroke"] = "stroke"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -228,5 +220,5 @@ class BaseTextBox(KicadPcbExpr):
     end: Optional[tuple[float, float]] = None
     pts: Optional[Pts] = None
     angle: Optional[float] = None
-    stroke: Optional[TextStroke] = None
+    stroke: Optional[Stroke] = None
     hide: bool = False

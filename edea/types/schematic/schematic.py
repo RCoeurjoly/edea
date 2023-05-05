@@ -4,7 +4,6 @@ Dataclasses describing the contents of .kicad_sch files.
 SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
-from enum import Enum
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
@@ -18,6 +17,7 @@ from edea.types.meta import make_meta as m
 from edea.types.schematic.base import KicadSchExpr
 from edea.types.schematic.shapes import Fill, Pts, Stroke
 from edea.types.schematic.symbol import Effects, LibSymbol, SymbolProperty
+from edea.types.str_enum import StrEnum
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -85,7 +85,7 @@ class LocalLabel(KicadSchExpr):
     kicad_expr_tag_name: Literal["label"] = "label"
 
 
-class LabelShape(str, Enum):
+class LabelShape(StrEnum):
     # pylint: disable=duplicate-code
     INPUT = "input"
     OUTPUT = "output"
