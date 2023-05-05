@@ -48,15 +48,15 @@ class KicadExpr:
             if "version" in parsed_kwargs:
                 cls.check_version(parsed_kwargs["version"][0][0])
 
-        field_types = {}
-        for f in dataclasses.fields(cls):
-            field_types[f.name] = f.type
+        fields = {}
+        for field in dataclasses.fields(cls):
+            fields[field.name] = field
 
         kwargs = {}
         for kw in parsed_kwargs:
-            if kw not in field_types:
+            if kw not in fields:
                 raise ValueError(f"Encountered unknown field: '{kw}' for '{cls}'")
-            kwargs[kw] = _parse_as(field_types[kw], parsed_kwargs[kw])
+            kwargs[kw] = _parse_field(fields[kw], parsed_kwargs[kw])
 
         return cls(*parsed_args, **kwargs)
 
@@ -152,6 +152,16 @@ def _value_to_str(annotation: Type, value) -> str:
     if is_number(annotation):
         return number_to_str(value)
     return str(value)
+
+
+def _parse_field(field: dataclasses.Field, exp: SExprList):
+    if get_meta(field, "kicad_kw_bool_empty"):
+        # It's an empty keyword boolean expression like `(fields_autoplaced)`.
+        # If we are here, then it's present so we set it to `True`.
+        if exp != [[]]:
+            raise ValueError(f"Expecting empty expression for {field.name}, got: {exp}")
+        return True
+    return _parse_as(field.type, exp)
 
 
 def _parse_as(annotation: Type, exp: SExprList):

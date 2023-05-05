@@ -12,6 +12,7 @@ from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
 from edea.types.common import Effects
+from edea.types.meta import make_meta as m
 from edea.types.config import PydanticConfig
 from edea.types.schematic.base import KicadSchExpr
 from edea.types.schematic.shapes import Arc, Bezier, Circle, Polyline, Rectangle
@@ -132,13 +133,6 @@ class SymbolGraphicText(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class IsPower(KicadSchExpr):
-    kicad_expr_tag_name: Literal["power"] = "power"
-    # holds no data, appears simply as "(power)" with parens.
-    # maybe there is a less ugly solution to this?
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class SubSymbol(KicadSchExpr):
     name: str
     polyline: list[Polyline] = field(default_factory=list)
@@ -159,7 +153,7 @@ class LibSymbol(KicadSchExpr):
     pin_numbers: PinNumberSettings = field(default_factory=PinNumberSettings)
     in_bom: bool = True
     on_board: bool = True
-    power: Optional[IsPower] = None
+    power: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     pin: list[Pin] = field(default_factory=list)
     symbol: list[SubSymbol] = field(default_factory=list)
     polyline: list[Polyline] = field(default_factory=list)

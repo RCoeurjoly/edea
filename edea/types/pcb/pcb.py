@@ -20,12 +20,11 @@ from edea.types.common import (
 )
 from edea.types.config import PydanticConfig
 from edea.types.pcb_layers import CanonicalLayerName
+from edea.types.meta import make_meta as m
 
 from .base import KicadPcbExpr
 from .common import (
     Group,
-    IsKeepEndLayers,
-    IsRemoveUnusedLayers,
     Layers,
     PositionIdentifier,
     Property,
@@ -173,13 +172,6 @@ class Segment(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class IsFreeVia(KicadPcbExpr):
-    kicad_expr_tag_name: Literal["free"] = "free"
-    # holds no data, appears simply as "(free)" with parens.
-    # maybe there is a less ugly solution to this?
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class Via(KicadPcbExpr):
     type: Optional[Literal["blind", "micro", "through"]] = "through"
     locked: bool = False
@@ -189,9 +181,9 @@ class Via(KicadPcbExpr):
     net: int = 0
     tstamp: UUID = field(default_factory=uuid4)
     layers: list[str] = field(default_factory=list)
-    remove_unused_layers: Optional[IsRemoveUnusedLayers] = None
-    keep_end_layers: Optional[IsKeepEndLayers] = None
-    free: Optional[IsFreeVia] = None
+    remove_unused_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    keep_end_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    free: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
 
     @root_validator(pre=True)
     def validate(cls, fields):
