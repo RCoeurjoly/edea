@@ -95,7 +95,7 @@ class PinNameSettings(KicadSchExpr):
     hide: bool = False
 
     @validator("hide", pre=True)
-    def accept_hide_string(s):
+    def accept_hide_string(cls, s):
         if s == "hide":
             return True
         return s
@@ -116,7 +116,7 @@ class PinNumberSettings(KicadSchExpr):
     hide: bool = False
 
     @validator("hide", pre=True)
-    def accept_hide_string(s):
+    def accept_hide_string(cls, s):
         if s == "hide":
             return True
         return s
