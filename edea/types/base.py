@@ -106,10 +106,14 @@ def _tuples_equal(annotation, t1, t2):
 
 
 def _unions_equal(v1, v2):
-    if type(v1) is not type(v2):
+    t = type(v1)
+    if t is not type(v2):
         return False
-    if is_number(type(v1)):
+    if is_number(t):
         return numbers_equal(v1, v2)
+    if t is tuple:
+        full = _get_full_type(v1)
+        return _tuples_equal(full, v1, v2)
     return v1 == v2
 
 
@@ -177,7 +181,8 @@ def _serialize_as(annotation: Type, value, in_quotes) -> SExprList:
         sub = sub_types[0]
         return [_value_to_str(sub, v, in_quotes) for v in value]
     if origin is Union or origin is UnionType:
-        return _serialize_as(type(value), value, in_quotes)
+        t = _get_full_type(value)
+        return _serialize_as(t, value, in_quotes)
 
     return [_value_to_str(annotation, value, in_quotes)]
 
@@ -307,3 +312,24 @@ def _is_parsable_as_layer(value: list):
         # A layer must be a list of 3 or 4 items.
         return False
     return value[0].isdigit() and value[1] in layer_names and value[2] in layer_types
+
+
+def _get_full_type(value: tuple | list) -> Type[tuple | list]:
+    """Get the full type with type args for tuples and lists"""
+    if type(value) is tuple:
+        sub_types: list[Type] = []
+        for v in value:
+            t = type(v)
+            if t is tuple or t is list:
+                t = _get_full_type(v)
+            sub_types.append(t)
+        return tuple[*sub_types]  # type: ignore
+    if type(value) is list:
+        if len(value) == 0:
+            return list
+        v = value[0]
+        t = type(v)
+        if t is tuple or t is list:
+            t = _get_full_type(v)
+        return list[t]
+    return type(value)
