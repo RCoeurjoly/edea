@@ -5,15 +5,16 @@ SPDX-License-Identifier: EUPL-1.2
 import glob
 import os
 import re
-import time
 from tempfile import NamedTemporaryFile, TemporaryDirectory
+import time
 from xml.etree.ElementTree import SubElement, register_namespace  # nosec
 
 import defusedxml.ElementTree as DET
 import pcbnew
 
-from ...draw.themes import ThemeName, get_theme
-from ...draw.themes.style import board_theme_to_style
+from edea.draw.themes import ThemeName, get_theme
+from edea.draw.themes.style import board_theme_to_style
+
 from .utils.kicad_version import KicadVersionError, is_kicad_v7
 from .utils.svg import empty_svg, remove_color, shrink_svg
 
