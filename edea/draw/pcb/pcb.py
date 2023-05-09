@@ -17,6 +17,41 @@ from ...draw.themes.style import board_theme_to_style
 from .utils.kicad_version import KicadVersionError, is_kicad_v7
 from .utils.svg import empty_svg, remove_color, shrink_svg
 
+# map to names used in the kicad theme json
+_to_css_map = {
+    "f_cu": "copper f",
+    "b_cu": "copper b",
+    "f_adhesive": "f_adhes",
+    "b_adhesive": "b_adhes",
+    "f_silkscreen": "f_silks",
+    "b_silkscreen": "b_silks",
+    "user_drawings": "dwgs_user",
+    "user_eco1": "eco1_user",
+    "user_eco2": "eco2_user",
+    "f_couryard": "f_crtyd",
+    "b_couryard": "b_crtyd",
+}
+
+
+def _set_plot_options(plot_control, tmpdir):
+    plot_options = plot_control.GetPlotOptions()
+    plot_options.SetOutputDirectory(tmpdir)
+    plot_options.SetPlotFrameRef(False)
+    plot_options.SetSketchPadLineWidth(pcbnew.FromMM(0.35))
+    plot_options.SetAutoScale(False)
+    plot_options.SetMirror(False)
+    plot_options.SetUseGerberAttributes(False)
+    plot_options.SetScale(1)
+    plot_options.SetUseAuxOrigin(True)
+    plot_options.SetNegative(False)
+    plot_options.SetPlotReference(True)
+    plot_options.SetPlotValue(True)
+    plot_options.SetPlotInvisibleText(False)
+    plot_options.SetDrillMarksType(pcbnew.DRILL_MARKS_NO_DRILL_SHAPE)
+
+    # remove solder mask from silk to be sure there is no silk on pads
+    plot_options.SetSubtractMaskFromSilk(True)
+
 
 def draw_pcb(content: str, theme: ThemeName) -> str:
     """
@@ -29,24 +64,9 @@ def draw_pcb(content: str, theme: ThemeName) -> str:
             input_file.write(content)
 
         board = pcbnew.LoadBoard(input_file.name)
-        plot_control = pcbnew.PLOT_CONTROLLER(board)
-        plot_options = plot_control.GetPlotOptions()
-        plot_options.SetOutputDirectory(tmpdir)
-        plot_options.SetPlotFrameRef(False)
-        plot_options.SetSketchPadLineWidth(pcbnew.FromMM(0.35))
-        plot_options.SetAutoScale(False)
-        plot_options.SetMirror(False)
-        plot_options.SetUseGerberAttributes(False)
-        plot_options.SetScale(1)
-        plot_options.SetUseAuxOrigin(True)
-        plot_options.SetNegative(False)
-        plot_options.SetPlotReference(True)
-        plot_options.SetPlotValue(True)
-        plot_options.SetPlotInvisibleText(False)
-        plot_options.SetDrillMarksType(pcbnew.DRILL_MARKS_NO_DRILL_SHAPE)
 
-        # remove solder mask from silk to be sure there is no silk on pads
-        plot_options.SetSubtractMaskFromSilk(True)
+        plot_control = pcbnew.PLOT_CONTROLLER(board)
+        _set_plot_options(plot_control, tmpdir)
 
         plot_plan = []
 
@@ -75,21 +95,6 @@ def draw_pcb(content: str, theme: ThemeName) -> str:
         new_tree = empty_svg()
         new_root = new_tree.getroot()
 
-    # map to names used in the kicad theme json
-    to_css_map = {
-        "f_cu": "copper f",
-        "b_cu": "copper b",
-        "f_adhesive": "f_adhes",
-        "b_adhesive": "b_adhes",
-        "f_silkscreen": "f_silks",
-        "b_silkscreen": "b_silks",
-        "user_drawings": "dwgs_user",
-        "user_eco1": "eco1_user",
-        "user_eco2": "eco2_user",
-        "f_couryard": "f_crtyd",
-        "b_couryard": "b_crtyd",
-    }
-
     theme_obj = get_theme(theme)
     style = board_theme_to_style(theme_obj.board)
 
@@ -104,8 +109,8 @@ def draw_pcb(content: str, theme: ThemeName) -> str:
 
     for layer_name, tree in layers:
         css_class = layer_name.lower()
-        if css_class in to_css_map:
-            css_class = to_css_map[css_class]
+        if css_class in _to_css_map:
+            css_class = _to_css_map[css_class]
         elif match := re.match(r"in(\d+)_cu", css_class):
             css_class = f"copper in{match[1]}"
 

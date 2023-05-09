@@ -19,10 +19,7 @@ def merge_bbox(left: Box, right: Box) -> Box:
     Merge bounding boxes in format (xmin, xmax, ymin, ymax)
     """
     return tuple(
-        [
-            f(_left, _right)
-            for _left, _right, f in zip(left, right, [min, max, min, max])
-        ]
+        f(_left, _right) for _left, _right, f in zip(left, right, [min, max, min, max])
     )
 
 
