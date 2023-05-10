@@ -13,10 +13,13 @@ from pydantic import ValidationError
 from pydantic.dataclasses import dataclass
 
 from edea.types.meta import get_meta
-from edea.types.number import is_number, number_to_str, numbers_equal
+from edea.types.number import is_number, number_to_str
 from edea.types.pcb_layers import layer_names, layer_types
 from edea.types.s_expr import QuotedStr, SExprList
 from edea.util import to_snake_case
+
+from . import _equality
+from ._type_utils import get_full_seq_type
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
 
@@ -78,65 +81,9 @@ class KicadExpr:
         for field in dataclasses.fields(self):
             v_self = getattr(self, field.name)
             v_other = getattr(other, field.name)
-            if not _fields_equal(field.type, v_self, v_other):
+            if not _equality.fields_equal(field.type, v_self, v_other):
                 return False
         return True
-
-
-def _fields_equal(annotation: Type, v1, v2):
-    origin = get_origin(annotation)
-    if is_number(annotation):
-        return numbers_equal(v1, v2)
-    elif origin is tuple:
-        return _tuples_equal(annotation, v1, v2)
-    elif origin is list:
-        return _lists_equal(annotation, v1, v2)
-    elif origin is Union or origin is UnionType:
-        return _unions_equal(v1, v2)
-    return v1 == v2
-
-
-def _lists_equal(annotation: Type[list], lst1, lst2):
-    sub_type = get_args(annotation)[0]
-    return all(_fields_equal(sub_type, v1, v2) for v1, v2 in zip(lst1, lst2))
-
-
-def _tuples_equal(annotation: Type[tuple], t1, t2):
-    sub_types = get_args(annotation)
-    for i, sub in enumerate(sub_types):
-        if not _fields_equal(sub, t1[i], t2[i]):
-            return False
-    return True
-
-
-def _unions_equal(v1, v2):
-    t = type(v1)
-    if t is not type(v2):
-        return False
-    if t is tuple or t is list:
-        t = _get_full_type(v1)
-    return _fields_equal(t, v1, v2)
-
-
-def _get_full_type(value: tuple | list) -> Type[tuple | list]:
-    """Get the full type with type args for tuples and lists"""
-    if type(value) is tuple:
-        sub_types: list[Type] = []
-        for v in value:
-            t = type(v)
-            if t is tuple or t is list:
-                t = _get_full_type(v)
-            sub_types.append(t)
-        return tuple[*sub_types]  # type: ignore
-    if type(value) is list:
-        if len(value) == 0:
-            return list
-        v = value[0]
-        t = type(v)
-        if t is tuple or t is list:
-            t = _get_full_type(v)
-        return list[t]
-    return type(value)
 
 
 def is_kicad_expr(t) -> bool:
@@ -203,7 +150,7 @@ def _serialize_as(annotation: Type, value, in_quotes) -> SExprList:
         sub = sub_types[0]
         return [_value_to_str(sub, v, in_quotes) for v in value]
     if origin is Union or origin is UnionType:
-        t = _get_full_type(value)
+        t = get_full_seq_type(value)
         return _serialize_as(t, value, in_quotes)
 
     return [_value_to_str(annotation, value, in_quotes)]
