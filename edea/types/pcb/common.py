@@ -69,14 +69,32 @@ class PositionIdentifier(KicadPcbExpr):
 
     @classmethod
     def from_list(cls, expr: SExprList) -> "PositionIdentifier":
-        assert isinstance(expr[0], str)
-        assert isinstance(expr[1], str)
+        if len(expr) < 2 or len(expr) > 4:
+            raise ValueError(
+                f"Expecting expression of length 2-4 got: {len(expr)=} {expr=}"
+            )
+
+        if (
+            not isinstance(expr[0], str)
+            or not isinstance(expr[1], str)
+            or (len(expr) > 2 and not isinstance(expr[2], str))
+            or (len(expr) > 3 and not isinstance(expr[3], str))
+        ):
+            raise ValueError(f"Expecting only atoms in expression got: {expr}")
+
         x = float(expr[0])
         y = float(expr[1])
-        unlocked = "unlocked" in expr
+
         angle = 0
-        if len(expr) > 2 and isinstance(expr[2], str) and expr[2] != "unlocked":
+        if len(expr) > 2 and expr[2] != "unlocked":
+            # the raise is unreachable, it's just a type assertion to keep the
+            # typechecker happy
+            if not isinstance(expr[2], str):
+                raise ValueError
             angle = float(expr[2])
+
+        unlocked = "unlocked" in expr
+
         return cls(x, y, angle, unlocked)
 
 
