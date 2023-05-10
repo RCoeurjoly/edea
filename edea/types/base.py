@@ -78,29 +78,33 @@ class KicadExpr:
         for field in dataclasses.fields(self):
             v_self = getattr(self, field.name)
             v_other = getattr(other, field.name)
-            origin = get_origin(field.type)
-            if is_number(field.type):
-                if not numbers_equal(v_self, v_other):
-                    return False
-            elif origin is tuple:
-                if not _tuples_equal(field.type, v_self, v_other):
-                    return False
-            elif origin is Union or origin is UnionType:
-                if not _unions_equal(v_self, v_other):
-                    return False
-            elif v_self != v_other:
+            if not _fields_equal(field.type, v_self, v_other):
                 return False
-
         return True
 
 
-def _tuples_equal(annotation, t1, t2):
+def _fields_equal(annotation: Type, v1, v2):
+    origin = get_origin(annotation)
+    if is_number(annotation):
+        return numbers_equal(v1, v2)
+    elif origin is tuple:
+        return _tuples_equal(annotation, v1, v2)
+    elif origin is list:
+        return _lists_equal(annotation, v1, v2)
+    elif origin is Union or origin is UnionType:
+        return _unions_equal(v1, v2)
+    return v1 == v2
+
+
+def _lists_equal(annotation: Type[list], lst1, lst2):
+    sub_type = get_args(annotation)[0]
+    return all(_fields_equal(sub_type, v1, v2) for v1, v2 in zip(lst1, lst2))
+
+
+def _tuples_equal(annotation: Type[tuple], t1, t2):
     sub_types = get_args(annotation)
     for i, sub in enumerate(sub_types):
-        if is_number(sub):
-            if not numbers_equal(t1[i], t2[i]):
-                return False
-        elif t1[i] != t2[i]:
+        if not _fields_equal(sub, t1[i], t2[i]):
             return False
     return True
 
@@ -109,12 +113,30 @@ def _unions_equal(v1, v2):
     t = type(v1)
     if t is not type(v2):
         return False
-    if is_number(t):
-        return numbers_equal(v1, v2)
-    if t is tuple:
-        full = _get_full_type(v1)
-        return _tuples_equal(full, v1, v2)
-    return v1 == v2
+    if t is tuple or t is list:
+        t = _get_full_type(v1)
+    return _fields_equal(t, v1, v2)
+
+
+def _get_full_type(value: tuple | list) -> Type[tuple | list]:
+    """Get the full type with type args for tuples and lists"""
+    if type(value) is tuple:
+        sub_types: list[Type] = []
+        for v in value:
+            t = type(v)
+            if t is tuple or t is list:
+                t = _get_full_type(v)
+            sub_types.append(t)
+        return tuple[*sub_types]  # type: ignore
+    if type(value) is list:
+        if len(value) == 0:
+            return list
+        v = value[0]
+        t = type(v)
+        if t is tuple or t is list:
+            t = _get_full_type(v)
+        return list[t]
+    return type(value)
 
 
 def is_kicad_expr(t) -> bool:
@@ -312,24 +334,3 @@ def _is_parsable_as_layer(value: list):
         # A layer must be a list of 3 or 4 items.
         return False
     return value[0].isdigit() and value[1] in layer_names and value[2] in layer_types
-
-
-def _get_full_type(value: tuple | list) -> Type[tuple | list]:
-    """Get the full type with type args for tuples and lists"""
-    if type(value) is tuple:
-        sub_types: list[Type] = []
-        for v in value:
-            t = type(v)
-            if t is tuple or t is list:
-                t = _get_full_type(v)
-            sub_types.append(t)
-        return tuple[*sub_types]  # type: ignore
-    if type(value) is list:
-        if len(value) == 0:
-            return list
-        v = value[0]
-        t = type(v)
-        if t is tuple or t is list:
-            t = _get_full_type(v)
-        return list[t]
-    return type(value)
