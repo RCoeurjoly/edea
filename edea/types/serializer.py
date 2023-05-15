@@ -1,6 +1,6 @@
 from edea.types.base import KicadExpr
 
-from .s_expr import SExprList
+from .s_expr import QuotedStr, SExprList
 
 
 def to_list(expr: KicadExpr) -> SExprList:
@@ -60,14 +60,22 @@ _special_chars = (
 )
 
 
-def from_list_to_str(expr: str | SExprList) -> str:
+def from_list_to_str(expr: str | QuotedStr | SExprList) -> str:
+    if isinstance(expr, QuotedStr):
+        return f'"{_escape(expr)}"'
     if isinstance(expr, str):
         if expr == "":
             return '""'
         elif any(c in expr for c in _special_chars):
             return f'"{_escape(expr)}"'
         return expr
-    return "(" + " ".join([from_list_to_str(lst) for lst in expr]) + ")"
+    # a lot of newlines to make sure we never exceed kicad's maximum line
+    # length
+    return "(" + "\n".join([from_list_to_str(lst) for lst in expr]) + ")"
+
+
+def to_str(expr: KicadExpr) -> str:
+    return from_list_to_str(to_list(expr))
 
 
 def _escape(s: str):

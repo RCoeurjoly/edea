@@ -52,7 +52,9 @@ class PaperOrientation(StrEnum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PaperUser(KicadExpr):
-    format: Literal["User"] = field(default="User", metadata=m("kicad_no_kw"))
+    format: Literal["User"] = field(
+        default="User", metadata=m("kicad_no_kw", "kicad_always_quotes")
+    )
     width: float = field(default=0, metadata=m("kicad_no_kw"))
     height: float = field(default=0, metadata=m("kicad_no_kw"))
     kicad_expr_tag_name: Literal["paper"] = "paper"
@@ -63,9 +65,12 @@ class PaperUser(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PaperStandard(KicadExpr):
-    format: PaperFormat = field(default=PaperFormat.A4, metadata=m("kicad_no_kw"))
+    format: PaperFormat = field(
+        default=PaperFormat.A4, metadata=m("kicad_no_kw", "kicad_always_quotes")
+    )
     orientation: PaperOrientation = field(
-        default=PaperOrientation.LANDSCAPE, metadata=m("kicad_no_kw")
+        default=PaperOrientation.LANDSCAPE,
+        metadata=m("kicad_no_kw", "kicad_omits_default"),
     )
     kicad_expr_tag_name: Literal["paper"] = "paper"
 
@@ -126,8 +131,8 @@ class Image(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class TitleBlockComment(KicadExpr):
-    number: int = 1
-    text: str = ""
+    number: int = field(default=1, metadata=m("kicad_no_kw"))
+    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     kicad_expr_tag_name: Literal["comment"] = "comment"
 
 

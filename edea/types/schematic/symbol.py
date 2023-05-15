@@ -47,22 +47,22 @@ class PinGraphicStyle(StrEnum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinNumber(KicadSchExpr):
-    text: str = field(default="", metadata=m("kicad_no_kw"))
+    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["number"] = "number"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinName(KicadSchExpr):
-    text: str = field(default="", metadata=m("kicad_no_kw"))
+    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["name"] = "name"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolProperty(KicadSchExpr):
-    key: str = ""
-    value: str = ""
+    key: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    value: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     id: int = 0
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     effects: Effects = field(default_factory=Effects)
@@ -71,16 +71,24 @@ class SymbolProperty(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinAlternate(KicadSchExpr):
-    name: str
-    electrical_type: PinElectricalType = PinElectricalType.UNSPECIFIED
-    graphic_style: PinGraphicStyle = PinGraphicStyle.LINE
+    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    electrical_type: PinElectricalType = field(
+        default=PinElectricalType.UNSPECIFIED, metadata=m("kicad_no_kw")
+    )
+    graphic_style: PinGraphicStyle = field(
+        default=PinGraphicStyle.LINE, metadata=m("kicad_no_kw")
+    )
     kicad_expr_tag_name: Literal["alternate"] = "alternate"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Pin(KicadSchExpr):
-    electrical_type: PinElectricalType = PinElectricalType.UNSPECIFIED
-    graphic_style: PinGraphicStyle = PinGraphicStyle.LINE
+    electrical_type: PinElectricalType = field(
+        default=PinElectricalType.UNSPECIFIED, metadata=m("kicad_no_kw")
+    )
+    graphic_style: PinGraphicStyle = field(
+        default=PinGraphicStyle.LINE, metadata=m("kicad_no_kw")
+    )
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     length: float = 0
     hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
@@ -126,7 +134,7 @@ class PinNumberSettings(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolGraphicText(KicadSchExpr):
-    text: str
+    text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     at: tuple[float, float, Literal[0, 90, 180, 270]]
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["text"] = "text"
@@ -134,7 +142,7 @@ class SymbolGraphicText(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SubSymbol(KicadSchExpr):
-    name: str
+    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     polyline: list[Polyline] = field(default_factory=list)
     text: list[SymbolGraphicText] = field(default_factory=list)
     rectangle: list[Rectangle] = field(default_factory=list)
@@ -147,7 +155,7 @@ class SubSymbol(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class LibSymbol(KicadSchExpr):
-    name: str
+    name: str = field(metadata=m("kicad_no_kw"))
     property: list[SymbolProperty] = field(default_factory=list)
     pin_names: PinNameSettings = field(
         default_factory=PinNameSettings, metadata=m("kicad_omits_default")
