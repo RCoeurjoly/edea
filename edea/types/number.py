@@ -29,3 +29,8 @@ def number_to_str(v: int | float | Decimal, *, precision=6):
 
     """
     return f"{v:.{precision}f}".rstrip("0").rstrip(".")
+
+
+def numbers_equal(n1: int | float | Decimal, n2: int | float | Decimal, *, precision=6):
+    p = precision
+    return number_to_str(n1, precision=p) == number_to_str(n2, precision=p)

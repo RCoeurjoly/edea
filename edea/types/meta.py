@@ -14,6 +14,8 @@ MetaTag = Literal[
     "kicad_kw_bool_empty",
     # KiCad omits this property completely when it's all default values.
     "kicad_omits_default",
+    # KiCad uses "yes" and "no" for this boolean
+    "kicad_bool_yes_no",
 ]
 
 

@@ -5,20 +5,20 @@ SPDX-License-Identifier: EUPL-1.2
 """
 
 from dataclasses import field
-from enum import Enum
 from typing import Literal, Optional
 
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
 from edea.types.common import Effects
-from edea.types.meta import make_meta as m
 from edea.types.config import PydanticConfig
+from edea.types.meta import make_meta as m
 from edea.types.schematic.base import KicadSchExpr
 from edea.types.schematic.shapes import Arc, Bezier, Circle, Polyline, Rectangle
+from edea.types.str_enum import StrEnum
 
 
-class PinElectricalType(str, Enum):
+class PinElectricalType(StrEnum):
     INPUT = "input"
     OUTPUT = "output"
     BIDIRECTIONAL = "bidirectional"
@@ -33,7 +33,7 @@ class PinElectricalType(str, Enum):
     NO_CONNECT = "no_connect"
 
 
-class PinGraphicStyle(str, Enum):
+class PinGraphicStyle(StrEnum):
     LINE = "line"
     INVERTED = "inverted"
     CLOCK = "clock"
@@ -47,14 +47,14 @@ class PinGraphicStyle(str, Enum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinNumber(KicadSchExpr):
-    text: str = ""
+    text: str = field(default="", metadata=m("kicad_no_kw"))
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["number"] = "number"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinName(KicadSchExpr):
-    text: str = ""
+    text: str = field(default="", metadata=m("kicad_no_kw"))
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["name"] = "name"
 
@@ -83,7 +83,7 @@ class Pin(KicadSchExpr):
     graphic_style: PinGraphicStyle = PinGraphicStyle.LINE
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     length: float = 0
-    hide: bool = False
+    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
     name: PinName = field(default_factory=PinName)
     number: PinNumber = field(default_factory=PinNumber)
     alternate: list[PinAlternate] = field(default_factory=list)
@@ -92,7 +92,7 @@ class Pin(KicadSchExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class PinNameSettings(KicadSchExpr):
     offset: Optional[float] = None
-    hide: bool = False
+    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
 
     @validator("hide", pre=True)
     def accept_hide_string(s):
@@ -113,7 +113,7 @@ class PinNameSettings(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinNumberSettings(KicadSchExpr):
-    hide: bool = False
+    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
 
     @validator("hide", pre=True)
     def accept_hide_string(s):
@@ -149,10 +149,14 @@ class SubSymbol(KicadSchExpr):
 class LibSymbol(KicadSchExpr):
     name: str
     property: list[SymbolProperty] = field(default_factory=list)
-    pin_names: PinNameSettings = field(default_factory=PinNameSettings)
-    pin_numbers: PinNumberSettings = field(default_factory=PinNumberSettings)
-    in_bom: bool = True
-    on_board: bool = True
+    pin_names: PinNameSettings = field(
+        default_factory=PinNameSettings, metadata=m("kicad_omits_default")
+    )
+    pin_numbers: PinNumberSettings = field(
+        default_factory=PinNumberSettings, metadata=m("kicad_omits_default")
+    )
+    in_bom: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
+    on_board: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
     power: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     pin: list[Pin] = field(default_factory=list)
     symbol: list[SubSymbol] = field(default_factory=list)
