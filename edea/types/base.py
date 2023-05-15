@@ -15,7 +15,7 @@ from pydantic.dataclasses import dataclass
 from edea.types.meta import get_meta
 from edea.types.number import numbers_equal, is_number, number_to_str
 from edea.types.pcb_layers import layer_names, layer_types
-from edea.types.s_expr import SExprList
+from edea.types.s_expr import QuotedStr, SExprList
 from edea.util import to_snake_case
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
@@ -131,9 +131,11 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
         if value == default:
             return []
 
+    in_quotes = get_meta(field, "kicad_always_quotes")
+
     if get_meta(field, "kicad_no_kw"):
         # It's just the value, not an expression, i.e. a positional argument.
-        return [_value_to_str(field.type, value)]
+        return [_value_to_str(field.type, value, in_quotes)]
 
     if get_meta(field, "kicad_kw_bool_empty"):
         # It's a keyword boolean but for some reason it's inside brackets, like
@@ -157,33 +159,36 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
             return []
         return [[field.name] + v.to_list() for v in value]
 
-    return [[field.name] + _serialize_as(field.type, value)]
+    return [[field.name] + _serialize_as(field.type, value, in_quotes)]
 
 
-def _serialize_as(annotation: Type, value) -> SExprList:
+def _serialize_as(annotation: Type, value, in_quotes) -> SExprList:
+    if is_kicad_expr(annotation):
+        return value.to_list()
     origin = get_origin(annotation)
     sub_types = get_args(annotation)
 
     if origin is tuple:
         r = []
         for i, sub in enumerate(sub_types):
-            r.append(_value_to_str(sub, value[i]))
+            r.append(_value_to_str(sub, value[i], in_quotes))
         return r
     elif origin is list:
         sub = sub_types[0]
-        return [_value_to_str(sub, v) for v in value]
-    elif is_kicad_expr(annotation):
-        return value.to_list()
+        return [_value_to_str(sub, v, in_quotes) for v in value]
     if origin is Union or origin is UnionType:
-        return _serialize_as(type(value), value)
+        return _serialize_as(type(value), value, in_quotes)
 
-    return [_value_to_str(annotation, value)]
+    return [_value_to_str(annotation, value, in_quotes)]
 
 
-def _value_to_str(annotation: Type, value) -> str:
+def _value_to_str(annotation: Type, value, in_quotes) -> str:
+    make_str = QuotedStr if in_quotes else str
+
     if is_number(annotation):
-        return number_to_str(value)
-    return str(value)
+        return make_str(number_to_str(value))
+
+    return make_str(value)
 
 
 def _parse_field(field: dataclasses.Field, exp: SExprList):

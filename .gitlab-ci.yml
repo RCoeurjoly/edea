@@ -49,6 +49,7 @@ test-long-running:
     - git submodule update --init
     - poetry run pytest -k 'parse_all_pcb'
     - poetry run pytest -k 'parse_all_types'
+    - poetry run pytest -k 'serialize_all'
 
 #publish:
 #  script:

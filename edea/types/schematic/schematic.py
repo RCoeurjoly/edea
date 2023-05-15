@@ -22,7 +22,7 @@ from edea.types.str_enum import StrEnum
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinAssignment(KicadSchExpr):
-    number: str
+    number: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     uuid: UUID = field(default_factory=uuid4)
     alternate: Optional[str] = None
     kicad_expr_tag_name: Literal["pin"] = "pin"
@@ -30,21 +30,21 @@ class PinAssignment(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class DefaultInstance(KicadSchExpr):
-    reference: str
+    reference: str = field(metadata=m("kicad_always_quotes"))
     unit: int = 1
-    value: str = ""
-    footprint: str = ""
+    value: str = field(default="", metadata=m("kicad_always_quotes"))
+    footprint: str = field(default="", metadata=m("kicad_always_quotes"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolUse(KicadSchExpr):
-    lib_id: str
+    lib_id: str = field(metadata=m("kicad_always_quotes"))
     lib_name: Optional[str] = None
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     unit: int = 1
     convert: Optional[int] = None
-    in_bom: bool = True
-    on_board: bool = True
+    in_bom: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
+    on_board: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
     mirror: Literal["x", "y", None] = None
     uuid: UUID = field(default_factory=uuid4)
     default_instance: Optional[DefaultInstance] = None
@@ -77,7 +77,7 @@ class NoConnect(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class LocalLabel(KicadSchExpr):
-    text: str
+    text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     at: tuple[float, float, Literal[0, 90, 180, 270]]
     fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     effects: Effects = field(default_factory=Effects)
@@ -96,7 +96,7 @@ class LabelShape(StrEnum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GlobalLabel(KicadSchExpr):
-    text: str
+    text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     at: tuple[float, float, Literal[0, 90, 180, 270]]
     shape: LabelShape = LabelShape.BIDIRECTIONAL
     effects: Effects = field(default_factory=Effects)
@@ -107,7 +107,7 @@ class GlobalLabel(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class HierarchicalLabel(KicadSchExpr):
-    text: str
+    text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     at: tuple[float, float, Literal[0, 90, 180, 270]]
     shape: LabelShape = LabelShape.BIDIRECTIONAL
     effects: Effects = field(default_factory=Effects)
@@ -122,8 +122,8 @@ class LibSymbols(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SheetPath(KicadSchExpr):
-    path: str = "/"
-    page: str = "1"
+    path: str = field(default="/", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    page: str = field(default="1", metadata=m("kicad_always_quotes"))
     kicad_expr_tag_name: Literal["path"] = "path"
 
 
@@ -134,11 +134,11 @@ class SheetInstances(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolInstancesPath(KicadSchExpr):
-    path: str
-    reference: str
+    path: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    reference: str = field(metadata=m("kicad_always_quotes"))
     unit: int
-    value: str
-    footprint: str = ""
+    value: str = field(metadata=m("kicad_always_quotes"))
+    footprint: str = field(metadata=m("kicad_always_quotes"))
     kicad_expr_tag_name: Literal["path"] = "path"
 
 
@@ -164,8 +164,10 @@ class FillColor(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SheetPin(KicadSchExpr):
-    name: str
-    shape: LabelShape = LabelShape.BIDIRECTIONAL
+    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    shape: LabelShape = field(
+        default=LabelShape.BIDIRECTIONAL, metadata=m("kicad_no_kw")
+    )
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
@@ -194,15 +196,15 @@ class BusEntry(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Bus(KicadSchExpr):
-    pts: Pts = field(default_factory=Pts)
+    pts: Pts = field(default_factory=Pts, metadata=m("kicad_omits_default"))
     stroke: Stroke = field(default_factory=Stroke)
     uuid: UUID = field(default_factory=uuid4)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class BusAlias(KicadSchExpr):
-    name: str
-    members: list[str] = field(default_factory=list)
+    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    members: list[str] = field(default_factory=list, metadata=m("kicad_always_quotes"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -239,7 +241,9 @@ class Schematic(KicadSchExpr):
     hierarchical_label: list[HierarchicalLabel] = field(default_factory=list)
     global_label: list[GlobalLabel] = field(default_factory=list)
     sheet_instances: SheetInstances = field(default_factory=SheetInstances)
-    symbol_instances: SymbolInstances = field(default_factory=SymbolInstances)
+    symbol_instances: SymbolInstances = field(
+        default_factory=SymbolInstances, metadata=m("kicad_omits_default")
+    )
     bus_alias: list[BusAlias] = field(default_factory=list)
 
     kicad_expr_tag_name: Literal["kicad_sch"] = "kicad_sch"

@@ -9,7 +9,7 @@ import re
 import edea.types.pcb  # noqa F401
 import edea.types.schematic  # noqa: F401
 
-from edea.types.s_expr import SExprList
+from edea.types.s_expr import QuotedStr, SExprList
 from edea.types.base import KicadExpr
 from edea.util import get_all_subclasses
 
@@ -41,7 +41,9 @@ def from_list(l_expr: SExprList) -> KicadExpr:
     return result
 
 
-def _tokens_to_list(tokens: tuple[str, ...], index: int) -> tuple[int, str | SExprList]:
+def _tokens_to_list(
+    tokens: tuple[str, ...], index: int
+) -> tuple[int, str | QuotedStr | SExprList]:
     if len(tokens) == index:
         raise EOFError("unexpected EOF")
     token = tokens[index]
@@ -68,6 +70,7 @@ def _tokens_to_list(tokens: tuple[str, ...], index: int) -> tuple[int, str | SEx
         token = token.removeprefix('"').removesuffix('"')
         token = token.replace("\\\\", "\\")
         token = token.replace('\\"', '"')
+        token = QuotedStr(token)
 
     return (index, token)
 

@@ -16,6 +16,8 @@ MetaTag = Literal[
     "kicad_omits_default",
     # KiCad uses "yes" and "no" for this boolean
     "kicad_bool_yes_no",
+    # KiCad always quotes this string property, no matter its contents
+    "kicad_always_quotes",
 ]
 
 
