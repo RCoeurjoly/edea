@@ -13,7 +13,7 @@ from pydantic import ValidationError
 from pydantic.dataclasses import dataclass
 
 from edea.types.meta import get_meta
-from edea.types.number import is_number, number_to_str
+from edea.types.number import numbers_equal, is_number, number_to_str
 from edea.types.pcb_layers import layer_names, layer_types
 from edea.types.s_expr import SExprList
 from edea.util import to_snake_case
@@ -80,19 +80,37 @@ class KicadExpr:
             v_other = getattr(other, field.name)
             origin = get_origin(field.type)
             if is_number(field.type):
-                if number_to_str(v_self) != number_to_str(v_other):
+                if not numbers_equal(v_self, v_other):
                     return False
             elif origin is tuple:
-                sub_types = get_args(field.type)
-                for i, sub in enumerate(sub_types):
-                    if is_number(sub):
-                        if number_to_str(v_self[i]) != number_to_str(v_other[i]):
-                            return False
-                    elif v_self[i] != v_other[i]:
-                        return False
+                if not _tuples_equal(field.type, v_self, v_other):
+                    return False
+            elif origin is Union or origin is UnionType:
+                if not _unions_equal(v_self, v_other):
+                    return False
             elif v_self != v_other:
                 return False
+
         return True
+
+
+def _tuples_equal(annotation, t1, t2):
+    sub_types = get_args(annotation)
+    for i, sub in enumerate(sub_types):
+        if is_number(sub):
+            if not numbers_equal(t1[i], t2[i]):
+                return False
+        elif t1[i] != t2[i]:
+            return False
+    return True
+
+
+def _unions_equal(v1, v2):
+    if type(v1) is not type(v2):
+        return False
+    if is_number(type(v1)):
+        return numbers_equal(v1, v2)
+    return v1 == v2
 
 
 def is_kicad_expr(t) -> bool:
@@ -100,7 +118,7 @@ def is_kicad_expr(t) -> bool:
 
 
 def _serialize_field(field: dataclasses.Field, value) -> SExprList:
-    if field.name == "kicad_expr_tag_name" or value is None or value == []:
+    if field.name == "kicad_expr_tag_name" or value is None:
         return []
 
     if get_meta(field, "kicad_omits_default"):
@@ -117,15 +135,26 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
         # It's just the value, not an expression, i.e. a positional argument.
         return [_value_to_str(field.type, value)]
 
+    if get_meta(field, "kicad_kw_bool_empty"):
+        # It's a keyword boolean but for some reason it's inside brackets, like
+        # `(fields_autoplaced)`
+        return [[field.name]] if value else []
+
     if get_meta(field, "kicad_kw_bool"):
         # It's a keyword who's presence signifies a boolean `True`, e.g. hide is
         # `hide=True`. Here we just return the keyword so just "hide" in our
         # example.
         return [field.name] if value else []
 
+    if get_meta(field, "kicad_bool_yes_no"):
+        # KiCad uses "yes" and "no" to indicate this boolean value
+        return [[field.name, "yes" if value else "no"]]
+
     origin = get_origin(field.type)
     sub_types = get_args(field.type)
     if origin is list and is_kicad_expr(sub_types[0]):
+        if value == []:
+            return []
         return [[field.name] + v.to_list() for v in value]
 
     return [[field.name] + _serialize_as(field.type, value)]
@@ -164,6 +193,8 @@ def _parse_field(field: dataclasses.Field, exp: SExprList):
         if exp != [[]]:
             raise ValueError(f"Expecting empty expression for {field.name}, got: {exp}")
         return True
+    if get_meta(field, "kicad_bool_yes_no"):
+        return exp == [["yes"]]
     return _parse_as(field.type, exp)
 
 
