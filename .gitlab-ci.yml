@@ -23,6 +23,7 @@ before_script:
 test:
   script:
     - poetry run pytest --cov=edea
+    - poetry run pytest --doctest-modules edea/types/number.py
 
 formatting:
   script:
