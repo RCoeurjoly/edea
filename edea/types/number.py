@@ -10,25 +10,31 @@ def number_to_str(v: int | float | Decimal, *, precision=6):
     """
     Prints the number in fixed point (default: 6 decimal places) and strips
     trailing zeros and decimal point. Never uses engineering notation like
-    3.134e-05.
+    3.134e-05. Prints -0.0 as 0.
 
-    >>> _number_to_str(1.000)
+    >>> number_to_str(1.000)
     '1'
 
-    >>> _number_to_str(1000)
+    >>> number_to_str(1000)
     '1000'
 
-    >>> _number_to_str(1.00010)
+    >>> number_to_str(1.00010)
     '1.0001'
 
-    >>> _number_to_str(2.342e-06)
+    >>> number_to_str(2.342e-06)
     '0.000002'
 
-    >>> _number_to_str(2.342e-06, precision=15)
+    >>> number_to_str(2.342e-06, precision=15)
     '0.000002342'
 
+    >>> number_to_str(-0.0)
+    '0'
+
     """
-    return f"{v:.{precision}f}".rstrip("0").rstrip(".")
+    s = f"{v:.{precision}f}".rstrip("0").rstrip(".")
+    if s == "-0":
+        return "0"
+    return s
 
 
 def numbers_equal(n1: int | float | Decimal, n2: int | float | Decimal, *, precision=6):
