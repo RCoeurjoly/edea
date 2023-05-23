@@ -32,13 +32,17 @@ class Layer(KicadPcbExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class Layers(KicadPcbExpr, UserList):
     """
-    This is constructed differently to other KicadExpr which are lists.
-    The `layers` field in the KiCad PCB file is as follows:
-    (layers
-        (0 "F.Cu" signal)
-        (31 "B.Cu" signal)
-        ...
-    )
+     This is constructed differently to other KicadExpr which are lists.
+     The `layers` field in the KiCad PCB file is as follows:
+
+    .. code-block:: text
+
+         (layers
+             (0 "F.Cu" signal)
+             (31 "B.Cu" signal)
+             ...
+         )
+
 
     We have two options either complicate the parser to handle this, or handle
     the construction of the list ourselves. We've chosen the latter.
@@ -167,7 +171,7 @@ class Hatch(str, Enum):
 @dataclass(config=PydanticConfig, eq=False)
 class Zone(KicadPcbExpr):
     """
-    :param layers: some zones have `layers` instead of `layer`.
+    layers: some zones have `layers` instead of `layer`.
         But it's always guaranteed to have all the layers in the `layers` list
         after initialization.
     """

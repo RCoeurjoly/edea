@@ -24,3 +24,6 @@ format.l
 /temp-test-output
 .hypothesis
 .ruff-cache
+
+# docs build
+/docs/_build

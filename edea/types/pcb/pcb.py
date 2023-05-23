@@ -11,25 +11,14 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import (
-    Image as BaseImage,
-    Paper,
-    PaperStandard,
-    TitleBlock,
-    VersionError,
-)
+from edea.types.common import Image as BaseImage
+from edea.types.common import Paper, PaperStandard, TitleBlock, VersionError
 from edea.types.config import PydanticConfig
-from edea.types.pcb_layers import CanonicalLayerName
 from edea.types.meta import make_meta as m
+from edea.types.pcb_layers import CanonicalLayerName
 
 from .base import KicadPcbExpr
-from .common import (
-    Group,
-    Layers,
-    PositionIdentifier,
-    Property,
-    Zone,
-)
+from .common import Group, Layers, PositionIdentifier, Property, Zone
 from .footprint import Footprint
 from .graphics import (
     GraphicalArc,

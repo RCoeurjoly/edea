@@ -8,9 +8,8 @@ import re
 # we need to import these unused modules for get_all_subclasses to work
 import edea.types.pcb  # noqa F401
 import edea.types.schematic  # noqa: F401
-
-from edea.types.s_expr import QuotedStr, SExprList
 from edea.types.base import KicadExpr
+from edea.types.s_expr import QuotedStr, SExprList
 from edea.util import get_all_subclasses
 
 all_classes: list[KicadExpr] = get_all_subclasses(KicadExpr)

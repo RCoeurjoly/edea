@@ -13,7 +13,7 @@ from pydantic import ValidationError
 from pydantic.dataclasses import dataclass
 
 from edea.types.meta import get_meta
-from edea.types.number import numbers_equal, is_number, number_to_str
+from edea.types.number import is_number, number_to_str, numbers_equal
 from edea.types.pcb_layers import layer_names, layer_types
 from edea.types.s_expr import QuotedStr, SExprList
 from edea.util import to_snake_case
