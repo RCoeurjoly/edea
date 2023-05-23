@@ -7,8 +7,8 @@ from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
 from edea.types.common import Effects, Pts, Stroke
-from edea.types.meta import make_meta as m
 from edea.types.config import PydanticConfig
+from edea.types.meta import make_meta as m
 from edea.types.pcb_layers import CanonicalLayerName
 
 from .common import (

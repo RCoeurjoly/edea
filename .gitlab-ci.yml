@@ -42,6 +42,16 @@ bandit:
   script:
     - poetry run bandit -r edea
 
+docs:
+  script:
+    # import annotations in all edea/types/pcb files to make sphinx type alias work
+    - find edea/types/pcb -type f -name "*.py" -exec sed -i '1i\from __future__ import annotations' {} +
+    - poetry run sphinx-build -b html docs docs/_build
+    - cp -r docs/_build public
+  artifacts:
+    paths:
+      - public
+
 test-long-running:
   only:
     - web
