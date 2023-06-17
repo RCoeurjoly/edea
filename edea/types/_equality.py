@@ -24,6 +24,8 @@ def fields_equal(annotation: Type, v1, v2):
 
 
 def _lists_equal(annotation: Type[list], lst1, lst2):
+    if len(lst1) != len(lst2):
+        return False
     sub_type = get_args(annotation)[0]
     return all(fields_equal(sub_type, v1, v2) for v1, v2 in zip(lst1, lst2))
 
