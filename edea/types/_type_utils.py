@@ -6,7 +6,19 @@ from typing import Type
 
 
 def get_full_seq_type(value: tuple | list) -> Type[tuple | list]:
-    """Get the full type with type args for tuples and lists"""
+    """
+    Get the full type with type args for tuples and lists
+
+    >>> get_full_seq_type([1, 2, 3])
+    list[int]
+
+    >>> get_full_seq_type((1, "a"))
+    tuple[int, str]
+
+    >>> get_full_seq_type([(1, 2, "a")])
+    list[tuple[int, int, str]]
+
+    """
     typ = type(value)
     if typ is tuple:
         sub_types: list[Type] = []
