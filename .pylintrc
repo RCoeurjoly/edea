@@ -100,6 +100,7 @@ disable=
         no-name-in-module,
         too-few-public-methods,
         too-many-arguments,
+        too-many-boolean-expressions,
         too-many-instance-attributes,
         too-many-locals,
         too-many-return-statements,

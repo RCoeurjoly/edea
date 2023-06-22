@@ -1,16 +1,17 @@
 from collections import UserList
 from dataclasses import field
-from enum import Enum
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
-from pydantic import root_validator, validator
+from pydantic import validator
 from pydantic.dataclasses import dataclass
 
 from edea.types.common import Effects, Pts, Stroke
 from edea.types.config import PydanticConfig
 from edea.types.meta import make_meta as m
 from edea.types.pcb_layers import CanonicalLayerName, LayerType
+from edea.types.s_expr import SExprList
+from edea.types.str_enum import StrEnum
 
 from .base import KicadPcbExpr
 
@@ -60,36 +61,47 @@ class Layers(KicadPcbExpr, UserList):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PositionIdentifier(KicadPcbExpr):
-    x: float = 0
-    y: float = 0
-    angle: Optional[float] = None
-    unlocked: bool = False
+    x: float = field(default=0, metadata=m("kicad_no_kw"))
+    y: float = field(default=0, metadata=m("kicad_no_kw"))
+    angle: float = field(default=0, metadata=m("kicad_no_kw", "kicad_omits_default"))
+    unlocked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["at"] = "at"
 
-    def __len__(self):
-        return 3 if self.angle is not None else 2
+    @classmethod
+    def from_list(cls, expr: SExprList) -> "PositionIdentifier":
+        if len(expr) < 2 or len(expr) > 4:
+            raise ValueError(
+                f"Expecting expression of length 2-4 got: {len(expr)=} {expr=}"
+            )
 
-    def __getitem__(self, index: int) -> Optional[float]:
-        return [self.x, self.y, self.angle][index]
+        if (
+            not isinstance(expr[0], str)
+            or not isinstance(expr[1], str)
+            or (len(expr) > 2 and not isinstance(expr[2], str))
+            or (len(expr) > 3 and not isinstance(expr[3], str))
+        ):
+            raise ValueError(f"Expecting only atoms in expression got: {expr}")
 
-    @root_validator(pre=True)
-    def validate(cls, args):
-        """If unlocked is passed to angle, set angle to None and unlocked to True."""
-        if "unlocked" in args.values() and args.get("angle", None) is not None:
-            args["angle"] = None
-            args["unlocked"] = True
-        return args
+        x = float(expr[0])
+        y = float(expr[1])
+
+        angle = 0
+        if len(expr) > 2 and expr[2] != "unlocked":
+            # the raise is unreachable, it's just a type assertion to keep the
+            # typechecker happy
+            if not isinstance(expr[2], str):
+                raise ValueError
+            angle = float(expr[2])
+
+        unlocked = "unlocked" in expr
+
+        return cls(x, y, angle, unlocked)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class ConnectionPads(KicadPcbExpr):
     type: Optional[Literal["yes", "no", "full", "thru_hole_only"]] = None
     clearance: float = 0
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class FilledAreaThickness(KicadPcbExpr):
-    no: bool
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -102,27 +114,27 @@ class ZoneKeepOutSettings(KicadPcbExpr):
     kicad_expr_tag_name: Literal["keepout"] = "keepout"
 
 
-class ZoneFillIslandRemovalMode(str, Enum):
+class ZoneFillIslandRemovalMode(StrEnum):
     Always = "0"
     Never = "1"
     MinimumArea = "2"
 
 
-class ZoneFillHatchSmoothingLevel(str, Enum):
+class ZoneFillHatchSmoothingLevel(StrEnum):
     No = "0"
     Fillet = "1"
     ArcMinimum = "2"
     ArcMaximum = "3"
 
 
-class ZoneFillHatchBorderAlgorithm(str, Enum):
+class ZoneFillHatchBorderAlgorithm(StrEnum):
     ZoneMinimumThickness = "zone_min_thickness"
     HatchThickness = "hatch_thickness"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class ZoneFillSettings(KicadPcbExpr):
-    yes: bool = False
+    yes: bool = field(default=False, metadata=m("kicad_kw_bool"))
     island_removal_mode: Optional[ZoneFillIslandRemovalMode] = None
     mode: Literal["hatch", "solid"] = "solid"
     thermal_gap: Optional[float] = None
@@ -162,7 +174,7 @@ class ZonePolygon(KicadPcbExpr):
     kicad_expr_tag_name: Literal["polygon"] = "polygon"
 
 
-class Hatch(str, Enum):
+class Hatch(StrEnum):
     Edge = "edge"
     Full = "full"
     None_ = "none"
@@ -176,7 +188,7 @@ class Zone(KicadPcbExpr):
         after initialization.
     """
 
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     net: int = 0
     tstamp: UUID = field(default_factory=uuid4)
     hatch: tuple[Hatch, float] = (Hatch.None_, 0)
@@ -190,7 +202,9 @@ class Zone(KicadPcbExpr):
     name: Optional[str] = None
     priority: int = 0
     net_name: str = ""
-    filled_areas_thickness: Optional[FilledAreaThickness] = None
+    filled_areas_thickness: bool = field(
+        default=True, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
+    )
     filled_polygon: list[ZoneFillPolygon] = field(default_factory=list)
     fill_segments: list[ZoneFillSegment] = field(default_factory=list)
 
@@ -208,21 +222,21 @@ class Zone(KicadPcbExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class Group(KicadPcbExpr):
     name: str
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     id: UUID = field(default_factory=uuid4)
     members: list[UUID] = field(default_factory=list)
 
 
-@dataclass(config=PydanticConfig)
+@dataclass(config=PydanticConfig, eq=False)
 class BaseTextBox(KicadPcbExpr):
     text: str
     layer: CanonicalLayerName
     tstmap: UUID
     effects: Effects
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     start: Optional[tuple[float, float]] = None
     end: Optional[tuple[float, float]] = None
     pts: Optional[Pts] = None
     angle: Optional[float] = None
     stroke: Optional[Stroke] = None
-    hide: bool = False
+    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))

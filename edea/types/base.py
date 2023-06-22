@@ -13,10 +13,13 @@ from pydantic import ValidationError
 from pydantic.dataclasses import dataclass
 
 from edea.types.meta import get_meta
-from edea.types.number import is_number, number_to_str, numbers_equal
+from edea.types.number import is_number, number_to_str
 from edea.types.pcb_layers import layer_names, layer_types
 from edea.types.s_expr import QuotedStr, SExprList
 from edea.util import to_snake_case
+
+from . import _equality
+from ._type_utils import get_full_seq_type
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
 
@@ -78,39 +81,9 @@ class KicadExpr:
         for field in dataclasses.fields(self):
             v_self = getattr(self, field.name)
             v_other = getattr(other, field.name)
-            origin = get_origin(field.type)
-            if is_number(field.type):
-                if not numbers_equal(v_self, v_other):
-                    return False
-            elif origin is tuple:
-                if not _tuples_equal(field.type, v_self, v_other):
-                    return False
-            elif origin is Union or origin is UnionType:
-                if not _unions_equal(v_self, v_other):
-                    return False
-            elif v_self != v_other:
+            if not _equality.fields_equal(field.type, v_self, v_other):
                 return False
-
         return True
-
-
-def _tuples_equal(annotation, t1, t2):
-    sub_types = get_args(annotation)
-    for i, sub in enumerate(sub_types):
-        if is_number(sub):
-            if not numbers_equal(t1[i], t2[i]):
-                return False
-        elif t1[i] != t2[i]:
-            return False
-    return True
-
-
-def _unions_equal(v1, v2):
-    if type(v1) is not type(v2):
-        return False
-    if is_number(type(v1)):
-        return numbers_equal(v1, v2)
-    return v1 == v2
 
 
 def is_kicad_expr(t) -> bool:
@@ -177,7 +150,8 @@ def _serialize_as(annotation: Type, value, in_quotes) -> SExprList:
         sub = sub_types[0]
         return [_value_to_str(sub, v, in_quotes) for v in value]
     if origin is Union or origin is UnionType:
-        return _serialize_as(type(value), value, in_quotes)
+        t = get_full_seq_type(value)
+        return _serialize_as(t, value, in_quotes)
 
     return [_value_to_str(annotation, value, in_quotes)]
 
