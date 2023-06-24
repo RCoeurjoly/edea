@@ -67,3 +67,8 @@ LayerType = Literal["jumper", "mixed", "power", "signal", "user"]
 
 layer_names = get_args(CanonicalLayerName)
 layer_types = get_args(LayerType)
+
+Layer = (
+    tuple[int, CanonicalLayerName, LayerType]
+    | tuple[int, CanonicalLayerName, LayerType, str]
+)

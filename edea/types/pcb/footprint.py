@@ -9,17 +9,8 @@ from pydantic.dataclasses import dataclass
 from edea.types.common import Effects, Pts, Stroke
 from edea.types.config import PydanticConfig
 from edea.types.meta import make_meta as m
-from edea.types.pcb_layers import CanonicalLayerName
 
-from .common import (
-    BaseTextBox,
-    Group,
-    KicadPcbExpr,
-    Layer,
-    PositionIdentifier,
-    Property,
-    Zone,
-)
+from .common import BaseTextBox, Group, KicadPcbExpr, PositionIdentifier, Property, Zone
 from .graphics import (
     GraphicalArc,
     GraphicalBezier,
@@ -31,6 +22,7 @@ from .graphics import (
     GraphicalText,
     GraphicalTextBox,
 )
+from .layer import CanonicalLayerName, Layer
 
 
 @dataclass(config=PydanticConfig, eq=False)
