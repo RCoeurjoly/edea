@@ -1,5 +1,5 @@
 """
-Dataclasses describing the contents of .kicad_sch files.
+Dataclasses describing the contents of .kicad_pcb files.
 
 SPDX-License-Identifier: EUPL-1.2
 """
@@ -15,10 +15,9 @@ from edea.types.common import Image as BaseImage
 from edea.types.common import Paper, PaperStandard, TitleBlock, VersionError
 from edea.types.config import PydanticConfig
 from edea.types.meta import make_meta as m
-from edea.types.pcb_layers import CanonicalLayerName
 
 from .base import KicadPcbExpr
-from .common import Group, Layers, PositionIdentifier, Property, Zone
+from .common import Group, PositionIdentifier, Property, Zone
 from .footprint import Footprint
 from .graphics import (
     GraphicalArc,
@@ -33,6 +32,7 @@ from .graphics import (
     GraphicalText,
     GraphicalTextBox,
 )
+from .layer import CanonicalLayerName, Layer
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -218,7 +218,7 @@ class Pcb(KicadPcbExpr):
     general: General = field(default_factory=General)
     title_block: Optional[TitleBlock] = None
     paper: Paper = field(default_factory=PaperStandard)
-    layers: Layers = field(default_factory=Layers)
+    layers: list[Layer] = field(default_factory=list)
     property: list[Property] = field(default_factory=list)
     net: list[Net] = field(default_factory=list)
     footprint: list[Footprint] = field(default_factory=list)

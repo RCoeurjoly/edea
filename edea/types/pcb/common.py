@@ -1,4 +1,3 @@
-from collections import UserList
 from dataclasses import field
 from typing import Literal, Optional
 from uuid import UUID, uuid4
@@ -9,54 +8,17 @@ from pydantic.dataclasses import dataclass
 from edea.types.common import Effects, Pts, Stroke
 from edea.types.config import PydanticConfig
 from edea.types.meta import make_meta as m
-from edea.types.pcb_layers import CanonicalLayerName, LayerType
 from edea.types.s_expr import SExprList
 from edea.types.str_enum import StrEnum
 
 from .base import KicadPcbExpr
+from .layer import CanonicalLayerName
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Property(KicadPcbExpr):
     key: str
     value: str = ""
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class Layer(KicadPcbExpr):
-    ordinal: int
-    name: CanonicalLayerName
-    type: LayerType = "user"
-    user_name: Optional[str] = None
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class Layers(KicadPcbExpr, UserList):
-    """
-     This is constructed differently to other KicadExpr which are lists.
-     The `layers` field in the KiCad PCB file is as follows:
-
-    .. code-block:: text
-
-         (layers
-             (0 "F.Cu" signal)
-             (31 "B.Cu" signal)
-             ...
-         )
-
-
-    We have two options either complicate the parser to handle this, or handle
-    the construction of the list ourselves. We've chosen the latter.
-    """
-
-    data: list[Layer] = field(default_factory=list)
-
-    def __init__(self, *args):
-        super().__init__()
-        # Setting the self.data to a list of Layer objects, will make instances
-        # of this class act as a list of Layer objects without the need to
-        # access the self.data attribute.
-        self.data = [Layer(*a) for a in args]
 
 
 @dataclass(config=PydanticConfig, eq=False)

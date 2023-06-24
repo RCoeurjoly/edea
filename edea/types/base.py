@@ -14,7 +14,6 @@ from pydantic.dataclasses import dataclass
 
 from edea.types.meta import get_meta
 from edea.types.number import is_number, number_to_str
-from edea.types.pcb_layers import layer_names, layer_types
 from edea.types.s_expr import QuotedStr, SExprList
 from edea.util import to_snake_case
 
@@ -236,8 +235,9 @@ def _split_args(expr: SExprList) -> tuple[list[str], dict]:
     args = []
     index = 0
     for arg in expr:
-        # Once we hit a list we start treating it as kwargs, UNLESS it's a
-        # layer list. The `layers` field in the KiCad PCB file is as follows:
+        # Once we hit a list we start treating it as kwargs, UNLESS the keyword
+        # would start with a number (which it can't in Python). This will be the
+        # case for layers expressions which look like:
         #
         # (layers
         #     (0 "F.Cu" signal)
@@ -245,8 +245,7 @@ def _split_args(expr: SExprList) -> tuple[list[str], dict]:
         #     ...
         # )
         #
-        # So we avoid treating it as a kwarg.
-        if isinstance(arg, list) and not _is_parsable_as_layer(arg):
+        if isinstance(arg, list) and not _starts_with_number(arg):
             break
         index += 1
         args.append(arg)
@@ -276,8 +275,10 @@ def _split_args(expr: SExprList) -> tuple[list[str], dict]:
     return (args, kwargs)
 
 
-def _is_parsable_as_layer(value: list):
-    if not isinstance(value, list) or not 3 <= len(value) <= 4:
-        # A layer must be a list of 3 or 4 items.
-        return False
-    return value[0].isdigit() and value[1] in layer_names and value[2] in layer_types
+def _starts_with_number(expr: SExprList) -> bool:
+    return (
+        len(expr) > 0
+        and isinstance(expr[0], str)
+        and len(expr[0]) > 0
+        and expr[0][0].isdigit()
+    )
