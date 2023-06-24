@@ -31,12 +31,12 @@ formatting:
 
 lint:
   script:
-    - poetry run ruff edea/types edea/draw tests
-    - poetry run pylint edea/types edea/draw
+    - poetry run ruff edea tests
+    - poetry run pylint edea
 
 typecheck:
   script:
-    - poetry run pyright edea/types edea/draw
+    - poetry run pyright edea
 
 bandit:
   script:
@@ -57,8 +57,7 @@ test-long-running:
     - web
   script:
     - git submodule update --init
-    - poetry run pytest -k 'parse_all_pcb'
-    - poetry run pytest -k 'parse_all_types'
+    # the serialize test parses and serializes so we just run that
     - poetry run pytest -k 'serialize_all'
 
 #publish:

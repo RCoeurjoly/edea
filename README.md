@@ -28,20 +28,19 @@ poetry shell
 pytest --cov-report term-missing --cov=edea
 
 # it's also possible to run a single test or a test class
-pytest -k TestMetadata
+pytest -k test_parse
 ```
 
 ### Long running test
 
-`test_parse_all` parses a lot of KiCad 6 files which can take a long time. It
-doesn't run by default if the files are not there but you can enable it by
-getting them.
+`test_parse_all` and `test_serialize_all` process a lot of KiCad files which
+can take a long time. They are skipped by default if the files are not there but
+you can enable them by retrieving the files.
 
 ```sh
-# the files are in the kicad6-test-files git submodule
+# the files are in the kicad6-test-files git submodule, retrieve them
 git submodule update --init
 # we'd like to parallelize the tests using pytest-xdist to speed things up
-poetry shell
-# run the tests, automatically detecting the optimal number of processes for your machine
-pytest -n auto
+# automatically detecting the optimal number of processes for your machine
+poetry run pytest -n auto
 ```
