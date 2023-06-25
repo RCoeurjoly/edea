@@ -1,5 +1,4 @@
 from dataclasses import field
-from enum import Enum
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
@@ -9,8 +8,17 @@ from pydantic.dataclasses import dataclass
 from edea.types.common import Effects, Pts, Stroke
 from edea.types.config import PydanticConfig
 from edea.types.meta import make_meta as m
+from edea.types.str_enum import StrEnum
 
-from .common import BaseTextBox, Group, KicadPcbExpr, PositionIdentifier, Property, Zone
+from .common import (
+    BaseTextBox,
+    Group,
+    KicadPcbExpr,
+    Net,
+    PositionIdentifier,
+    Property,
+    Zone,
+)
 from .graphics import (
     GraphicalArc,
     GraphicalBezier,
@@ -27,14 +35,16 @@ from .layer import CanonicalLayerName, Layer
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintAttributes(KicadPcbExpr):
-    type: Optional[Literal["smd", "through_hole"]] = "smd"
-    board_only: bool = False
-    exclude_from_pos_files: bool = False
-    exclude_from_bom: bool = False
+    type: Literal["smd", "through_hole"] | None = field(
+        default=None, metadata=m("kicad_no_kw")
+    )
+    board_only: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    exclude_from_pos_files: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    exclude_from_bom: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["attr"] = "attr"
 
-    @root_validator(pre=True)
-    def _root(cls, fields):
+    @classmethod
+    def from_list(cls, expr):
         """All the fields are optional for example:
         ```kicad_pcb
         (attr smd board_only exclude_from_pos_files exclude_from_bom)
@@ -45,21 +55,23 @@ class FootprintAttributes(KicadPcbExpr):
         to handle the case where the `type` field is omitted.
         Also, we handle the type conversion here for boolean fields.
         """
-        values = list(fields.values())
-        if values[0] in ["smd", "through_hole"]:
-            fields["type"] = values[0]
-        else:
-            fields["type"] = None
+        self = cls()
+
+        if len(expr) == 0:
+            return self
+
+        if expr[0] == "smd":
+            self.type = "smd"
+        elif expr[0] == "through_hole":
+            self.type = "through_hole"
 
         for key in ["board_only", "exclude_from_pos_files", "exclude_from_bom"]:
-            if key in values:
-                fields[key] = True
-            else:
-                fields[key] = False
-        return fields
+            setattr(self, key, key in expr)
+
+        return self
 
 
-class ZoneConnection(str, Enum):
+class ZoneConnection(StrEnum):
     NoConnection = "0"
     ThermalRelief = "1"
     SolidFill = "2"
@@ -67,23 +79,23 @@ class ZoneConnection(str, Enum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintText(KicadPcbExpr):
-    type: Literal["reference", "value", "user"] = "user"
-    text: str = field(default_factory=str)
-    locked: bool = False
+    type: Literal["reference", "value", "user"] = field(
+        default="user", metadata=m("kicad_no_kw")
+    )
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    text: str = field(default="", metadata=m("kicad_always_quotes", "kicad_no_kw"))
     at: PositionIdentifier = field(default_factory=PositionIdentifier)
-    layer: CanonicalLayerName = "F.Cu"
+    layer: CanonicalLayerName = field(default="F.Cu", metadata=m("kicad_always_quotes"))
+    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
     effects: Effects = field(default_factory=Effects)
     tstamp: UUID = field(default_factory=uuid4)
-    hide: bool = False
     kicad_expr_tag_name: Literal["fp_text"] = "fp_text"
 
     @root_validator(pre=True)
     def validate(cls, fields):
-        values = list(fields.values())
-        if "locked" in values and values[2] != "locked":
-            # if locked and text passed in reverse order
-            fields["locked"] = True
-            fields["text"] = values[2]
+        if fields["locked"] != "locked":
+            fields["text"] = fields["locked"]
+            fields["locked"] = False
         return fields
 
 
@@ -100,7 +112,7 @@ class FootprintLine(KicadPcbExpr):
     width: float
     tstamp: UUID
     stroke: Optional[Stroke] = None
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["fp_line"] = "fp_line"
 
 
@@ -113,7 +125,7 @@ class FootprintRectangle(KicadPcbExpr):
     tstamp: UUID
     stroke: Optional[Stroke] = None
     fill: Optional[Literal["solid", "none"]] = None
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["fp_rect"] = "fp_rect"
 
 
@@ -126,7 +138,7 @@ class FootprintCircle(KicadPcbExpr):
     tstamp: UUID
     stroke: Optional[Stroke] = None
     fill: Optional[Literal["solid", "none"]] = None
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["fp_circle"] = "fp_circle"
 
 
@@ -139,44 +151,54 @@ class FootprintArc(KicadPcbExpr):
     width: float
     tstamp: UUID
     stroke: Optional[Stroke] = None
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["fp_arc"] = "fp_arc"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintPolygon(KicadPcbExpr):
+    pts: Pts
     layer: CanonicalLayerName
     width: float
-    tstamp: UUID
     stroke: Optional[Stroke] = None
-    pts: Pts = field(default_factory=Pts)
     fill: Optional[Literal["solid", "none"]] = None
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["fp_poly"] = "fp_poly"
+    tstamp: UUID = field(default_factory=uuid4)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintCurve(KicadPcbExpr):
+    pts: Pts
     layer: CanonicalLayerName
     width: float
     tstamp: UUID
-    pts: Pts
     stroke: Optional[Stroke] = None
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["fp_curve"] = "fp_curve"
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class FootprintPadDrill(KicadPcbExpr):
-    oval: bool = False
-    diameter: Optional[float] = None
-    width: Optional[float] = None
-    offset: Optional[tuple[float, float]] = None
+class FootprintPadDrillOval(KicadPcbExpr):
+    oval: Literal["oval"] = field(default="oval", metadata=m("kicad_no_kw"))
+    diameter: float = field(default=0, metadata=m("kicad_no_kw"))
+    width: float = field(default=0, metadata=m("kicad_no_kw"))
+    offset: tuple[float, float] = field(
+        default=(0, 0), metadata=m("kicad_omits_default")
+    )
     kicad_expr_tag_name: Literal["drill"] = "drill"
 
-    @validator("oval", pre=True)
-    def validate_oval(cls, v):
-        return v == "oval"
+
+@dataclass(config=PydanticConfig, eq=False)
+class FootprintPadDrillRound(KicadPcbExpr):
+    diameter: float = field(default=0, metadata=m("kicad_no_kw"))
+    offset: tuple[float, float] = field(
+        default=(0, 0), metadata=m("kicad_omits_default")
+    )
+    kicad_expr_tag_name: Literal["drill"] = "drill"
+
+
+FootprintPadDrill = FootprintPadDrillOval | FootprintPadDrillRound
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -187,8 +209,6 @@ class FootprintPadOptions(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintPadPrimitives(KicadPcbExpr):
-    width: Optional[float] = None
-    fill: bool = False
     gr_poly: list[GraphicalPolygon] = field(default_factory=list)
     gr_line: list[GraphicalLine] = field(default_factory=list)
     gr_rect: list[GraphicalRectangle] = field(default_factory=list)
@@ -198,39 +218,47 @@ class FootprintPadPrimitives(KicadPcbExpr):
     bezier_to: list[GraphicalBezier] = field(default_factory=list)
     gr_bbox: list[GraphicalBoundingBox] = field(default_factory=list)
     gr_text_box: list[GraphicalTextBox] = field(default_factory=list)
+    width: Optional[float] = None
+    fill: bool = field(
+        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
+    )
 
     kicad_expr_tag_name: Literal["primitives"] = "primitives"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintPadRectDelta(KicadPcbExpr):
-    x: float
-    y: float
+    x: float = field(metadata=m("kicad_no_kw"))
+    y: float = field(metadata=m("kicad_no_kw"))
     kicad_expr_tag_name: Literal["rect_delta"] = "rect_delta"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintPad(KicadPcbExpr):
-    number: str
-    type: Literal["thru_hole", "smd", "connect", "connect", "np_thru_hole"]
-    shape: Literal["rect", "circle", "oval", "trapezoid", "roundrect", "custom"]
-    locked: bool = False
+    number: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    type: Literal["thru_hole", "smd", "connect", "connect", "np_thru_hole"] = field(
+        metadata=m("kicad_no_kw")
+    )
+    shape: Literal[
+        "rect", "circle", "oval", "trapezoid", "roundrect", "custom"
+    ] = field(metadata=m("kicad_no_kw"))
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     size: tuple[float, float] = (0, 0)
     tstamp: UUID = field(default_factory=uuid4)
     at: PositionIdentifier = field(default_factory=PositionIdentifier)
     drill: Optional[FootprintPadDrill] = None
     layers: list[str] = field(default_factory=list)
-    property: list[Property] = field(default_factory=list)
+    property: list[str] = field(default_factory=list)
     remove_unused_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     keep_end_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     roundrect_rratio: Optional[float] = None
-    chamfer: Optional[
-        list[Literal["top_left", "top_right", "bottom_left", "bottom_right"]]
-    ] = None
+    chamfer: list[
+        Literal["top_left", "top_right", "bottom_left", "bottom_right"]
+    ] = field(default_factory=list, metadata=m("kicad_omits_default"))
     chamfer_ratio: Optional[float] = None
-    net: Optional[tuple[int, str]] = None
-    pinfunction: Optional[str] = None
-    pintype: Optional[str] = None
+    net: Optional[Net] = None
+    pinfunction: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
+    pintype: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
     die_length: Optional[float] = None
     solder_mask_margin: Optional[float] = None
     solder_paste_margin: Optional[float] = None
@@ -240,7 +268,9 @@ class FootprintPad(KicadPcbExpr):
     thermal_width: Optional[float] = None
     thermal_gap: Optional[float] = None
     options: Optional[FootprintPadOptions] = None
-    primitives: Optional[FootprintPadPrimitives] = None
+    primitives: FootprintPadPrimitives = field(
+        default_factory=FootprintPadPrimitives, metadata=m("kicad_omits_default")
+    )
     kicad_expr_tag_name: Literal["pad"] = "pad"
     # UNDOCUMENTED: `rect_delta`
     rect_delta: Optional[FootprintPadRectDelta] = None
@@ -259,12 +289,18 @@ class FootprintModelCoord(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Footprint3dModel(KicadPcbExpr):
-    file: str
-    hide: bool = False
+    file: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
     # UNDOCUMENTED: `offset`
-    offset: Optional[FootprintModelCoord] = field(default_factory=FootprintModelCoord)
-    scale: Optional[FootprintModelCoord] = field(default_factory=FootprintModelCoord)
-    rotate: Optional[FootprintModelCoord] = field(default_factory=FootprintModelCoord)
+    offset: FootprintModelCoord = field(
+        default_factory=FootprintModelCoord, metadata=m("kicad_omits_default")
+    )
+    scale: FootprintModelCoord = field(
+        default_factory=FootprintModelCoord, metadata=m("kicad_omits_default")
+    )
+    rotate: FootprintModelCoord = field(
+        default_factory=FootprintModelCoord, metadata=m("kicad_omits_default")
+    )
     # UNDOCUMENTED: `opacity`
     opacity: Optional[float] = None
 
@@ -278,9 +314,9 @@ AutoplaceCost = Literal["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
 @dataclass(config=PydanticConfig, eq=False)
 class Footprint(KicadPcbExpr):
-    library_link: str
-    locked: bool = False
-    placed: bool = False
+    library_link: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    placed: bool = field(default=False, metadata=m("kicad_kw_bool"))
     layer: CanonicalLayerName = "F.Cu"
     tedit: Optional[str] = None
     model: list[Footprint3dModel] = field(default_factory=list)

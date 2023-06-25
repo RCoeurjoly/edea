@@ -138,11 +138,13 @@ class TitleBlockComment(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class TitleBlock(KicadExpr):
-    title: str = ""
-    date: str = ""
-    rev: str = ""
-    company: str = ""
-    comment: list[TitleBlockComment] = field(default_factory=list)
+    title: str = field(default="", metadata=m("kicad_omits_default"))
+    date: str = field(default="", metadata=m("kicad_omits_default"))
+    rev: str = field(default="", metadata=m("kicad_omits_default"))
+    company: str = field(default="", metadata=m("kicad_omits_default"))
+    comment: list[TitleBlockComment] = field(
+        default_factory=list, metadata=m("kicad_omits_default")
+    )
 
 
 class JustifyHoriz(StrEnum):

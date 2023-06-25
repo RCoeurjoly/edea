@@ -1,5 +1,7 @@
 from typing import Literal, get_args
 
+from edea.types.s_expr import SExprList, QuotedStr
+
 CanonicalLayerName = Literal[
     "F.Cu",
     "In1.Cu",
@@ -72,3 +74,10 @@ Layer = (
     tuple[int, CanonicalLayerName, LayerType]
     | tuple[int, CanonicalLayerName, LayerType, str]
 )
+
+
+def layer_to_list(layer: Layer) -> SExprList:
+    lst = [str(layer[0]), QuotedStr(layer[1]), layer[2]]
+    if len(layer) > 3:
+        lst.append(QuotedStr(layer[3]))  # type: ignore
+    return lst

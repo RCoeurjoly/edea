@@ -15,7 +15,7 @@ from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalText(KicadPcbExpr):
-    text: str = ""
+    text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     at: PositionIdentifier = field(default_factory=PositionIdentifier)
     effects: Effects = field(default_factory=Effects)
@@ -80,10 +80,10 @@ class GraphicalArc(KicadPcbExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalPolygon(KicadPcbExpr):
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    pts: Pts = field(default_factory=Pts)
     width: float = 0
     layer: Optional[CanonicalLayerName] = None
     tstamp: Optional[UUID] = None
-    pts: Pts = field(default_factory=Pts)
     fill: Optional[Literal["solid", "yes", "none"]] = None
     kicad_expr_tag_name: Literal["gr_poly"] = "gr_poly"
 
@@ -91,9 +91,9 @@ class GraphicalPolygon(KicadPcbExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalBezier(KicadPcbExpr):
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    width: float = 0
     pts: Pts = field(default_factory=Pts)
     layer: Optional[CanonicalLayerName] = None
+    width: float = 0
     tstamp: Optional[UUID] = None
     kicad_expr_tag_name: Literal["bezier"] = "bezier"
 
