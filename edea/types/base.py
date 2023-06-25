@@ -6,8 +6,9 @@ SPDX-License-Identifier: EUPL-1.2
 """
 
 import dataclasses
+import inspect
 from types import UnionType
-from typing import Literal, Type, TypeVar, Union, get_args, get_origin
+from typing import Any, Callable, Literal, Type, TypeVar, Union, get_args, get_origin
 
 from pydantic import ValidationError
 from pydantic.dataclasses import dataclass
@@ -21,6 +22,16 @@ from . import _equality
 from ._type_utils import get_full_seq_type
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
+
+CustomSerializerMethod = Callable[[Any], list[SExprList]]
+
+
+def custom_serializer(field_name: str):
+    def decorator(fn):
+        fn.edea_custom_serializer_field_name = field_name
+        return fn
+
+    return decorator
 
 
 @dataclass
@@ -64,10 +75,23 @@ class KicadExpr:
 
     def to_list(self) -> SExprList:
         sexpr = []
+        custom_serializers = self._get_custom_serializers()
         for field in dataclasses.fields(self):
             value = getattr(self, field.name)
-            sexpr += _serialize_field(field, value)
+            if field.name in custom_serializers:
+                serializer = custom_serializers[field.name]
+                sexpr += serializer(value)
+            else:
+                sexpr += _serialize_field(field, value)
         return sexpr
+
+    def _get_custom_serializers(self) -> dict[str, CustomSerializerMethod]:
+        custom_serializers = {}
+        members = inspect.getmembers(self)
+        for _, method in members:
+            if hasattr(method, "edea_custom_serializer_field_name"):
+                custom_serializers[method.edea_custom_serializer_field_name] = method
+        return custom_serializers
 
     @classmethod
     def check_version(cls, v):
@@ -147,6 +171,14 @@ def _serialize_as(annotation: Type, value, in_quotes) -> SExprList:
         return r
     elif origin is list:
         sub = sub_types[0]
+        sub_origin = get_origin(sub)
+        if (
+            sub_origin is tuple
+            or sub_origin is list
+            or sub_origin is Union
+            or sub_origin is UnionType
+        ):
+            return [_serialize_as(sub, v, in_quotes) for v in value]
         return [_value_to_str(sub, v, in_quotes) for v in value]
     if origin is Union or origin is UnionType:
         t = get_full_seq_type(value)
@@ -160,6 +192,9 @@ def _value_to_str(annotation: Type, value, in_quotes) -> str:
 
     if is_number(annotation):
         return make_str(number_to_str(value))
+
+    if annotation is bool:
+        return make_str("true" if value else "false")
 
     return make_str(value)
 
@@ -215,6 +250,9 @@ def _parse_as(annotation: Type, exp: SExprList):
     if origin is Literal:
         return exp[0][0]
 
+    if annotation is bool:
+        return exp[0][0] == "true"
+
     return annotation(exp[0][0])
 
 
@@ -261,7 +299,7 @@ def _split_args(expr: SExprList) -> tuple[list[str], dict]:
         else:
             # treat positional args after keyword args as booleans
             # e.g. instance of 'hide' becomes hide=True
-            kwarg_list.append((kwarg, [True]))
+            kwarg_list.append((kwarg, ["true"]))
 
     # Turn a list of kwargs into a kwarg dict collecting duplicates
     # into lists.

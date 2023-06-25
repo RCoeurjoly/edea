@@ -17,8 +17,8 @@ from .layer import CanonicalLayerName
 
 @dataclass(config=PydanticConfig, eq=False)
 class Property(KicadPcbExpr):
-    key: str
-    value: str = ""
+    key: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    value: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -62,7 +62,9 @@ class PositionIdentifier(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class ConnectionPads(KicadPcbExpr):
-    type: Optional[Literal["yes", "no", "full", "thru_hole_only"]] = None
+    type: Literal["yes", "no", "full", "thru_hole_only", None] = field(
+        default=None, metadata=m("kicad_no_kw")
+    )
     clearance: float = 0
 
 
@@ -98,7 +100,9 @@ class ZoneFillHatchBorderAlgorithm(StrEnum):
 class ZoneFillSettings(KicadPcbExpr):
     yes: bool = field(default=False, metadata=m("kicad_kw_bool"))
     island_removal_mode: Optional[ZoneFillIslandRemovalMode] = None
-    mode: Literal["hatch", "solid"] = "solid"
+    mode: Literal["hatch", "solid"] = field(
+        default="solid", metadata=m("kicad_omits_default")
+    )
     thermal_gap: Optional[float] = None
     thermal_bridge_width: Optional[float] = None
     smoothing: Optional[Literal["chamfer", "fillet"]] = None
@@ -118,8 +122,8 @@ class ZoneFillSettings(KicadPcbExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class ZoneFillPolygon(KicadPcbExpr):
     layer: CanonicalLayerName
-    pts: Pts = field(default_factory=Pts)
     island: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    pts: Pts = field(default_factory=Pts)
     kicad_expr_tag_name: Literal["filled_polygon"] = "filled_polygon"
 
 
@@ -183,7 +187,7 @@ class Zone(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Group(KicadPcbExpr):
-    name: str
+    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     id: UUID = field(default_factory=uuid4)
     members: list[UUID] = field(default_factory=list)
@@ -202,3 +206,9 @@ class BaseTextBox(KicadPcbExpr):
     angle: Optional[float] = None
     stroke: Optional[Stroke] = None
     hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class Net(KicadPcbExpr):
+    number: int = field(metadata=m("kicad_no_kw"))
+    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))

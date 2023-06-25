@@ -4,20 +4,22 @@ Dataclasses describing the contents of .kicad_pcb files.
 SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
-from enum import Enum
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
+from edea.types.base import custom_serializer
 from edea.types.common import Image as BaseImage
 from edea.types.common import Paper, PaperStandard, TitleBlock, VersionError
 from edea.types.config import PydanticConfig
 from edea.types.meta import make_meta as m
+from edea.types.s_expr import SExprList
+from edea.types.str_enum import StrEnum
 
 from .base import KicadPcbExpr
-from .common import Group, PositionIdentifier, Property, Zone
+from .common import Group, Net, PositionIdentifier, Property, Zone
 from .footprint import Footprint
 from .graphics import (
     GraphicalArc,
@@ -32,7 +34,7 @@ from .graphics import (
     GraphicalText,
     GraphicalTextBox,
 )
-from .layer import CanonicalLayerName, Layer
+from .layer import CanonicalLayerName, Layer, layer_to_list
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -41,41 +43,44 @@ class General(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class StackUpLayerThickness(KicadPcbExpr):
-    value: float
-    locked: bool = False
+class StackupLayerThickness(KicadPcbExpr):
+    value: float = field(metadata=m("kicad_no_kw"))
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    kicad_expr_tag_name: Literal["thickness"] = "thickness"
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class StackUpLayer(KicadPcbExpr):
-    name: Optional[str]
+class StackupLayer(KicadPcbExpr):
+    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     # This is an arbitrary string, not a `CanonicalLayer`.
     type: str
-    color: Optional[str] = None
-    thickness: Optional[StackUpLayerThickness] = None
-    material: Optional[str] = None
+    color: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
+    thickness: Optional[StackupLayerThickness] = None
+    material: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
     epsilon_r: Optional[float] = None
     loss_tangent: Optional[float] = None
     kicad_expr_tag_name: Literal["layer"] = "layer"
 
-    @validator("name", pre=True)
-    def validate_name(cls, v):
-        if v is None:
-            return "dielectric"
-        return None
-
 
 @dataclass(config=PydanticConfig, eq=False)
 class Stackup(KicadPcbExpr):
-    layer: list[StackUpLayer] = field(default_factory=list)
-    copper_finish: Optional[str] = "None"
-    dielectric_constraints: Optional[Literal["yes", "no"]] = None
-    edge_connector: Optional[Literal["yes", "bevelled"]] = None
-    castellated_pads: Optional[Literal["yes"]] = None
-    edge_plating: Optional[Literal["yes"]] = None
+    layer: list[StackupLayer] = field(default_factory=list)
+    copper_finish: Optional[str] = None
+    dielectric_constraints: bool = field(
+        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
+    )
+    edge_connector: Literal["yes", "bevelled", None] = field(
+        default=None, metadata=m("kicad_omits_default")
+    )
+    castellated_pads: bool = field(
+        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
+    )
+    edge_plating: bool = field(
+        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
+    )
 
 
-class PlotOutputFormat(str, Enum):
+class PlotOutputFormat(StrEnum):
     GERBER = "0"
     POSTSCRIPT = "1"
     SVG = "2"
@@ -86,31 +91,31 @@ class PlotOutputFormat(str, Enum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PlotSettings(KicadPcbExpr):
-    layerselection: str
-    disableapertmacros: bool
-    usegerberextensions: bool
-    usegerberattributes: bool
-    usegerberadvancedattributes: bool
-    creategerberjobfile: bool
-    svgprecision: int
-    excludeedgelayer: bool
-    plotframeref: bool
-    viasonmask: bool
-    mode: Literal[1, 2]
-    useauxorigin: bool
-    hpglpennumber: int
-    hpglpenspeed: int
-    hpglpendiameter: float
-    dxfpolygonmode: bool
-    dxfimperialunits: bool
-    dxfusepcbnewfont: bool
-    psnegative: bool
-    psa4output: bool
-    plotreference: bool
-    plotvalue: bool
-    plotinvisibletext: bool
-    sketchpadsonfab: bool
-    subtractmaskfromsilk: bool
+    layerselection: str = "0x00010fc_ffffffff"
+    disableapertmacros: bool = False
+    usegerberextensions: bool = False
+    usegerberattributes: bool = True
+    usegerberadvancedattributes: bool = True
+    creategerberjobfile: bool = True
+    svgprecision: int = 4
+    excludeedgelayer: bool = False
+    plotframeref: bool = False
+    viasonmask: bool = False
+    mode: Literal[1, 2] = 1
+    useauxorigin: bool = False
+    hpglpennumber: int = 1
+    hpglpenspeed: int = 20
+    hpglpendiameter: float = 15.0
+    dxfpolygonmode: bool = True
+    dxfimperialunits: bool = True
+    dxfusepcbnewfont: bool = True
+    psnegative: bool = False
+    psa4output: bool = False
+    plotreference: bool = True
+    plotvalue: bool = True
+    plotinvisibletext: bool = False
+    sketchpadsonfab: bool = False
+    subtractmaskfromsilk: bool = False
     outputformat: PlotOutputFormat = PlotOutputFormat.GERBER
     svguseinch: bool = False
     mirror: bool = False
@@ -133,25 +138,27 @@ class PlotSettings(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Setup(KicadPcbExpr):
-    pcbplotparams: PlotSettings
     stackup: Optional[Stackup] = None
     pad_to_mask_clearance: float = 0.0
-    solder_mask_min_width: Optional[float] = 0.0
-    pad_to_paste_clearance: Optional[float] = 0.0
-    pad_to_paste_clearance_ratio: Optional[float] = 100.0
-    aux_axis_origin: Optional[tuple[float, float]] = (0.0, 0.0)
-    grid_origin: Optional[tuple[float, float]] = (0.0, 0.0)
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class Net(KicadPcbExpr):
-    oridinal: int
-    name: str
+    solder_mask_min_width: float = field(default=0.0, metadata=m("kicad_omits_default"))
+    pad_to_paste_clearance: float = field(
+        default=0.0, metadata=m("kicad_omits_default")
+    )
+    pad_to_paste_clearance_ratio: float = field(
+        default=100.0, metadata=m("kicad_omits_default")
+    )
+    aux_axis_origin: tuple[float, float] = field(
+        default=(0.0, 0.0), metadata=m("kicad_omits_default")
+    )
+    grid_origin: tuple[float, float] = field(
+        default=(0.0, 0.0), metadata=m("kicad_omits_default")
+    )
+    pcbplotparams: PlotSettings = field(default_factory=PlotSettings)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Segment(KicadPcbExpr):
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     start: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
     width: float = 0.0
@@ -162,8 +169,10 @@ class Segment(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Via(KicadPcbExpr):
-    type: Optional[Literal["blind", "micro", "through"]] = "through"
-    locked: bool = False
+    type: Literal["blind", "micro", "through"] = field(
+        default="through", metadata=m("kicad_no_kw", "kicad_omits_default")
+    )
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     at: tuple[float, float] = (0, 0)
     size: float = 0
     drill: float = 0
@@ -185,7 +194,7 @@ class Via(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Arc(KicadPcbExpr):
-    locked: bool = False
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     start: tuple[float, float] = (0, 0)
     mid: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
@@ -197,7 +206,7 @@ class Arc(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Target(KicadPcbExpr):
-    type: str
+    type: str = field(metadata=m("kicad_no_kw"))
     at: PositionIdentifier
     size: float
     width: float
@@ -212,13 +221,20 @@ class Image(BaseImage, KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Pcb(KicadPcbExpr):
-    setup: Setup
     version: Literal["20211014"] = "20211014"
     generator: str = "edea"
     general: General = field(default_factory=General)
     title_block: Optional[TitleBlock] = None
     paper: Paper = field(default_factory=PaperStandard)
-    layers: list[Layer] = field(default_factory=list)
+
+    layers: list[Layer] = field(default_factory=list, metadata=m("kicad_always_quotes"))
+
+    @custom_serializer("layers")
+    def _layers_to_list(self, layers: list[Layer]) -> list[SExprList]:
+        lst: SExprList = ["layers"]
+        return [lst + [layer_to_list(layer) for layer in layers]]
+
+    setup: Setup = field(default_factory=Setup)
     property: list[Property] = field(default_factory=list)
     net: list[Net] = field(default_factory=list)
     footprint: list[Footprint] = field(default_factory=list)
