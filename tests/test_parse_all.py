@@ -29,7 +29,7 @@ for root, dirs, files in os.walk(kicad_folder):
 
 
 @pytest.mark.parametrize("sch_path", kicad_sch_files)
-def test_parse_all_types(sch_path):
+def test_parse_all_sch(sch_path):
     with open(sch_path, encoding="utf-8") as f:
         try:
             sch = from_str(f.read())
