@@ -19,11 +19,12 @@ cache:
 before_script:
   - python3 --version # For debugging
   - poetry install
+  - pip install nox
 
 test:
   script:
-    - poetry run pytest --cov=edea
-    - poetry run pytest --doctest-modules edea/types
+    - nox -- --cov=edea
+    - nox -- --doctest-modules edea/types
 
 formatting:
   script:
@@ -58,8 +59,7 @@ test-long-running:
   script:
     - git submodule update --init
     # the serialize test parses and serializes so we just run that
-    - poetry run pytest -k 'serialize_all'
-
+    - nox -- -k 'serialize_all'
 #publish:
 #  script:
 #    - poetry build
