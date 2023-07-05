@@ -59,7 +59,7 @@ test-long-running:
   script:
     - git submodule update --init
     # the serialize test parses and serializes so we just run that
-    - nox -- -k 'serialize_all'
+    - poetry run pytest -k 'serialize_all'
 #publish:
 #  script:
 #    - poetry build
