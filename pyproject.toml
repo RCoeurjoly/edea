@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "edea"
-version = "0.1.0"
+version = "0.2.2"
 description = "KiCAD file format parser and tools"
 authors = ["Elen Eisendle <ln@calcifer.ee>", "Zoé Bőle <zoe@astech.hu>", "Kaspar Emanuel <kaspar@kitspace.org>", "Abdulrhmn Ghanem <abdoghanem160@gmail.com>"]
 license = "EUPL-1.2"

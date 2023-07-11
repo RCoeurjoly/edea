@@ -52,6 +52,8 @@ docs:
   artifacts:
     paths:
       - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 test-long-running:
   only:
@@ -60,26 +62,16 @@ test-long-running:
     - git submodule update --init
     # the serialize test parses and serializes so we just run that
     - poetry run pytest -k 'serialize_all'
-#publish:
-#  script:
-#    - poetry build
-#    - poetry config repositories.gitlab ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
-#    - poetry config http-basic.gitlab gitlab-ci-token ${CI_JOB_TOKEN}
-#    - poetry publish -r gitlab
-#  artifacts:
-#    paths:
-#      - dist/*.whl
-#  rules:
-#    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-#pages:
-#  script:
-#    - pip install sphinx sphinx-rtd-theme
-#    - cd doc
-#    - make html
-#    - mv build/html/ ../public/
-#  artifacts:
-#    paths:
-#      - public
-#  rules:
-#    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+release:
+  stage: deploy
+  script:
+    - poetry build
+    - poetry config repositories.gitlab ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+    - poetry config http-basic.gitlab gitlab-ci-token ${CI_JOB_TOKEN}
+    - poetry publish -r gitlab
+  artifacts:
+    paths:
+      - dist/*.whl
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release"
