@@ -27,7 +27,7 @@ def get_full_seq_type(value: tuple | list) -> Type[tuple | list]:
             if sub is tuple or sub is list:
                 sub = get_full_seq_type(v)
             sub_types.append(sub)
-        return tuple[*sub_types]  # type: ignore
+        return tuple[tuple(sub_types)]  # type: ignore
     if typ is list:
         if len(value) == 0:
             return list
