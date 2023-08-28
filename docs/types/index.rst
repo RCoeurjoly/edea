@@ -8,3 +8,4 @@ Types
     schematic/index
     pcb/index
     pcb_layers
+    project
