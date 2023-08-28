@@ -3,6 +3,8 @@ Dataclasses describing the contents of .kicad_pcb files.
 
 SPDX-License-Identifier: EUPL-1.2
 """
+import itertools
+import math
 from dataclasses import field
 from typing import Literal, Optional
 from uuid import UUID, uuid4
@@ -219,6 +221,12 @@ class Image(BaseImage, KicadPcbExpr):
     layer: CanonicalLayerName = "F.Cu"
 
 
+@dataclass(config=PydanticConfig)
+class BoardSize:
+    width_mm: float
+    height_mm: float
+
+
 @dataclass(config=PydanticConfig, eq=False)
 class Pcb(KicadPcbExpr):
     version: Literal["20211014"] = "20211014"
@@ -245,7 +253,6 @@ class Pcb(KicadPcbExpr):
     gr_line: list[GraphicalLine] = field(default_factory=list)
     gr_text: list[GraphicalText] = field(default_factory=list)
     gr_text_box: list[GraphicalTextBox] = field(default_factory=list)
-    gr_line: list[GraphicalLine] = field(default_factory=list)
     gr_rect: list[GraphicalRectangle] = field(default_factory=list)
     gr_circle: list[GraphicalCircle] = field(default_factory=list)
     gr_curve: list[GraphicalCurve] = field(default_factory=list)
@@ -277,4 +284,50 @@ class Pcb(KicadPcbExpr):
             )
         return v
 
+    def size(self):
+        """Calculate the size (width, height) of the board"""
+        min_x = min_y = float("inf")
+        max_x = max_y = float("-inf")
+
+        for zone in self.zone:
+            for polygon in itertools.chain(
+                zone.polygon, zone.filled_polygon, zone.fill_segments
+            ):
+                for pt in polygon.pts.xy:
+                    min_x = min(min_x, pt.x)
+                    max_x = max(max_x, pt.x)
+                    min_y = min(min_y, pt.y)
+                    max_y = max(max_y, pt.y)
+
+        is_infinite_size = any(math.isinf(x) for x in (min_x, min_y, max_x, max_y))
+        if is_infinite_size:
+            for graphic in itertools.chain(
+                # if there is no zones try to calculate the size from the graphics
+                self.gr_line,
+                self.gr_text,
+                self.gr_text_box,
+                self.gr_rect,
+                self.gr_circle,
+                self.gr_curve,
+                self.gr_arc,
+                self.gr_poly,
+                self.bezier,
+            ):
+                if graphic.layer == "Edge.Cuts":
+                    # TODO: calculate the size of the board outline
+                    # see https://gitlab.com/edea-dev/edea/-/issues/15
+                    break
+            else:
+                # if there is no outline on the`Edge.Cuts` layer then kicad's DRC raises
+                #  the same error
+                raise MissingBoardOutlineError("Board outline is missing")
+
+            raise ValueError("Could not calculate board size")
+
+        return BoardSize(width_mm=max_x - min_x, height_mm=max_y - min_y)
+
     kicad_expr_tag_name: Literal["kicad_pcb"] = "kicad_pcb"
+
+
+class MissingBoardOutlineError(ValueError):
+    pass
