@@ -9,4 +9,5 @@ PCB
    common
    footprint
    graphics
+   layer
    pcb
