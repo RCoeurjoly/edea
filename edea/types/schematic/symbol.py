@@ -135,7 +135,7 @@ class PinNumberSettings(KicadSchExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolGraphicText(KicadSchExpr):
     text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    at: tuple[float, float, Literal[0, 90, 180, 270]]
+    at: tuple[float, float, int]
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["text"] = "text"
 
