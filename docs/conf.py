@@ -40,5 +40,5 @@ html_static_path = ["_static"]
 html_theme = "sphinxawesome_theme"
 
 autodoc_type_aliases = {
-    "CanonicalLayerName": "edea.types.pcb_layers.CanonicalLayerName",
+    "CanonicalLayerName": "edea.types.pcb.layer.CanonicalLayerName",
 }
