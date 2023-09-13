@@ -286,45 +286,42 @@ class Pcb(KicadPcbExpr):
 
     def size(self):
         """Calculate the size (width, height) of the board"""
+        # pylint: disable=too-many-branches
         min_x = min_y = float("inf")
         max_x = max_y = float("-inf")
 
-        for zone in self.zone:
-            for polygon in itertools.chain(
-                zone.polygon, zone.filled_polygon, zone.fill_segments
-            ):
-                for pt in polygon.pts.xy:
-                    min_x = min(min_x, pt.x)
-                    max_x = max(max_x, pt.x)
-                    min_y = min(min_y, pt.y)
-                    max_y = max(max_y, pt.y)
+        is_missing_board_outline = True
 
-        is_infinite_size = any(math.isinf(x) for x in (min_x, min_y, max_x, max_y))
-        if is_infinite_size:
-            for graphic in itertools.chain(
-                # if there is no zones try to calculate the size from the graphics
-                self.gr_line,
-                self.gr_text,
-                self.gr_text_box,
-                self.gr_rect,
-                self.gr_circle,
-                self.gr_curve,
-                self.gr_arc,
-                self.gr_poly,
-                self.bezier,
-            ):
-                if graphic.layer == "Edge.Cuts":
-                    # TODO: calculate the size of the board outline
-                    # see https://gitlab.com/edea-dev/edea/-/issues/15
-                    break
+        for gr in itertools.chain(
+            self.gr_line,
+            self.gr_rect,
+            self.gr_arc,
+            self.gr_poly,
+            self.gr_curve,
+            self.gr_circle,
+        ):
+            if gr.layer == "Edge.Cuts":
+                if is_missing_board_outline:
+                    # found board outline
+                    is_missing_board_outline = False
             else:
-                # if there is no outline on the`Edge.Cuts` layer then kicad's DRC raises
-                #  the same error
-                raise MissingBoardOutlineError("Board outline is missing")
+                # only calculate size from edge cuts
+                continue
+            min_x, max_x, min_y, max_y = gr.envelope(min_x, max_x, min_y, max_y)
 
+        if is_missing_board_outline:
+            raise MissingBoardOutlineError("Board outline is missing")
+
+        if self._is_infinite_size(min_x, min_y, max_x, max_y):
             raise ValueError("Could not calculate board size")
 
-        return BoardSize(width_mm=max_x - min_x, height_mm=max_y - min_y)
+        return BoardSize(
+            width_mm=round(max_x - min_x, 2), height_mm=round(max_y - min_y, 2)
+        )
+
+    @staticmethod
+    def _is_infinite_size(min_x, min_y, max_x, max_y):
+        return any(math.isinf(x) for x in (min_x, min_y, max_x, max_y))
 
     kicad_expr_tag_name: Literal["kicad_pcb"] = "kicad_pcb"
 
