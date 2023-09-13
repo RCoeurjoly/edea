@@ -1,19 +1,24 @@
-# edea python libary and tool
+# edea python library
 
-This is the edea commandline tool and kicad parser python library.
+The core python module for the edea project.
+
+
+## Installation
+```sh
+pip install edea --index-url https://gitlab.com/api/v4/projects/35843774/packages/pypi/simple
+```
+or using poetry:
+```sh
+poetry source add --priority=explicit gitlab https://gitlab.com/api/v4/projects/35843774/packages/pypi/simple
+poetry add --source gitlab edea
+```
+
+## Documentation
+[latest docs](https://edea-dev.gitlab.io/edea/latest/)
 
 ## Running the tool
 
 To run the tool for test & development purposes either enter a venv or use poetry to run it:
-
-```sh
-# when outside the poetry environment, just run
-poetry run python -m edea
-# or
-poetry shell
-# now we're inside the venv and can run
-python -m edea
-```
 
 ## Running the tests
 
