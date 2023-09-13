@@ -2,7 +2,10 @@ import importlib.metadata
 import os
 import re
 import sys
+from dataclasses import asdict
 from datetime import datetime
+
+from sphinxawesome_theme import LinkIcon, ThemeOptions
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -29,7 +32,7 @@ extensions = [
     # "sphinxcontrib.autodoc_pydantic",
 ]
 
-templates_path = ["_templates"]
+templates_path = ["templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
@@ -38,6 +41,18 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_static_path = ["_static"]
 html_theme = "sphinxawesome_theme"
+html_theme_options = asdict(
+    ThemeOptions(
+        awesome_external_links=True,
+        awesome_headerlinks=True,
+        extra_header_link_icons={
+            "GitLab": LinkIcon(
+                link="https://gitlab.com/edea-dev/edea",
+                icon=open("gitlab.svg").read(),
+            )
+        },
+    )
+)
 
 autodoc_type_aliases = {
     "CanonicalLayerName": "edea.types.pcb.layer.CanonicalLayerName",
