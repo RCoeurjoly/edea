@@ -19,8 +19,6 @@ cache:
 before_script:
   - python3 --version # For debugging
   - poetry install
-  - pip install nox
-  - apt-get install -y unzip
 
 test:
   script:
@@ -78,7 +76,7 @@ pages:
   script:
     # download old docs for to support multiple versions
     - |
-      DOWNLOAD_URL='https://gitlab.com/api/v4/projects/35843774/jobs/artifacts/pages/download?job=pages'
+      DOWNLOAD_URL='https://gitlab.com/api/v4/projects/35843774/jobs/artifacts/main/download?job=pages'
       curl -L --output old.zip "$DOWNLOAD_URL"
       unzip -q old.zip -d .
 
