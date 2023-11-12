@@ -3,6 +3,7 @@ from dataclasses import field
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
+import numpy as np
 from pydantic.dataclasses import dataclass
 
 from edea.kicad.common import Effects, Pts
