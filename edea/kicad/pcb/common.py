@@ -5,11 +5,11 @@ from uuid import UUID, uuid4
 from pydantic import validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Effects, Pts, Stroke
-from edea.types.config import PydanticConfig
-from edea.types.meta import make_meta as m
-from edea.types.s_expr import SExprList
-from edea.types.str_enum import StrEnum
+from edea.kicad.common import Effects, Pts, Stroke
+from edea.kicad.config import PydanticConfig
+from edea.kicad.meta import make_meta as m
+from edea.kicad.s_expr import SExprList
+from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
 from .layer import CanonicalLayerName

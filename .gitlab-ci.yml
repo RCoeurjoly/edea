@@ -23,7 +23,7 @@ before_script:
 test:
   script:
     - nox -- --cov=edea
-    - nox -- --doctest-modules edea/types
+    - nox -- --doctest-modules edea
     - poetry run coverage report
     - poetry run coverage xml
   coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
@@ -80,9 +80,9 @@ pages:
       curl -L --output old.zip "$DOWNLOAD_URL"
       unzip -q old.zip -d .
 
-    # build new docs
-    ## import annotations in all edea/types/pcb files to make sphinx type alias work
-    - find edea/types/pcb -type f -name "*.py" -exec sed -i '1i\from __future__ import annotations' {} +
+    # build new doccs
+    ## import annotations in all edea/kicad/pcb files to make sphinx type alias work
+    - find edea/kicad/pcb -type f -name "*.py" -exec sed -i '1i\from __future__ import annotations' {} +
     - poetry run sphinx-build -b html docs docs/_build
     ## add new docs to old docs
     - mkdir -p "public/$(poetry version --short)"

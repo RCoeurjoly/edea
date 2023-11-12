@@ -6,10 +6,10 @@ from uuid import UUID, uuid4
 import numpy as np
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Effects, Pts
-from edea.types.config import PydanticConfig
-from edea.types.meta import make_meta as m
-from edea.types.str_enum import StrEnum
+from edea.kicad.common import Effects, Pts
+from edea.kicad.config import PydanticConfig
+from edea.kicad.meta import make_meta as m
+from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
 from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier

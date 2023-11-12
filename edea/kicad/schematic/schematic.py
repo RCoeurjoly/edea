@@ -10,14 +10,14 @@ from uuid import UUID, uuid4
 from pydantic import validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.color import Color
-from edea.types.common import Image, Paper, PaperStandard, TitleBlock, VersionError
-from edea.types.config import PydanticConfig
-from edea.types.meta import make_meta as m
-from edea.types.schematic.base import KicadSchExpr
-from edea.types.schematic.shapes import Fill, Pts, Stroke
-from edea.types.schematic.symbol import Effects, LibSymbol, SymbolProperty
-from edea.types.str_enum import StrEnum
+from edea.kicad.color import Color
+from edea.kicad.common import Image, Paper, PaperStandard, TitleBlock, VersionError
+from edea.kicad.config import PydanticConfig
+from edea.kicad.meta import make_meta as m
+from edea.kicad.schematic.base import KicadSchExpr
+from edea.kicad.schematic.shapes import Fill, Pts, Stroke
+from edea.kicad.schematic.symbol import Effects, LibSymbol, SymbolProperty
+from edea.kicad.str_enum import StrEnum
 
 
 @dataclass(config=PydanticConfig, eq=False)

@@ -1,7 +1,7 @@
 Shapes
 ======
 
-.. automodule:: edea.types.schematic.shapes
+.. automodule:: edea.kicad.schematic.shapes
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,7 +1,7 @@
 import pytest
 
-from edea.types.parser import from_str
-from edea.types.pcb import MissingBoardOutlineError, Pcb
+from edea.kicad.parser import from_str
+from edea.kicad.pcb import MissingBoardOutlineError, Pcb
 
 
 def test_exact_board_size():

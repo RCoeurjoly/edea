@@ -1,6 +1,6 @@
 from typing import Literal, get_args
 
-from edea.types.s_expr import SExprList, QuotedStr
+from edea.kicad.s_expr import SExprList, QuotedStr
 
 CanonicalLayerName = Literal[
     "F.Cu",

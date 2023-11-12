@@ -1,7 +1,7 @@
 Base
 =====
 
-.. automodule:: edea.types.pcb.base
+.. automodule:: edea.kicad.pcb.base
    :members:
    :undoc-members:
    :show-inheritance:

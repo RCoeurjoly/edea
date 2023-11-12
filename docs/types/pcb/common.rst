@@ -1,7 +1,7 @@
 Common
 ======
 
-.. automodule:: edea.types.pcb.common
+.. automodule:: edea.kicad.pcb.common
    :members:
    :undoc-members:
    :show-inheritance:

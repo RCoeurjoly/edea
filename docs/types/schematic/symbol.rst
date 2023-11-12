@@ -1,7 +1,7 @@
 Symbol
 =========
 
-.. automodule:: edea.types.schematic.symbol
+.. automodule:: edea.kicad.schematic.symbol
    :members:
    :undoc-members:
    :show-inheritance:

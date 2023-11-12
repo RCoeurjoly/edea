@@ -7,7 +7,7 @@ SPDX-License-Identifier: EUPL-1.2
 
 from pydantic import validator
 
-from edea.types.base import KicadExpr
+from edea.kicad.base import KicadExpr
 
 
 class KicadPcbExpr(KicadExpr):

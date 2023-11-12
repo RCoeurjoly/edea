@@ -1,7 +1,7 @@
 from hypothesis import given, infer
 
-from edea.types.pcb import Pcb
-from edea.types.schematic import Schematic
+from edea.kicad.pcb import Pcb
+from edea.kicad.schematic import Schematic
 
 from .config import configure_hypothesis
 

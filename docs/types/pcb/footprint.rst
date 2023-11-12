@@ -1,7 +1,7 @@
 Footprint
 ==========
 
-.. automodule:: edea.types.pcb.footprint
+.. automodule:: edea.kicad.pcb.footprint
    :members:
    :undoc-members:
    :show-inheritance:

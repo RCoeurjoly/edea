@@ -13,9 +13,9 @@ from typing import Any, Callable, Literal, Type, TypeVar, Union, get_args, get_o
 from pydantic import ValidationError
 from pydantic.dataclasses import dataclass
 
-from edea.types.meta import get_meta
-from edea.types.number import is_number, number_to_str
-from edea.types.s_expr import QuotedStr, SExprList
+from edea.kicad.meta import get_meta
+from edea.kicad.number import is_number, number_to_str
+from edea.kicad.s_expr import QuotedStr, SExprList
 from edea.util import to_snake_case
 
 from . import _equality

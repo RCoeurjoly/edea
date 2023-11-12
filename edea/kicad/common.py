@@ -5,11 +5,11 @@ from uuid import UUID, uuid4
 from pydantic import root_validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.base import KicadExpr
-from edea.types.color import Color
-from edea.types.config import PydanticConfig
-from edea.types.meta import make_meta as m
-from edea.types.str_enum import StrEnum
+from edea.kicad.base import KicadExpr
+from edea.kicad.color import Color
+from edea.kicad.config import PydanticConfig
+from edea.kicad.meta import make_meta as m
+from edea.kicad.str_enum import StrEnum
 
 
 class StrokeType(StrEnum):

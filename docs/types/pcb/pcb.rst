@@ -1,7 +1,7 @@
 PCB
 ====
 
-.. automodule:: edea.types.pcb.pcb
+.. automodule:: edea.kicad.pcb.pcb
    :members:
    :undoc-members:
    :show-inheritance:

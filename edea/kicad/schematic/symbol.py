@@ -10,12 +10,12 @@ from typing import Literal, Optional
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.common import Effects
-from edea.types.config import PydanticConfig
-from edea.types.meta import make_meta as m
-from edea.types.schematic.base import KicadSchExpr
-from edea.types.schematic.shapes import Arc, Bezier, Circle, Polyline, Rectangle
-from edea.types.str_enum import StrEnum
+from edea.kicad.common import Effects
+from edea.kicad.config import PydanticConfig
+from edea.kicad.meta import make_meta as m
+from edea.kicad.schematic.base import KicadSchExpr
+from edea.kicad.schematic.shapes import Arc, Bezier, Circle, Polyline, Rectangle
+from edea.kicad.str_enum import StrEnum
 
 
 class PinElectricalType(StrEnum):

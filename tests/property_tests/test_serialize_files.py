@@ -3,8 +3,8 @@ import os
 from hypothesis import given, infer
 import pytest
 
-from edea.types.schematic import Schematic
-from edea.types.serializer import to_str
+from edea.kicad.schematic import Schematic
+from edea.kicad.serializer import to_str
 
 
 @pytest.mark.skip(

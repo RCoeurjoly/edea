@@ -1,7 +1,7 @@
 Graphics
 =========
 
-.. automodule:: edea.types.pcb.graphics
+.. automodule:: edea.kicad.pcb.graphics
    :members:
    :undoc-members:
    :show-inheritance:

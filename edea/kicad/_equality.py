@@ -5,7 +5,7 @@ SPDX-License-Identifier: EUPL-1.2
 from types import UnionType
 from typing import Type, Union, get_args, get_origin
 
-from edea.types.number import is_number, numbers_equal
+from edea.kicad.number import is_number, numbers_equal
 
 from ._type_utils import get_full_seq_type
 

@@ -1,19 +1,19 @@
 Layer
 =====
 
-.. module:: edea.types.pcb.layer
+.. module:: edea.kicad.pcb.layer
    :synopsis: Definitions of layer names and types for PCB layers.
 
-.. autodata:: edea.types.pcb.layer.CanonicalLayerName
+.. autodata:: edea.kicad.pcb.layer.CanonicalLayerName
    :annotation: = Literal
 
-.. autofunction:: edea.types.pcb.layer.layer_to_list
+.. autofunction:: edea.kicad.pcb.layer.layer_to_list
 
     Serialize a layer to a list.
 
    A literal type representing the canonical names of PCB layers.
 
-.. autodata:: edea.types.pcb.layer.LayerType
+.. autodata:: edea.kicad.pcb.layer.LayerType
    :annotation: = Literal
 
    A literal type representing the types of PCB layers.

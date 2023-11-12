@@ -1,7 +1,7 @@
 Base
 =====
 
-.. automodule:: edea.types.schematic.base
+.. automodule:: edea.kicad.schematic.base
    :members:
    :undoc-members:
    :show-inheritance:

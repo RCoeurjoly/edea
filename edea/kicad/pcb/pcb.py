@@ -12,13 +12,13 @@ from uuid import UUID, uuid4
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.types.base import custom_serializer
-from edea.types.common import Image as BaseImage
-from edea.types.common import Paper, PaperStandard, TitleBlock, VersionError
-from edea.types.config import PydanticConfig
-from edea.types.meta import make_meta as m
-from edea.types.s_expr import SExprList
-from edea.types.str_enum import StrEnum
+from edea.kicad.base import custom_serializer
+from edea.kicad.common import Image as BaseImage
+from edea.kicad.common import Paper, PaperStandard, TitleBlock, VersionError
+from edea.kicad.config import PydanticConfig
+from edea.kicad.meta import make_meta as m
+from edea.kicad.s_expr import SExprList
+from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
 from .common import Group, Net, PositionIdentifier, Property, Zone

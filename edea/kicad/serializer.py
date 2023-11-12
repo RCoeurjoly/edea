@@ -1,4 +1,4 @@
-from edea.types.base import KicadExpr
+from edea.kicad.base import KicadExpr
 
 from .s_expr import QuotedStr, SExprList
 

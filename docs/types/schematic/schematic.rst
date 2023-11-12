@@ -1,7 +1,7 @@
 Schematic
 =========
 
-.. automodule:: edea.types.schematic.schematic
+.. automodule:: edea.kicad.schematic.schematic
    :members:
    :undoc-members:
    :show-inheritance:

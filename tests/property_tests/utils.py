@@ -2,7 +2,7 @@ import inspect
 
 from hypothesis import strategies as st
 
-from edea.types.base import is_kicad_expr
+from edea.kicad.base import is_kicad_expr
 
 
 def list_module_kicad_expr(module):
