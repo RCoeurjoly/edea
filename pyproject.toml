@@ -11,8 +11,9 @@ authors = [
 license = "EUPL-1.2"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "<3.13,>=3.9"
 pydantic = "^1.10.2"
+numpy = "^1.26.1"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
