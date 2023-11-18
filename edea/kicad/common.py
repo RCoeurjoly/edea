@@ -188,10 +188,14 @@ class Justify(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Font(KicadExpr):
+    face: Optional[str] = None
     size: tuple[float, float] = (1.27, 1.27)
     thickness: Optional[float] = field(default=None, metadata=m("kicad_omits_default"))
     italic: bool = field(default=False, metadata=m("kicad_kw_bool"))
     bold: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    color: tuple[int, int, int, float] = field(
+        default=(0, 0, 0, 1.0), metadata=m("kicad_omits_default")
+    )
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -199,6 +203,7 @@ class Effects(KicadExpr):
     font: Font = field(default_factory=Font)
     justify: Justify = field(default_factory=Justify, metadata=m("kicad_omits_default"))
     hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    href: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
 
 
 class VersionError(ValueError):

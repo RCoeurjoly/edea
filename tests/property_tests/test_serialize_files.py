@@ -12,7 +12,7 @@ from edea.kicad.serializer import to_str
     "able to read."
 )
 @given(expr=infer)
-def test_serialize_arbitrary_sch_files(expr: Schematic, tmp_path_factory):
+def test_serialize_any_sch_files(expr: Schematic, tmp_path_factory):
     """
     Test that serializing any arbitrary `Schematic` is openable by KiCad.
     """

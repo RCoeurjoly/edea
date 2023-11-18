@@ -4,7 +4,7 @@ Dataclasses describing the graphic items found in .kicad_sch files.
 SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
-from typing import Optional
+from typing import Optional, Literal
 
 from pydantic.dataclasses import dataclass
 
@@ -21,22 +21,33 @@ class FillType(StrEnum):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class Fill(KicadSchExpr):
+class FillSimple(KicadSchExpr):
     type: FillType = FillType.NONE
+    kicad_expr_tag_name: Literal["fill"] = "fill"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class FillColor(KicadSchExpr):
+    type: Literal["color"] = "color"
+    color: tuple[int, int, int, float] = (0, 0, 0, 1.0)
+    kicad_expr_tag_name: Literal["fill"] = "fill"
+
+
+Fill = FillSimple | FillColor
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Polyline(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=Fill)
+    fill: Fill = field(default_factory=FillSimple)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Bezier(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=Fill)
+    fill: Fill = field(default_factory=FillSimple)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -44,7 +55,7 @@ class Rectangle(KicadSchExpr):
     start: tuple[float, float]
     end: tuple[float, float]
     stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=Fill)
+    fill: Fill = field(default_factory=FillSimple)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -52,7 +63,7 @@ class Circle(KicadSchExpr):
     center: tuple[float, float]
     radius: float
     stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=Fill)
+    fill: Fill = field(default_factory=FillSimple)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -69,4 +80,4 @@ class Arc(KicadSchExpr):
     end: tuple[float, float]
     radius: Optional[Radius] = None
     stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=Fill)
+    fill: Fill = field(default_factory=FillSimple)
