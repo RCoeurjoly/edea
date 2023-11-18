@@ -14,7 +14,7 @@ from edea.kicad.pcb import Pcb
 from edea.kicad.common import VersionError
 
 test_folder = os.path.dirname(os.path.realpath(__file__))
-kicad_folder = os.path.join(test_folder, "kicad_projects/kicad6-test-files")
+kicad_folder = os.path.join(test_folder, "kicad_projects/kicad-test-files")
 
 
 kicad_sch_files = []

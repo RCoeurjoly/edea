@@ -18,5 +18,7 @@ class KicadSchExpr(KicadExpr):
         We've also seen unecessary rotations such as 900° in the wild hence `% 360`.
         """
         if len(value) == 3:
-            return (value[0], value[1], int(value[2]) % 360)
+            # rotation uses `float` because we have seen some rotations with a
+            # decimal point in the wild
+            return (value[0], value[1], int(float(value[2])) % 360)
         return value

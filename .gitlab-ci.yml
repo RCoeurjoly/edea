@@ -54,6 +54,8 @@ test-long-running:
   only:
     - web
   script:
+    # not sure why this is needed but submodule update fails without it
+    - git config --global --add safe.directory "$(pwd)"
     - git submodule update --init
     # the serialize test parses and serializes so we just run that
     - poetry run pytest -k 'serialize_all'

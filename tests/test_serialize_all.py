@@ -17,7 +17,7 @@ from edea.kicad.pcb import Pcb
 from edea.kicad.serializer import to_str
 
 test_folder = os.path.dirname(os.path.realpath(__file__))
-kicad_folder = os.path.join(test_folder, "kicad_projects/kicad6-test-files")
+kicad_folder = os.path.join(test_folder, "kicad_projects/kicad-test-files")
 
 kicad_sch_files = []
 kicad_pcb_files = []
@@ -46,6 +46,18 @@ def test_serialize_all_sch_files(sch_path, tmp_path_factory):
         ["kicad-cli", "sch", "export", "netlist", sch_path, "-o", tmp_net_kicad],
         capture_output=True,
     )
+
+    # skip files that already have warnings/errors
+    if process_kicad.returncode != 0 or (
+        process_kicad.stderr != b""
+        # kicad-cli lock file errors happen when we run tests in parallel but
+        # don't affect anything we are doing
+        and b"Invalid lock file" not in process_kicad.stderr
+        and b"Failed to access lock" not in process_kicad.stderr
+        and b"Failed to inspect the lock file" not in process_kicad.stderr
+    ):
+        return pytest.skip()
+
     contents = to_str(sch)
     tmp_sch = tmp_dir / "test_edea.kicad_sch"
     with open(tmp_sch, "w") as f:

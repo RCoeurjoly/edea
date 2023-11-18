@@ -71,6 +71,12 @@ class KicadExpr:
                 raise ValueError(f"Encountered unknown field: '{kw}' for '{cls}'")
             kwargs[kw] = _parse_field(fields[kw], parsed_kwargs[kw])
 
+        for name in fields:
+            if get_meta(fields[name], "kicad_kw_bool"):
+                if name in parsed_args:
+                    kwargs[name] = True
+                    parsed_args.remove(name)
+
         return cls(*parsed_args, **kwargs)
 
     def to_list(self) -> SExprList:
@@ -238,7 +244,7 @@ def _parse_as(annotation: Type, exp: SExprList):
         for sub in sub_types:
             try:
                 return _parse_as(sub, exp)
-            except (ValidationError, TypeError) as e:
+            except (ValidationError, TypeError, ValueError) as e:
                 errors.append(e)
         if len(errors) > 0:
             raise errors[0]

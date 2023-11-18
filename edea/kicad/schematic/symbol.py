@@ -10,11 +10,19 @@ from typing import Literal, Optional
 from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
-from edea.kicad.common import Effects
+from edea.kicad.common import Effects, Stroke
 from edea.kicad.config import PydanticConfig
 from edea.kicad.meta import make_meta as m
 from edea.kicad.schematic.base import KicadSchExpr
-from edea.kicad.schematic.shapes import Arc, Bezier, Circle, Polyline, Rectangle
+from edea.kicad.schematic.shapes import (
+    Arc,
+    Bezier,
+    Circle,
+    Fill,
+    FillColor,
+    Polyline,
+    Rectangle,
+)
 from edea.kicad.str_enum import StrEnum
 
 
@@ -60,11 +68,13 @@ class PinName(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class SymbolProperty(KicadSchExpr):
+class Property(KicadSchExpr):
     key: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     value: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     id: int = 0
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
+    do_not_autoplace: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    show_name: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["property"] = "property"
 
@@ -134,10 +144,22 @@ class PinNumberSettings(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolGraphicText(KicadSchExpr):
-    text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    at: tuple[float, float, int]
+    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    at: tuple[float, float, int] = (0, 0, 0)
     effects: Effects = field(default_factory=Effects)
+    private: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["text"] = "text"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class SymbolGraphicTextBox(KicadSchExpr):
+    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
+    size: tuple[float, float] = (0, 0)
+    stroke: Stroke = field(default_factory=Stroke)
+    fill: Fill = field(default_factory=FillColor)
+    effects: Effects = field(default_factory=Effects)
+    kicad_expr_tag_name: Literal["text_box"] = "text_box"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -146,6 +168,7 @@ class SubSymbol(KicadSchExpr):
     polyline: list[Polyline] = field(default_factory=list)
     text: list[SymbolGraphicText] = field(default_factory=list)
     rectangle: list[Rectangle] = field(default_factory=list)
+    text_box: list[SymbolGraphicTextBox] = field(default_factory=list)
     circle: list[Circle] = field(default_factory=list)
     arc: list[Arc] = field(default_factory=list)
     pin: list[Pin] = field(default_factory=list)
@@ -156,7 +179,7 @@ class SubSymbol(KicadSchExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class LibSymbol(KicadSchExpr):
     name: str = field(metadata=m("kicad_no_kw"))
-    property: list[SymbolProperty] = field(default_factory=list)
+    property: list[Property] = field(default_factory=list)
     pin_names: PinNameSettings = field(
         default_factory=PinNameSettings, metadata=m("kicad_omits_default")
     )
