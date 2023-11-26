@@ -6,7 +6,7 @@ from typing import Any, Literal, TYPE_CHECKING, Type, Union, get_args, get_origi
 
 from pydantic import ValidationError
 
-from edea.kicad._fields import get_meta, is_optional
+from edea.kicad._fields import get_meta, get_type, is_optional
 from edea.kicad.is_kicad_expr import is_kicad_expr, is_kicad_expr_list
 from edea.kicad.s_expr import QuotedStr, SExprAtom, SExprList
 
@@ -120,8 +120,10 @@ def _parse(
                 parsed_kwargs[field.name] = True
             continue
 
-        if is_kicad_expr_list(field.type):
-            parsed_kwargs[field.name], rest = _collect_into_list(field.type, exprs)
+        field_type = get_type(field)
+
+        if is_kicad_expr_list(field_type):
+            parsed_kwargs[field.name], rest = _collect_into_list(field_type, exprs)
             exprs = rest
             continue
 
@@ -130,7 +132,7 @@ def _parse(
         if no_kw and is_optional(field):
             if isinstance(exprs[0], SExprAtom):
                 try:
-                    v = _parse_atom_as(field.type, exprs[0])
+                    v = _parse_atom_as(field_type, exprs[0])
                 except (ValidationError, TypeError, ValueError):
                     pass
                 else:
@@ -142,13 +144,13 @@ def _parse(
             exp = exprs.pop(0)
             if not isinstance(exp, SExprAtom):
                 raise ValueError(f"Expecting single value got: {exp}")
-            parsed_kwargs[field.name] = _parse_atom_as(field.type, exp)
+            parsed_kwargs[field.name] = _parse_atom_as(field_type, exp)
             continue
 
         found = False
         for exp in exprs:
             if isinstance(exp, list) and len(exp) > 0 and exp[0] == field.name:
-                parsed_kwargs[field.name] = _parse_as(field.type, exp)
+                parsed_kwargs[field.name] = _parse_as(field_type, exp)
                 exprs.remove(exp)
                 found = True
                 break

@@ -1,12 +1,12 @@
 from dataclasses import field
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic.dataclasses import dataclass
 
+from edea.kicad._fields import make_meta as m
 from edea.kicad.common import Effects, Pts, Stroke
 from edea.kicad.config import PydanticConfig
-from edea.kicad._fields import make_meta as m
 from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
@@ -15,24 +15,24 @@ from .layer import CanonicalLayerName, WildCardLayerName
 
 @dataclass(config=PydanticConfig, eq=False)
 class Property(KicadPcbExpr):
-    key: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    value: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    key: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
+    value: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PositionIdentifier(KicadPcbExpr):
-    x: float = field(default=0, metadata=m("kicad_no_kw"))
-    y: float = field(default=0, metadata=m("kicad_no_kw"))
-    angle: float = field(default=0, metadata=m("kicad_no_kw", "kicad_omits_default"))
-    unlocked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    x: Annotated[float, m("kicad_no_kw")] = 0
+    y: Annotated[float, m("kicad_no_kw")] = 0
+    angle: Annotated[float, m("kicad_no_kw", "kicad_omits_default")] = 0
+    unlocked: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: Literal["at"] = "at"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class ConnectionPads(KicadPcbExpr):
-    type: Literal["yes", "no", "full", "thru_hole_only", None] = field(
-        default=None, metadata=m("kicad_no_kw")
-    )
+    type: Annotated[
+        Literal["yes", "no", "full", "thru_hole_only", None], m("kicad_no_kw")
+    ] = None
     clearance: float = 0
     kicad_expr_tag_name: Literal["connect_pads"] = "connect_pads"
 
@@ -67,10 +67,8 @@ class ZoneFillHatchBorderAlgorithm(StrEnum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class ZoneFillSettings(KicadPcbExpr):
-    yes: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    mode: Literal["hatch", "solid"] = field(
-        default="solid", metadata=m("kicad_omits_default")
-    )
+    yes: Annotated[bool, m("kicad_kw_bool")] = False
+    mode: Annotated[Literal["hatch", "solid"], m("kicad_omits_default")] = "solid"
     thermal_gap: Optional[float] = None
     thermal_bridge_width: Optional[float] = None
     smoothing: Literal["chamfer", "fillet", None] = None
@@ -91,7 +89,7 @@ class ZoneFillSettings(KicadPcbExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class ZoneFillPolygon(KicadPcbExpr):
     layer: CanonicalLayerName
-    island: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    island: Annotated[bool, m("kicad_kw_bool_empty")] = False
     pts: Pts = field(default_factory=Pts)
     kicad_expr_tag_name: Literal["filled_polygon"] = "filled_polygon"
 
@@ -128,12 +126,14 @@ class Zone(KicadPcbExpr):
         after initialization.
     """
 
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     net: int = 0
     net_name: str = ""
     layer: Optional[CanonicalLayerName] = None
-    layers: list[CanonicalLayerName | WildCardLayerName] = field(
-        default_factory=list, metadata=m("kicad_always_quotes")
+    layers: Annotated[
+        list[CanonicalLayerName | WildCardLayerName], m("kicad_always_quotes")
+    ] = field(
+        default_factory=list,
     )
     tstamp: UUID = field(default_factory=uuid4)
     name: Optional[str] = None
@@ -142,12 +142,12 @@ class Zone(KicadPcbExpr):
     attr: Optional[ZoneAttr] = None
     connect_pads: ConnectionPads = field(default_factory=ConnectionPads)
     min_thickness: float = 0
-    filled_areas_thickness: bool = field(
-        default=True, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
-    )
+    filled_areas_thickness: Annotated[
+        bool, m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = True
     keepout: Optional[ZoneKeepOutSettings] = None
-    fill: ZoneFillSettings = field(
-        default_factory=ZoneFillSettings, metadata=m("kicad_omits_default")
+    fill: Annotated[ZoneFillSettings, m("kicad_omits_default")] = field(
+        default_factory=ZoneFillSettings,
     )
     polygon: list[Polygon] = field(default_factory=list)
     filled_polygon: list[ZoneFillPolygon] = field(default_factory=list)
@@ -155,23 +155,23 @@ class Zone(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Group(KicadPcbExpr):
-    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     id: UUID = field(default_factory=uuid4)
     members: list[UUID] = field(default_factory=list)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class RenderCache(KicadPcbExpr):
-    name: str = field(metadata=m("kicad_no_kw"))
-    number: float = field(metadata=m("kicad_no_kw"))
+    name: Annotated[str, m("kicad_no_kw")]
+    number: Annotated[float, m("kicad_no_kw")]
     polygon: list[Polygon] = field(default_factory=list)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class BaseTextBox(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    text: str = field(default="", metadata=m("kicad_no_kw"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
+    text: Annotated[str, m("kicad_no_kw")] = ""
     start: Optional[tuple[float, float]] = None
     end: Optional[tuple[float, float]] = None
     pts: Optional[Pts] = None
@@ -181,13 +181,13 @@ class BaseTextBox(KicadPcbExpr):
     render_cache: Optional[RenderCache] = None
     angle: Optional[float] = None
     stroke: Optional[Stroke] = None
-    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    hide: Annotated[bool, m("kicad_kw_bool")] = False
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Net(KicadPcbExpr):
-    number: int = field(metadata=m("kicad_no_kw"))
-    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    number: Annotated[int, m("kicad_no_kw")]
+    name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
 
 
 @dataclass(config=PydanticConfig, eq=False)

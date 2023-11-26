@@ -1,14 +1,14 @@
 from dataclasses import field
 import math
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 from uuid import UUID, uuid4
 
 import numpy as np
 from pydantic.dataclasses import dataclass
 
+from edea.kicad._fields import make_meta as m
 from edea.kicad.common import Effects, Pts, Stroke
 from edea.kicad.config import PydanticConfig
-from edea.kicad._fields import make_meta as m
 from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
@@ -17,17 +17,17 @@ from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier, RenderC
 
 @dataclass(config=PydanticConfig, eq=False)
 class LayerKnockout(KicadPcbExpr):
-    name: CanonicalLayerName = field(
-        default="F.Cu", metadata=m("kicad_always_quotes", "kicad_no_kw")
-    )
-    knockout: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    name: Annotated[
+        CanonicalLayerName, m("kicad_always_quotes", "kicad_no_kw")
+    ] = "F.Cu"
+    knockout: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: Literal["layer"] = "layer"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalText(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
+    text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     at: PositionIdentifier = field(default_factory=PositionIdentifier)
     layer: Optional[LayerKnockout] = None
     tstamp: Optional[UUID] = None
@@ -43,7 +43,7 @@ class GraphicalTextBox(BaseTextBox):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalLine(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
     width: Optional[float] = None
@@ -67,7 +67,7 @@ class GraphicalLine(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalRectangle(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
     width: Optional[float] = None
@@ -91,7 +91,7 @@ class GraphicalRectangle(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalCircle(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     center: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
     stroke: Optional[Stroke] = None
@@ -115,7 +115,7 @@ class GraphicalCircle(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalArc(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
     mid: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
@@ -199,7 +199,7 @@ class GraphicalArc(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalPolygon(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     pts: Pts = field(default_factory=Pts)
     stroke: Optional[Stroke] = None
     width: Optional[float] = None
@@ -222,7 +222,7 @@ class GraphicalPolygon(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalBezier(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     layer: Optional[CanonicalLayerName] = None
@@ -253,7 +253,7 @@ class GraphicalCurve(GraphicalBezier):
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalBoundingBox(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
     kicad_expr_tag_name: Literal["gr_bbox"] = "gr_bbox"
@@ -280,7 +280,7 @@ class DimensionFormat(KicadPcbExpr):
     units_format: DimensionFormatUnitsFormat = DimensionFormatUnitsFormat.WrapSuffix
     precision: int = 4
     override_value: Optional[str] = None
-    suppress_zeroes: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    suppress_zeroes: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: Literal["format"] = "format"
 
 
@@ -307,13 +307,13 @@ class DimensionStyle(KicadPcbExpr):
     extension_height: Optional[float] = None
     extension_offset: Optional[float] = None
     text_frame: Optional[DimensionStyleTextFrame] = None
-    keep_text_aligned: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    keep_text_aligned: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: Literal["style"] = "style"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalDimension(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     type: Literal["aligned", "leader", "center", "orthogonal", "radial"] = "aligned"
     layer: CanonicalLayerName = "F.Cu"
     tstamp: UUID = field(default_factory=uuid4)

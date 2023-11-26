@@ -5,13 +5,13 @@ SPDX-License-Identifier: EUPL-1.2
 """
 
 from dataclasses import field
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic.dataclasses import dataclass
 
+from edea.kicad._fields import make_meta as m
 from edea.kicad.common import Effects, Stroke
 from edea.kicad.config import PydanticConfig
-from edea.kicad._fields import make_meta as m
 from edea.kicad.schematic.base import KicadSchExpr
 from edea.kicad.schematic.shapes import (
     Arc,
@@ -54,52 +54,48 @@ class PinGraphicStyle(StrEnum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinNumber(KicadSchExpr):
-    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["number"] = "number"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinName(KicadSchExpr):
-    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["name"] = "name"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Property(KicadSchExpr):
-    key: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    value: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    key: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
+    value: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
-    do_not_autoplace: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
-    show_name: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    do_not_autoplace: Annotated[bool, m("kicad_kw_bool_empty")] = False
+    show_name: Annotated[bool, m("kicad_kw_bool_empty")] = False
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["property"] = "property"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinAlternate(KicadSchExpr):
-    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    electrical_type: PinElectricalType = field(
-        default=PinElectricalType.UNSPECIFIED, metadata=m("kicad_no_kw")
-    )
-    graphic_style: PinGraphicStyle = field(
-        default=PinGraphicStyle.LINE, metadata=m("kicad_no_kw")
-    )
+    name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
+    electrical_type: Annotated[
+        PinElectricalType, m("kicad_no_kw")
+    ] = PinElectricalType.UNSPECIFIED
+    graphic_style: Annotated[PinGraphicStyle, m("kicad_no_kw")] = PinGraphicStyle.LINE
     kicad_expr_tag_name: Literal["alternate"] = "alternate"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Pin(KicadSchExpr):
-    electrical_type: PinElectricalType = field(
-        default=PinElectricalType.UNSPECIFIED, metadata=m("kicad_no_kw")
-    )
-    graphic_style: PinGraphicStyle = field(
-        default=PinGraphicStyle.LINE, metadata=m("kicad_no_kw")
-    )
+    electrical_type: Annotated[
+        PinElectricalType, m("kicad_no_kw")
+    ] = PinElectricalType.UNSPECIFIED
+    graphic_style: Annotated[PinGraphicStyle, m("kicad_no_kw")] = PinGraphicStyle.LINE
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     length: float = 0
-    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    hide: Annotated[bool, m("kicad_kw_bool")] = False
     name: PinName = field(default_factory=PinName)
     number: PinNumber = field(default_factory=PinNumber)
     alternate: list[PinAlternate] = field(default_factory=list)
@@ -107,21 +103,21 @@ class Pin(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinNameSettings(KicadSchExpr):
-    offset: float = field(default=0, metadata=m("kicad_omits_default"))
-    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    offset: Annotated[float, m("kicad_omits_default")] = 0
+    hide: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: Literal["pin_names"] = "pin_names"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinNumberSettings(KicadSchExpr):
-    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    hide: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: Literal["pin_numbers"] = "pin_numbers"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolGraphicText(KicadSchExpr):
-    private: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    private: Annotated[bool, m("kicad_kw_bool")] = False
+    text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     at: tuple[float, float, int] = (0, 0, 0)
     effects: Effects = field(default_factory=Effects)
     kicad_expr_tag_name: Literal["text"] = "text"
@@ -129,7 +125,7 @@ class SymbolGraphicText(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolGraphicTextBox(KicadSchExpr):
-    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     size: tuple[float, float] = (0, 0)
     stroke: Stroke = field(default_factory=Stroke)
@@ -140,7 +136,7 @@ class SymbolGraphicTextBox(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SubSymbol(KicadSchExpr):
-    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     polyline: list[Polyline] = field(default_factory=list)
     text: list[SymbolGraphicText] = field(default_factory=list)
     rectangle: list[Rectangle] = field(default_factory=list)
@@ -154,17 +150,17 @@ class SubSymbol(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class LibSymbol(KicadSchExpr):
-    name: str = field(metadata=m("kicad_no_kw"))
+    name: Annotated[str, m("kicad_no_kw")]
     property: list[Property] = field(default_factory=list)
-    power: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
-    pin_numbers: PinNumberSettings = field(
-        default_factory=PinNumberSettings, metadata=m("kicad_omits_default")
+    power: Annotated[bool, m("kicad_kw_bool_empty")] = False
+    pin_numbers: Annotated[PinNumberSettings, m("kicad_omits_default")] = field(
+        default_factory=PinNumberSettings,
     )
-    pin_names: PinNameSettings = field(
-        default_factory=PinNameSettings, metadata=m("kicad_omits_default")
+    pin_names: Annotated[PinNameSettings, m("kicad_omits_default")] = field(
+        default_factory=PinNameSettings,
     )
-    in_bom: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
-    on_board: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
+    in_bom: Annotated[bool, m("kicad_bool_yes_no")] = True
+    on_board: Annotated[bool, m("kicad_bool_yes_no")] = True
     pin: list[Pin] = field(default_factory=list)
     symbol: list[SubSymbol] = field(default_factory=list)
     polyline: list[Polyline] = field(default_factory=list)

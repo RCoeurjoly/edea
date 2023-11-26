@@ -6,16 +6,16 @@ SPDX-License-Identifier: EUPL-1.2
 from dataclasses import field
 import itertools
 import math
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import validator
 from pydantic.dataclasses import dataclass
 
-from edea.kicad.base import custom_serializer, custom_parser
+from edea.kicad._fields import make_meta as m
+from edea.kicad.base import custom_parser, custom_serializer
 from edea.kicad.common import Paper, PaperStandard, TitleBlock, VersionError
 from edea.kicad.config import PydanticConfig
-from edea.kicad._fields import make_meta as m
 from edea.kicad.s_expr import SExprList
 from edea.kicad.str_enum import StrEnum
 
@@ -45,19 +45,19 @@ class General(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class StackupLayerThickness(KicadPcbExpr):
-    value: float = field(metadata=m("kicad_no_kw"))
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    value: Annotated[float, m("kicad_no_kw")]
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: Literal["thickness"] = "thickness"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class StackupLayer(KicadPcbExpr):
-    name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     # This is an arbitrary string, not a `CanonicalLayer`.
     type: str
-    color: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
+    color: Annotated[Optional[str], m("kicad_always_quotes")] = None
     thickness: Optional[StackupLayerThickness] = None
-    material: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
+    material: Annotated[Optional[str], m("kicad_always_quotes")] = None
     epsilon_r: Optional[float] = None
     loss_tangent: Optional[float] = None
     kicad_expr_tag_name: Literal["layer"] = "layer"
@@ -67,18 +67,16 @@ class StackupLayer(KicadPcbExpr):
 class Stackup(KicadPcbExpr):
     layer: list[StackupLayer] = field(default_factory=list)
     copper_finish: Optional[str] = None
-    dielectric_constraints: bool = field(
-        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
-    )
-    edge_connector: Literal["yes", "bevelled", None] = field(
-        default=None, metadata=m("kicad_omits_default")
-    )
-    castellated_pads: bool = field(
-        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
-    )
-    edge_plating: bool = field(
-        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
-    )
+    dielectric_constraints: Annotated[
+        bool, m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = False
+    edge_connector: Annotated[
+        Literal["yes", "bevelled", None], m("kicad_omits_default")
+    ] = None
+    castellated_pads: Annotated[
+        bool, m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = False
+    edge_plating: Annotated[bool, m("kicad_bool_yes_no", "kicad_omits_default")] = False
 
 
 class PlotOutputFormat(StrEnum):
@@ -104,7 +102,7 @@ class PlotSettings(KicadPcbExpr):
     dashed_line_dash_ratio: Optional[float] = None
     dashed_line_gap_ratio: Optional[float] = None
     svgprecision: int = 4
-    excludeedgelayer: bool = field(default=False, metadata=m("kicad_omits_default"))
+    excludeedgelayer: Annotated[bool, m("kicad_omits_default")] = False
     plotframeref: bool = False
     viasonmask: bool = False
     mode: Literal[1, 2] = 1
@@ -126,7 +124,7 @@ class PlotSettings(KicadPcbExpr):
     mirror: bool = False
     drillshape: int = 0
     scaleselection: int = 0
-    outputdirectory: str = field(default="", metadata=m("kicad_always_quotes"))
+    outputdirectory: Annotated[str, m("kicad_always_quotes")] = ""
 
     kicad_expr_tag_name: Literal["pcbplotparams"] = "pcbplotparams"
 
@@ -135,28 +133,23 @@ class PlotSettings(KicadPcbExpr):
 class Setup(KicadPcbExpr):
     stackup: Optional[Stackup] = None
     pad_to_mask_clearance: float = 0.0
-    solder_mask_min_width: float = field(default=0.0, metadata=m("kicad_omits_default"))
-    pad_to_paste_clearance: float = field(
-        default=0.0, metadata=m("kicad_omits_default")
+    solder_mask_min_width: Annotated[float, m("kicad_omits_default")] = 0.0
+    pad_to_paste_clearance: Annotated[float, m("kicad_omits_default")] = 0.0
+    pad_to_paste_clearance_ratio: Annotated[float, m("kicad_omits_default")] = 100.0
+    allow_soldermask_bridges_in_footprints: Annotated[
+        bool, m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = False
+    aux_axis_origin: Annotated[tuple[float, float], m("kicad_omits_default")] = (
+        0.0,
+        0.0,
     )
-    pad_to_paste_clearance_ratio: float = field(
-        default=100.0, metadata=m("kicad_omits_default")
-    )
-    allow_soldermask_bridges_in_footprints: bool = field(
-        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
-    )
-    aux_axis_origin: tuple[float, float] = field(
-        default=(0.0, 0.0), metadata=m("kicad_omits_default")
-    )
-    grid_origin: tuple[float, float] = field(
-        default=(0.0, 0.0), metadata=m("kicad_omits_default")
-    )
+    grid_origin: Annotated[tuple[float, float], m("kicad_omits_default")] = (0.0, 0.0)
     pcbplotparams: PlotSettings = field(default_factory=PlotSettings)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Segment(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
     width: float = 0.0
@@ -167,19 +160,21 @@ class Segment(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Via(KicadPcbExpr):
-    type: Literal["blind", "micro", "through"] = field(
-        default="through", metadata=m("kicad_no_kw", "kicad_omits_default")
-    )
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    type: Annotated[
+        Literal["blind", "micro", "through"], m("kicad_no_kw", "kicad_omits_default")
+    ] = "through"
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     at: tuple[float, float] = (0, 0)
     size: float = 0
     drill: float = 0
     layers: list[str] = field(default_factory=list)
-    remove_unused_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
-    keep_end_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
-    free: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
-    zone_layer_connections: list[CanonicalLayerName] = field(
-        default_factory=list, metadata=m("kicad_omits_default")
+    remove_unused_layers: Annotated[bool, m("kicad_kw_bool_empty")] = False
+    keep_end_layers: Annotated[bool, m("kicad_kw_bool_empty")] = False
+    free: Annotated[bool, m("kicad_kw_bool_empty")] = False
+    zone_layer_connections: Annotated[
+        list[CanonicalLayerName], m("kicad_omits_default")
+    ] = field(
+        default_factory=list,
     )
     net: int = 0
     tstamp: UUID = field(default_factory=uuid4)
@@ -187,7 +182,7 @@ class Via(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Arc(KicadPcbExpr):
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
     mid: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
@@ -199,7 +194,7 @@ class Arc(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Target(KicadPcbExpr):
-    type: str = field(metadata=m("kicad_no_kw"))
+    type: Annotated[str, m("kicad_no_kw")]
     at: PositionIdentifier
     size: float
     width: float
@@ -232,7 +227,9 @@ class Pcb(KicadPcbExpr):
     paper: Paper = field(default_factory=PaperStandard)
     title_block: Optional[TitleBlock] = None
 
-    layers: list[Layer] = field(default_factory=list, metadata=m("kicad_always_quotes"))
+    layers: Annotated[list[Layer], m("kicad_always_quotes")] = field(
+        default_factory=list,
+    )
 
     @custom_serializer("layers")
     def _layers_to_list(self, layers: list[Layer]) -> list[SExprList]:

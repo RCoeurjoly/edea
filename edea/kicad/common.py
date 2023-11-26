@@ -1,5 +1,5 @@
 from dataclasses import field
-from typing import Literal, Optional, Union
+from typing import Annotated, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 from pydantic.dataclasses import dataclass
@@ -24,7 +24,7 @@ class StrokeType(StrEnum):
 class Stroke(KicadExpr):
     width: float = 0
     type: StrokeType = StrokeType.DEFAULT
-    color: Color = field(default=(0, 0, 0, 0.0), metadata=m("kicad_omits_default"))
+    color: Annotated[Color, m("kicad_omits_default")] = (0, 0, 0, 0.0)
 
 
 class PaperFormat(StrEnum):
@@ -51,11 +51,9 @@ class PaperOrientation(StrEnum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PaperUser(KicadExpr):
-    format: Literal["User"] = field(
-        default="User", metadata=m("kicad_no_kw", "kicad_always_quotes")
-    )
-    width: float = field(default=0, metadata=m("kicad_no_kw"))
-    height: float = field(default=0, metadata=m("kicad_no_kw"))
+    format: Annotated[Literal["User"], m("kicad_no_kw", "kicad_always_quotes")] = "User"
+    width: Annotated[float, m("kicad_no_kw")] = 0
+    height: Annotated[float, m("kicad_no_kw")] = 0
     kicad_expr_tag_name: Literal["paper"] = "paper"
 
     def as_dimensions_mm(self) -> tuple[float, float]:
@@ -64,13 +62,12 @@ class PaperUser(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class PaperStandard(KicadExpr):
-    format: PaperFormat = field(
-        default=PaperFormat.A4, metadata=m("kicad_no_kw", "kicad_always_quotes")
-    )
-    orientation: PaperOrientation = field(
-        default=PaperOrientation.LANDSCAPE,
-        metadata=m("kicad_no_kw", "kicad_omits_default"),
-    )
+    format: Annotated[
+        PaperFormat, m("kicad_no_kw", "kicad_always_quotes")
+    ] = PaperFormat.A4
+    orientation: Annotated[
+        PaperOrientation, m("kicad_no_kw", "kicad_omits_default")
+    ] = PaperOrientation.LANDSCAPE
     kicad_expr_tag_name: Literal["paper"] = "paper"
 
     def as_dimensions_mm(self) -> tuple[float, float]:
@@ -110,8 +107,8 @@ class PolygonArc(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class XY(KicadExpr):
-    x: float = field(metadata=m("kicad_no_kw"))
-    y: float = field(metadata=m("kicad_no_kw"))
+    x: Annotated[float, m("kicad_no_kw")]
+    y: Annotated[float, m("kicad_no_kw")]
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -130,19 +127,19 @@ class Image(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class TitleBlockComment(KicadExpr):
-    number: int = field(default=1, metadata=m("kicad_no_kw"))
-    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
+    number: Annotated[int, m("kicad_no_kw")] = 1
+    text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     kicad_expr_tag_name: Literal["comment"] = "comment"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class TitleBlock(KicadExpr):
-    title: str = field(default="", metadata=m("kicad_omits_default"))
-    date: str = field(default="", metadata=m("kicad_omits_default"))
-    rev: str = field(default="", metadata=m("kicad_omits_default"))
-    company: str = field(default="", metadata=m("kicad_omits_default"))
-    comment: list[TitleBlockComment] = field(
-        default_factory=list, metadata=m("kicad_omits_default")
+    title: Annotated[str, m("kicad_omits_default")] = ""
+    date: Annotated[str, m("kicad_omits_default")] = ""
+    rev: Annotated[str, m("kicad_omits_default")] = ""
+    company: Annotated[str, m("kicad_omits_default")] = ""
+    comment: Annotated[list[TitleBlockComment], m("kicad_omits_default")] = field(
+        default_factory=list,
     )
 
 
@@ -150,22 +147,28 @@ class TitleBlock(KicadExpr):
 class Font(KicadExpr):
     face: Optional[str] = None
     size: tuple[float, float] = (1.27, 1.27)
-    thickness: Optional[float] = field(default=None, metadata=m("kicad_omits_default"))
-    bold: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    italic: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    color: tuple[int, int, int, float] = field(
-        default=(0, 0, 0, 1.0), metadata=m("kicad_omits_default")
+    thickness: Annotated[Optional[float], m("kicad_omits_default")] = None
+    bold: Annotated[bool, m("kicad_kw_bool")] = False
+    italic: Annotated[bool, m("kicad_kw_bool")] = False
+    color: Annotated[tuple[int, int, int, float], m("kicad_omits_default")] = (
+        0,
+        0,
+        0,
+        1.0,
     )
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Effects(KicadExpr):
     font: Font = field(default_factory=Font)
-    justify: list[Literal["left", "right", "top", "bottom", "mirror"]] = field(
-        default_factory=list, metadata=m("kicad_omits_default")
+    justify: Annotated[
+        list[Literal["left", "right", "top", "bottom", "mirror"]],
+        m("kicad_omits_default"),
+    ] = field(
+        default_factory=list,
     )
-    hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
-    href: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
+    hide: Annotated[bool, m("kicad_kw_bool")] = False
+    href: Annotated[Optional[str], m("kicad_always_quotes")] = None
 
 
 class VersionError(ValueError):

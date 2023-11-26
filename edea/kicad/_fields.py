@@ -1,6 +1,6 @@
 import dataclasses
 from types import UnionType
-from typing import Literal, Union, get_args, get_origin
+from typing import Annotated, Literal, Union, get_args, get_origin
 
 MetaTag = Literal[
     # KiCad doesn't have a keyword for the property. The property appears
@@ -23,14 +23,25 @@ MetaTag = Literal[
 
 
 def make_meta(*args: MetaTag):
-    meta = {}
-    for tag in args:
-        meta[tag] = True
-    return meta
+    # just a list for now, but we might change that later
+    return args
 
 
 def get_meta(field: dataclasses.Field, tag: MetaTag):
-    return field.metadata.get(tag)
+    origin = get_origin(field.type)
+    if origin is Annotated:
+        sub_types = get_args(field.type)
+        metadata = sub_types[1]
+        return tag in metadata
+    return False
+
+
+def get_type(field: dataclasses.Field):
+    origin = get_origin(field.type)
+    if origin is Annotated:
+        sub_types = get_args(field.type)
+        return sub_types[0]
+    return field.type
 
 
 def is_optional(field: dataclasses.Field):
@@ -42,12 +53,13 @@ def is_optional(field: dataclasses.Field):
         return True
     if get_meta(field, "kicad_omits_default"):
         return True
-    origin = get_origin(field.type)
+    field_type = get_type(field)
+    origin = get_origin(field_type)
     # any list can be empty and thus omitted
     if origin is list:
         return True
     is_union = origin is Union or origin is UnionType or origin is Literal
     if not is_union:
         return False
-    sub_types = get_args(field.type)
+    sub_types = get_args(field_type)
     return type(None) in sub_types or None in sub_types
