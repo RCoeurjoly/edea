@@ -6,7 +6,7 @@ SPDX-License-Identifier: EUPL-1.2
 """
 import dataclasses
 import inspect
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, ClassVar, Type, TypeVar
 
 from pydantic.dataclasses import dataclass
 
@@ -45,7 +45,7 @@ def custom_parser(field_name: str):
 
 @dataclass
 class KicadExpr:
-    _is_edea_kicad_expr = True
+    _is_edea_kicad_expr: ClassVar = True
 
     @classmethod
     @property

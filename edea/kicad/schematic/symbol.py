@@ -5,7 +5,7 @@ SPDX-License-Identifier: EUPL-1.2
 """
 
 from dataclasses import field
-from typing import Annotated, Literal
+from typing import Annotated, ClassVar, Literal
 
 from pydantic.dataclasses import dataclass
 
@@ -56,14 +56,14 @@ class PinGraphicStyle(StrEnum):
 class PinNumber(KicadSchExpr):
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     effects: Effects = field(default_factory=Effects)
-    kicad_expr_tag_name: Literal["number"] = "number"
+    kicad_expr_tag_name: ClassVar[Literal["number"]] = "number"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinName(KicadSchExpr):
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     effects: Effects = field(default_factory=Effects)
-    kicad_expr_tag_name: Literal["name"] = "name"
+    kicad_expr_tag_name: ClassVar[Literal["name"]] = "name"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -74,7 +74,7 @@ class Property(KicadSchExpr):
     do_not_autoplace: Annotated[bool, m("kicad_kw_bool_empty")] = False
     show_name: Annotated[bool, m("kicad_kw_bool_empty")] = False
     effects: Effects = field(default_factory=Effects)
-    kicad_expr_tag_name: Literal["property"] = "property"
+    kicad_expr_tag_name: ClassVar[Literal["property"]] = "property"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -84,7 +84,7 @@ class PinAlternate(KicadSchExpr):
         PinElectricalType, m("kicad_no_kw")
     ] = PinElectricalType.UNSPECIFIED
     graphic_style: Annotated[PinGraphicStyle, m("kicad_no_kw")] = PinGraphicStyle.LINE
-    kicad_expr_tag_name: Literal["alternate"] = "alternate"
+    kicad_expr_tag_name: ClassVar[Literal["alternate"]] = "alternate"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -105,13 +105,13 @@ class Pin(KicadSchExpr):
 class PinNameSettings(KicadSchExpr):
     offset: Annotated[float, m("kicad_omits_default")] = 0
     hide: Annotated[bool, m("kicad_kw_bool")] = False
-    kicad_expr_tag_name: Literal["pin_names"] = "pin_names"
+    kicad_expr_tag_name: ClassVar[Literal["pin_names"]] = "pin_names"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class PinNumberSettings(KicadSchExpr):
     hide: Annotated[bool, m("kicad_kw_bool")] = False
-    kicad_expr_tag_name: Literal["pin_numbers"] = "pin_numbers"
+    kicad_expr_tag_name: ClassVar[Literal["pin_numbers"]] = "pin_numbers"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -120,7 +120,7 @@ class SymbolGraphicText(KicadSchExpr):
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     at: tuple[float, float, int] = (0, 0, 0)
     effects: Effects = field(default_factory=Effects)
-    kicad_expr_tag_name: Literal["text"] = "text"
+    kicad_expr_tag_name: ClassVar[Literal["text"]] = "text"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -131,7 +131,7 @@ class SymbolGraphicTextBox(KicadSchExpr):
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillColor)
     effects: Effects = field(default_factory=Effects)
-    kicad_expr_tag_name: Literal["text_box"] = "text_box"
+    kicad_expr_tag_name: ClassVar[Literal["text_box"]] = "text_box"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -145,7 +145,7 @@ class SubSymbol(KicadSchExpr):
     arc: list[Arc] = field(default_factory=list)
     pin: list[Pin] = field(default_factory=list)
     bezier: list[Bezier] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["symbol"] = "symbol"
+    kicad_expr_tag_name: ClassVar[Literal["symbol"]] = "symbol"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -168,4 +168,4 @@ class LibSymbol(KicadSchExpr):
     rectangle: list[Rectangle] = field(default_factory=list)
     circle: list[Circle] = field(default_factory=list)
     arc: list[Arc] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["symbol"] = "symbol"
+    kicad_expr_tag_name: ClassVar[Literal["symbol"]] = "symbol"

@@ -4,7 +4,7 @@ Dataclasses describing the contents of .kicad_sch files.
 SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
-from typing import Annotated, Literal, Optional
+from typing import Annotated, ClassVar, Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import validator
@@ -25,7 +25,7 @@ class PinAssignment(KicadSchExpr):
     number: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     uuid: UUID = field(default_factory=uuid4)
     alternate: Optional[str] = None
-    kicad_expr_tag_name: Literal["pin"] = "pin"
+    kicad_expr_tag_name: ClassVar[Literal["pin"]] = "pin"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -43,20 +43,20 @@ class SymbolUseInstancePath(KicadSchExpr):
     unit: int = 1
     value: Annotated[str | None, m("kicad_always_quotes")] = None
     footprint: Annotated[str | None, m("kicad_always_quotes")] = None
-    kicad_expr_tag_name: Literal["path"] = "path"
+    kicad_expr_tag_name: ClassVar[Literal["path"]] = "path"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolUseInstanceProject(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     path: list[SymbolUseInstancePath] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["project"] = "project"
+    kicad_expr_tag_name: ClassVar[Literal["project"]] = "project"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolUseInstances(KicadSchExpr):
     project: list[SymbolUseInstanceProject] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["instances"] = "instances"
+    kicad_expr_tag_name: ClassVar[Literal["instances"]] = "instances"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -76,7 +76,7 @@ class SymbolUse(KicadSchExpr):
     property: list[Property] = field(default_factory=list)
     pin: list[PinAssignment] = field(default_factory=list)
     instances: SymbolUseInstances | None = field(default=None)
-    kicad_expr_tag_name: Literal["symbol"] = "symbol"
+    kicad_expr_tag_name: ClassVar[Literal["symbol"]] = "symbol"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -108,12 +108,12 @@ class LocalLabel(KicadSchExpr):
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     property: list[Property] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["label"] = "label"
+    kicad_expr_tag_name: ClassVar[Literal["label"]] = "label"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Text(LocalLabel):
-    kicad_expr_tag_name: Literal["text"] = "text"
+    kicad_expr_tag_name: ClassVar[Literal["text"]] = "text"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -125,7 +125,7 @@ class TextBox(KicadSchExpr):
     fill: Fill = field(default_factory=FillSimple)
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: Literal["text_box"] = "text_box"
+    kicad_expr_tag_name: ClassVar[Literal["text_box"]] = "text_box"
 
 
 class LabelShape(StrEnum):
@@ -183,7 +183,7 @@ class SymbolInstancesPath(KicadSchExpr):
     unit: int
     value: Annotated[str, m("kicad_always_quotes")]
     footprint: Annotated[str, m("kicad_always_quotes")]
-    kicad_expr_tag_name: Literal["path"] = "path"
+    kicad_expr_tag_name: ClassVar[Literal["path"]] = "path"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -197,7 +197,7 @@ class PolylineTopLevel(KicadSchExpr):
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill | None = field(default=None)
     uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: Literal["polyline"] = "polyline"
+    kicad_expr_tag_name: ClassVar[Literal["polyline"]] = "polyline"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -207,13 +207,13 @@ class RectangleTopLevel(KicadSchExpr):
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillSimple)
     uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: Literal["rectangle"] = "rectangle"
+    kicad_expr_tag_name: ClassVar[Literal["rectangle"]] = "rectangle"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class ArcTopLevel(Arc):
     uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: Literal["arc"] = "arc"
+    kicad_expr_tag_name: ClassVar[Literal["arc"]] = "arc"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -223,7 +223,7 @@ class CircleTopLevel(KicadSchExpr):
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillSimple)
     uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: Literal["circle"] = "circle"
+    kicad_expr_tag_name: ClassVar[Literal["circle"]] = "circle"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -233,46 +233,46 @@ class SheetPin(KicadSchExpr):
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: Literal["pin"] = "pin"
+    kicad_expr_tag_name: ClassVar[Literal["pin"]] = "pin"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SheetInstancePath(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     page: Annotated[str, m("kicad_always_quotes")]
-    kicad_expr_tag_name: Literal["path"] = "path"
+    kicad_expr_tag_name: ClassVar[Literal["path"]] = "path"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SheetInstanceProject(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
-    kicad_expr_tag_name: Literal["project"] = "project"
+    kicad_expr_tag_name: ClassVar[Literal["project"]] = "project"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SheetInstances(KicadSchExpr):
     path: list[SheetInstancePath] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["sheet_instances"] = "sheet_instances"
+    kicad_expr_tag_name: ClassVar[Literal["sheet_instances"]] = "sheet_instances"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SubSheetInstancePath(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     page: Annotated[str, m("kicad_always_quotes")]
-    kicad_expr_tag_name: Literal["path"] = "path"
+    kicad_expr_tag_name: ClassVar[Literal["path"]] = "path"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SubSheetInstanceProject(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     path: list[SubSheetInstancePath] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["project"] = "project"
+    kicad_expr_tag_name: ClassVar[Literal["project"]] = "project"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SubSheetInstances(KicadSchExpr):
     project: list[SubSheetInstanceProject] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["instances"] = "instances"
+    kicad_expr_tag_name: ClassVar[Literal["instances"]] = "instances"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -357,4 +357,4 @@ class Schematic(KicadSchExpr):
         default_factory=SymbolInstances,
     )
 
-    kicad_expr_tag_name: Literal["kicad_sch"] = "kicad_sch"
+    kicad_expr_tag_name: ClassVar[Literal["kicad_sch"]] = "kicad_sch"

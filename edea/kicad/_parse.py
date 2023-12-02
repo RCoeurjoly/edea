@@ -79,9 +79,6 @@ def _parse(
     # pylint: disable=too-many-statements
     parsed_kwargs = {}
     for field in fields:
-        if field.name == "kicad_expr_tag_name":
-            continue
-
         if len(exprs) == 0:
             index = fields.index(field)
             remaining = [f.name for f in fields[index:] if not is_optional(f)]

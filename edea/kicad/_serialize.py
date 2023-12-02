@@ -31,9 +31,8 @@ def to_list(kicad_expr: KicadExpr) -> SExprList:
 
 
 def _serialize_field(field: dataclasses.Field, value) -> SExprList:
-    if field.name == "kicad_expr_tag_name" or value is None:
+    if value is None:
         return []
-
     if get_meta(field, "kicad_omits_default"):
         # KiCad doesn't put anything in the s-expression if this field is at
         # its default value, so we don't either.

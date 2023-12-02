@@ -45,8 +45,6 @@ def get_type(field: dataclasses.Field):
 
 
 def is_optional(field: dataclasses.Field):
-    if field.name == "kicad_expr_tag_name":
-        return True
     if get_meta(field, "kicad_kw_bool"):
         return True
     if get_meta(field, "kicad_kw_bool_empty"):

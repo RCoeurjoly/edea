@@ -1,13 +1,13 @@
 from dataclasses import field
-from typing import Annotated, Literal, Optional, Union
+from typing import Annotated, ClassVar, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 from pydantic.dataclasses import dataclass
 
+from edea.kicad._fields import make_meta as m
 from edea.kicad.base import KicadExpr
 from edea.kicad.color import Color
 from edea.kicad.config import PydanticConfig
-from edea.kicad._fields import make_meta as m
 from edea.kicad.str_enum import StrEnum
 
 
@@ -54,7 +54,7 @@ class PaperUser(KicadExpr):
     format: Annotated[Literal["User"], m("kicad_no_kw", "kicad_always_quotes")] = "User"
     width: Annotated[float, m("kicad_no_kw")] = 0
     height: Annotated[float, m("kicad_no_kw")] = 0
-    kicad_expr_tag_name: Literal["paper"] = "paper"
+    kicad_expr_tag_name: ClassVar[Literal["paper"]] = "paper"
 
     def as_dimensions_mm(self) -> tuple[float, float]:
         return (self.width, self.height)
@@ -68,7 +68,7 @@ class PaperStandard(KicadExpr):
     orientation: Annotated[
         PaperOrientation, m("kicad_no_kw", "kicad_omits_default")
     ] = PaperOrientation.LANDSCAPE
-    kicad_expr_tag_name: Literal["paper"] = "paper"
+    kicad_expr_tag_name: ClassVar[Literal["paper"]] = "paper"
 
     def as_dimensions_mm(self) -> tuple[float, float]:
         lookup = {
@@ -102,7 +102,7 @@ class PolygonArc(KicadExpr):
     mid: tuple[float, float]
     end: tuple[float, float]
 
-    kicad_expr_tag_name: Literal["arc"] = "arc"
+    kicad_expr_tag_name: ClassVar[Literal["arc"]] = "arc"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -129,7 +129,7 @@ class Image(KicadExpr):
 class TitleBlockComment(KicadExpr):
     number: Annotated[int, m("kicad_no_kw")] = 1
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
-    kicad_expr_tag_name: Literal["comment"] = "comment"
+    kicad_expr_tag_name: ClassVar[Literal["comment"]] = "comment"
 
 
 @dataclass(config=PydanticConfig, eq=False)

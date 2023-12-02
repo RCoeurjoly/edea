@@ -1,5 +1,5 @@
 from dataclasses import field
-from typing import Annotated, Literal, Optional
+from typing import Annotated, ClassVar, Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic.dataclasses import dataclass
@@ -25,7 +25,7 @@ class PositionIdentifier(KicadPcbExpr):
     y: Annotated[float, m("kicad_no_kw")] = 0
     angle: Annotated[float, m("kicad_no_kw", "kicad_omits_default")] = 0
     unlocked: Annotated[bool, m("kicad_kw_bool")] = False
-    kicad_expr_tag_name: Literal["at"] = "at"
+    kicad_expr_tag_name: ClassVar[Literal["at"]] = "at"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -34,7 +34,7 @@ class ConnectionPads(KicadPcbExpr):
         Literal["yes", "no", "full", "thru_hole_only", None], m("kicad_no_kw")
     ] = None
     clearance: float = 0
-    kicad_expr_tag_name: Literal["connect_pads"] = "connect_pads"
+    kicad_expr_tag_name: ClassVar[Literal["connect_pads"]] = "connect_pads"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -44,7 +44,7 @@ class ZoneKeepOutSettings(KicadPcbExpr):
     pads: Literal["allowed", "not_allowed"]
     copperpour: Literal["allowed", "not_allowed"]
     footprints: Literal["allowed", "not_allowed"]
-    kicad_expr_tag_name: Literal["keepout"] = "keepout"
+    kicad_expr_tag_name: ClassVar[Literal["keepout"]] = "keepout"
 
 
 class ZoneFillIslandRemovalMode(StrEnum):
@@ -83,7 +83,7 @@ class ZoneFillSettings(KicadPcbExpr):
     hatch_smoothing_value: Optional[float] = None
     hatch_border_algorithm: Optional[ZoneFillHatchBorderAlgorithm] = None
     hatch_min_hole_area: Optional[float] = None
-    kicad_expr_tag_name: Literal["fill"] = "fill"
+    kicad_expr_tag_name: ClassVar[Literal["fill"]] = "fill"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -91,13 +91,13 @@ class ZoneFillPolygon(KicadPcbExpr):
     layer: CanonicalLayerName
     island: Annotated[bool, m("kicad_kw_bool_empty")] = False
     pts: Pts = field(default_factory=Pts)
-    kicad_expr_tag_name: Literal["filled_polygon"] = "filled_polygon"
+    kicad_expr_tag_name: ClassVar[Literal["filled_polygon"]] = "filled_polygon"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Polygon(KicadPcbExpr):
     pts: list[Pts] = field(default_factory=list)
-    kicad_expr_tag_name: Literal["polygon"] = "polygon"
+    kicad_expr_tag_name: ClassVar[Literal["polygon"]] = "polygon"
 
 
 class Hatch(StrEnum):
@@ -109,13 +109,13 @@ class Hatch(StrEnum):
 @dataclass(config=PydanticConfig, eq=False)
 class ZoneAttrTearDrop(KicadPcbExpr):
     type: Literal["padvia", "track_end"] = "padvia"
-    kicad_expr_tag_name: Literal["teardrop"] = "teardrop"
+    kicad_expr_tag_name: ClassVar[Literal["teardrop"]] = "teardrop"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class ZoneAttr(KicadPcbExpr):
     teardrop: ZoneAttrTearDrop
-    kicad_expr_tag_name: Literal["attr"] = "attr"
+    kicad_expr_tag_name: ClassVar[Literal["attr"]] = "attr"
 
 
 @dataclass(config=PydanticConfig, eq=False)

@@ -6,7 +6,7 @@ SPDX-License-Identifier: EUPL-1.2
 from dataclasses import field
 import itertools
 import math
-from typing import Annotated, Literal, Optional
+from typing import Annotated, ClassVar, Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import validator
@@ -47,7 +47,7 @@ class General(KicadPcbExpr):
 class StackupLayerThickness(KicadPcbExpr):
     value: Annotated[float, m("kicad_no_kw")]
     locked: Annotated[bool, m("kicad_kw_bool")] = False
-    kicad_expr_tag_name: Literal["thickness"] = "thickness"
+    kicad_expr_tag_name: ClassVar[Literal["thickness"]] = "thickness"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -60,7 +60,7 @@ class StackupLayer(KicadPcbExpr):
     material: Annotated[Optional[str], m("kicad_always_quotes")] = None
     epsilon_r: Optional[float] = None
     loss_tangent: Optional[float] = None
-    kicad_expr_tag_name: Literal["layer"] = "layer"
+    kicad_expr_tag_name: ClassVar[Literal["layer"]] = "layer"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -126,7 +126,7 @@ class PlotSettings(KicadPcbExpr):
     scaleselection: int = 0
     outputdirectory: Annotated[str, m("kicad_always_quotes")] = ""
 
-    kicad_expr_tag_name: Literal["pcbplotparams"] = "pcbplotparams"
+    kicad_expr_tag_name: ClassVar[Literal["pcbplotparams"]] = "pcbplotparams"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -332,7 +332,7 @@ class Pcb(KicadPcbExpr):
     def _is_infinite_size(min_x, min_y, max_x, max_y):
         return any(math.isinf(x) for x in (min_x, min_y, max_x, max_y))
 
-    kicad_expr_tag_name: Literal["kicad_pcb"] = "kicad_pcb"
+    kicad_expr_tag_name: ClassVar[Literal["kicad_pcb"]] = "kicad_pcb"
 
 
 class MissingBoardOutlineError(ValueError):
