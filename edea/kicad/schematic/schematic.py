@@ -40,9 +40,7 @@ class DefaultInstance(KicadSchExpr):
 class SymbolUseInstancePath(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     reference: Annotated[str, m("kicad_always_quotes")]
-    unit: int = 1
-    value: Annotated[str | None, m("kicad_always_quotes")] = None
-    footprint: Annotated[str | None, m("kicad_always_quotes")] = None
+    unit: int
     kicad_expr_tag_name: ClassVar[Literal["path"]] = "path"
 
 
@@ -237,35 +235,22 @@ class SheetPin(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class SheetInstancePath(KicadSchExpr):
+class SheetInstancesPath(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     page: Annotated[str, m("kicad_always_quotes")]
     kicad_expr_tag_name: ClassVar[Literal["path"]] = "path"
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class SheetInstanceProject(KicadSchExpr):
-    name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
-    kicad_expr_tag_name: ClassVar[Literal["project"]] = "project"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SheetInstances(KicadSchExpr):
-    path: list[SheetInstancePath] = field(default_factory=list)
+    path: list[SheetInstancesPath] = field(default_factory=list)
     kicad_expr_tag_name: ClassVar[Literal["sheet_instances"]] = "sheet_instances"
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class SubSheetInstancePath(KicadSchExpr):
-    name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
-    page: Annotated[str, m("kicad_always_quotes")]
-    kicad_expr_tag_name: ClassVar[Literal["path"]] = "path"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class SubSheetInstanceProject(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
-    path: list[SubSheetInstancePath] = field(default_factory=list)
+    path: list[SheetInstancesPath] = field(default_factory=list)
     kicad_expr_tag_name: ClassVar[Literal["project"]] = "project"
 
 
