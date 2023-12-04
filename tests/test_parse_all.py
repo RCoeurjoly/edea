@@ -1,5 +1,5 @@
 """
-Test that parses as many KiCad 6 projects as we could find.
+Test that parses as many KiCad schematic and PCB files as we could find.
 
 SPDX-License-Identifier: EUPL-1.2
 """
