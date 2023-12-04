@@ -5,12 +5,12 @@ from warnings import warn
 
 from pydantic import BaseModel
 
-from .parser import from_str
-from .pcb import Pcb
-from .schematic import Schematic
+from edea.kicad.parser import from_str
+from edea.kicad.pcb import Pcb
+from edea.kicad.schematic import Schematic
 
 
-class EdeaModuleMetadata(BaseModel):
+class EdeaProjectMetadata(BaseModel):
     """Metadata for the EDeA module."""
 
     area_mm: float | None = None
@@ -40,7 +40,7 @@ class Project:
 
     @cached_property
     def metadata(self):
-        data = EdeaModuleMetadata()
+        data = EdeaProjectMetadata()
 
         for symbol in self.schematic.symbol:
             if any(
