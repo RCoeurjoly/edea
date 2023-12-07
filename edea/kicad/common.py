@@ -2,13 +2,12 @@ from dataclasses import field
 from typing import Literal, Optional, Union
 from uuid import UUID, uuid4
 
-from pydantic import root_validator
 from pydantic.dataclasses import dataclass
 
 from edea.kicad.base import KicadExpr
 from edea.kicad.color import Color
 from edea.kicad.config import PydanticConfig
-from edea.kicad.meta import make_meta as m
+from edea.kicad._fields import make_meta as m
 from edea.kicad.str_enum import StrEnum
 
 
@@ -25,7 +24,7 @@ class StrokeType(StrEnum):
 class Stroke(KicadExpr):
     width: float = 0
     type: StrokeType = StrokeType.DEFAULT
-    color: Color = (0, 0, 0, 0.0)
+    color: Color = field(default=(0, 0, 0, 0.0), metadata=m("kicad_omits_default"))
 
 
 class PaperFormat(StrEnum):
@@ -147,52 +146,13 @@ class TitleBlock(KicadExpr):
     )
 
 
-class JustifyHoriz(StrEnum):
-    LEFT = "left"
-    CENTER = "center"
-    RIGHT = "right"
-
-
-class JustifyVert(StrEnum):
-    TOP = "top"
-    CENTER = "center"
-    BOTTOM = "bottom"
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class Justify(KicadExpr):
-    horizontal: JustifyHoriz = field(
-        default=JustifyHoriz.CENTER, metadata=m("kicad_no_kw", "kicad_omits_default")
-    )
-    vertical: JustifyVert = field(
-        default=JustifyVert.CENTER, metadata=m("kicad_no_kw", "kicad_omits_default")
-    )
-    mirror: bool = field(default=False, metadata=m("kicad_kw_bool"))
-
-    @root_validator(pre=True)
-    def validate(cls, fields: dict):
-        """
-        The values can be passed in any order so we have to find the right
-        field for them.
-        """
-        correct_fields = {}
-        for v in fields.values():
-            if v in (JustifyHoriz.LEFT, JustifyHoriz.RIGHT):
-                correct_fields["horizontal"] = v
-            elif v in (JustifyVert.TOP, JustifyVert.BOTTOM):
-                correct_fields["vertical"] = v
-            elif v == "mirror":
-                correct_fields["mirror"] = True
-        return correct_fields
-
-
 @dataclass(config=PydanticConfig, eq=False)
 class Font(KicadExpr):
     face: Optional[str] = None
     size: tuple[float, float] = (1.27, 1.27)
     thickness: Optional[float] = field(default=None, metadata=m("kicad_omits_default"))
-    italic: bool = field(default=False, metadata=m("kicad_kw_bool"))
     bold: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    italic: bool = field(default=False, metadata=m("kicad_kw_bool"))
     color: tuple[int, int, int, float] = field(
         default=(0, 0, 0, 1.0), metadata=m("kicad_omits_default")
     )
@@ -201,7 +161,9 @@ class Font(KicadExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class Effects(KicadExpr):
     font: Font = field(default_factory=Font)
-    justify: Justify = field(default_factory=Justify, metadata=m("kicad_omits_default"))
+    justify: list[Literal["left", "right", "top", "bottom", "mirror"]] = field(
+        default_factory=list, metadata=m("kicad_omits_default")
+    )
     hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
     href: Optional[str] = field(default=None, metadata=m("kicad_always_quotes"))
 

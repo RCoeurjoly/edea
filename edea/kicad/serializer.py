@@ -57,6 +57,8 @@ _special_chars = (
     "\x85",
     # en quad, again not sure why we need to quote
     "\u2000",
+    # em quad
+    "\u2001",
 )
 
 

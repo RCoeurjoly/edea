@@ -8,4 +8,6 @@ class QuotedStr(str):
     """
 
 
-SExprList = list[Union[str, QuotedStr, "SExprList"]]
+SExprAtom = str | QuotedStr
+
+SExprList = list[Union[SExprAtom, "SExprList"]]
