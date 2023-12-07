@@ -21,6 +21,9 @@ from edea.util import to_snake_case
 from . import _equality
 from ._type_utils import get_full_seq_type
 
+ParsedKwargValue = list[SExprList]
+ParsedKwargs = dict[str, ParsedKwargValue]
+
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
 
 CustomSerializerMethod = Callable[[Any], list[SExprList]]
@@ -55,6 +58,10 @@ class KicadExpr:
         """
         parsed_args, parsed_kwargs = _split_args(expr)
 
+        parsed_args, parsed_kwargs = cls._process_args_for_parsing(
+            parsed_args, parsed_kwargs
+        )
+
         if cls.kicad_expr_tag_name in ["kicad_sch", "kicad_pcb"]:
             if len(expr) <= 4:
                 raise EOFError(f"Invalid {cls.kicad_expr_tag_name} file")
@@ -82,7 +89,9 @@ class KicadExpr:
     def to_list(self) -> SExprList:
         sexpr = []
         custom_serializers = self._get_custom_serializers()
-        for field in dataclasses.fields(self):
+        fields = dataclasses.fields(self)
+        fields = self._process_fields_for_serialization(fields)
+        for field in fields:
             value = getattr(self, field.name)
             if field.name in custom_serializers:
                 serializer = custom_serializers[field.name]
@@ -103,6 +112,22 @@ class KicadExpr:
     def check_version(cls, v):
         """This should be implemented by subclasses to check the file format version"""
         raise NotImplementedError
+
+    @classmethod
+    def _process_args_for_parsing(
+        cls, args: list[str], kwargs: ParsedKwargs
+    ) -> tuple[list[str], ParsedKwargs]:
+        """
+        This can be re-implemented by a subclass to process the arguments
+        extracted in `from_list`.
+        """
+        return args, kwargs
+
+    def _process_fields_for_serialization(
+        self, fields: tuple[dataclasses.Field, ...]
+    ) -> tuple[dataclasses.Field, ...]:
+        """This can be re-implemented by a subclass to e.g. re-order the fields."""
+        return fields
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -205,19 +230,21 @@ def _value_to_str(annotation: Type, value, in_quotes) -> str:
     return make_str(value)
 
 
-def _parse_field(field: dataclasses.Field, exp: SExprList):
+def _parse_field(field: dataclasses.Field, value: ParsedKwargValue):
     if get_meta(field, "kicad_kw_bool_empty"):
         # It's an empty keyword boolean expression like `(fields_autoplaced)`.
         # If we are here, then it's present so we set it to `True`.
-        if exp != [[]]:
-            raise ValueError(f"Expecting empty expression for {field.name}, got: {exp}")
+        if value != [[]]:
+            raise ValueError(
+                f"Expecting empty expression for {field.name}, got: {value}"
+            )
         return True
     if get_meta(field, "kicad_bool_yes_no"):
-        return exp == [["yes"]]
-    return _parse_as(field.type, exp)
+        return value == [["yes"]]
+    return _parse_as(field.type, value)
 
 
-def _parse_as(annotation: Type, exp: SExprList):
+def _parse_as(annotation: Type, value: ParsedKwargValue):
     """
     Parse an s-expression list as a particular type.
     """
@@ -227,23 +254,23 @@ def _parse_as(annotation: Type, exp: SExprList):
     if origin is list:
         sub = sub_types[0]
         if is_kicad_expr(sub):
-            return [sub.from_list(e) for e in exp]
-        _assert_len_one(annotation, exp)
-        return exp[0]
+            return [sub.from_list(e) for e in value]
+        _assert_len_one(annotation, value)
+        return value[0]
     elif is_kicad_expr(annotation):
-        _assert_len_one(annotation, exp)
-        return annotation.from_list(exp[0])
+        _assert_len_one(annotation, value)
+        return annotation.from_list(value[0])
     elif origin is tuple:
-        _assert_len_one(annotation, exp)
+        _assert_len_one(annotation, value)
         # XXX you can't have tuples of `KicadExpr`
-        return tuple(exp[0])
+        return tuple(value[0])
     elif (origin is Union) or (origin is UnionType):
         # union types are tried till we find one that doesn't produce a
         # validation error
         errors = []
         for sub in sub_types:
             try:
-                return _parse_as(sub, exp)
+                return _parse_as(sub, value)
             except (ValidationError, TypeError, ValueError) as e:
                 errors.append(e)
         if len(errors) > 0:
@@ -251,15 +278,15 @@ def _parse_as(annotation: Type, exp: SExprList):
         else:
             raise Exception("Unknown error with parsing union type")
 
-    _assert_len_one(annotation, exp[0])
+    _assert_len_one(annotation, value[0])
 
     if origin is Literal:
-        return exp[0][0]
+        return value[0][0]
 
     if annotation is bool:
-        return exp[0][0] == "true"
+        return value[0][0] == "true"
 
-    return annotation(exp[0][0])
+    return annotation(value[0][0])
 
 
 def _assert_len_one(annotation, exp):
@@ -269,7 +296,7 @@ def _assert_len_one(annotation, exp):
         )
 
 
-def _split_args(expr: SExprList) -> tuple[list[str], dict]:
+def _split_args(expr: SExprList) -> tuple[list[str], ParsedKwargs]:
     """
     Turn an s-expression list into something resembling python args and
     keyword args.

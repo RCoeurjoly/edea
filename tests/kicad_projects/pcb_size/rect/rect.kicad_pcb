@@ -1,4 +1,4 @@
-(kicad_pcb (version 20211014) (generator pcbnew)
+(kicad_pcb (version 20221018) (generator pcbnew)
 
   (general
     (thickness 1.6)
@@ -41,6 +41,7 @@
     (pad_to_mask_clearance 0)
     (pcbplotparams
       (layerselection 0x00010fc_ffffffff)
+      (plot_on_all_layers_selection 0x0000000_00000000)
       (disableapertmacros false)
       (usegerberextensions false)
       (usegerberattributes true)
@@ -77,6 +78,6 @@
   (net 0 "")
 
   (gr_rect (start 152.4 73.66) (end 180.34 101.6)
-    (fill none) (layer "Edge.Cuts") (tstamp eb4e0dd6-f830-40c2-a788-ba5ae1cc25ef))
+    (stroke (width 0.1) (type solid)) (fill none) (layer "Edge.Cuts") (tstamp eb4e0dd6-f830-40c2-a788-ba5ae1cc25ef))
 
 )

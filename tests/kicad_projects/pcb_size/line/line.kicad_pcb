@@ -1,4 +1,4 @@
-(kicad_pcb (version 20211014) (generator pcbnew)
+(kicad_pcb (version 20221018) (generator pcbnew)
 
   (general
     (thickness 1.6)
@@ -41,6 +41,7 @@
     (pad_to_mask_clearance 0)
     (pcbplotparams
       (layerselection 0x00010fc_ffffffff)
+      (plot_on_all_layers_selection 0x0000000_00000000)
       (disableapertmacros false)
       (usegerberextensions false)
       (usegerberattributes true)
@@ -77,16 +78,16 @@
   (net 0 "")
 
   (gr_line (start 127 101.6) (end 104.14 101.6)
-    (layer "Edge.Cuts") (tstamp 170fe7d3-d854-4438-93a4-3ce38419cc89))
+    (stroke (width 0.1) (type solid)) (layer "Edge.Cuts") (tstamp 170fe7d3-d854-4438-93a4-3ce38419cc89))
   (gr_line (start 127 76.2) (end 127 101.6)
-    (layer "Edge.Cuts") (tstamp 1d9871ac-e0f5-455f-aa8c-a956423d1967))
+    (stroke (width 0.1) (type solid)) (layer "Edge.Cuts") (tstamp 1d9871ac-e0f5-455f-aa8c-a956423d1967))
   (gr_line (start 104.14 101.6) (end 101.6 101.6)
-    (layer "Edge.Cuts") (tstamp 55f6e325-3cce-4043-a426-8ac38312aaf3))
+    (stroke (width 0.1) (type solid)) (layer "Edge.Cuts") (tstamp 55f6e325-3cce-4043-a426-8ac38312aaf3))
   (gr_line (start 101.6 78.74) (end 101.6 76.2)
-    (layer "Edge.Cuts") (tstamp 7c95fc5c-78b3-4b99-b29a-9857a1ef6378))
+    (stroke (width 0.1) (type solid)) (layer "Edge.Cuts") (tstamp 7c95fc5c-78b3-4b99-b29a-9857a1ef6378))
   (gr_line (start 101.6 76.2) (end 127 76.2)
-    (layer "Edge.Cuts") (tstamp a83653a9-819e-4e4f-8df0-21e8977f038f))
+    (stroke (width 0.1) (type solid)) (layer "Edge.Cuts") (tstamp a83653a9-819e-4e4f-8df0-21e8977f038f))
   (gr_line (start 101.6 101.6) (end 101.6 78.74)
-    (layer "Edge.Cuts") (tstamp db39c3f2-4d4b-4be4-817d-5a4f851d514a))
+    (stroke (width 0.1) (type solid)) (layer "Edge.Cuts") (tstamp db39c3f2-4d4b-4be4-817d-5a4f851d514a))
 
 )

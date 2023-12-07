@@ -7,7 +7,7 @@ from dataclasses import field
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
-from pydantic import conint, validator
+from pydantic import validator
 from pydantic.dataclasses import dataclass
 
 from edea.kicad.color import Color
@@ -309,22 +309,19 @@ class BusAlias(KicadSchExpr):
     members: list[str] = field(default_factory=list, metadata=m("kicad_always_quotes"))
 
 
-SchematicVersion = conint(gt=20220000, le=20230121)
-
-
 @dataclass(config=PydanticConfig, eq=False)
 class Schematic(KicadSchExpr):
-    version: SchematicVersion = 20230121  # type: ignore
+    version: Literal["20230121"] = "20230121"
 
     @validator("version")
     @classmethod
-    def check_version(cls, v) -> SchematicVersion:  # type: ignore
-        v = int(v)
-        if 20220000 < v <= 20230121:
+    def check_version(cls, v) -> Literal["20230121"]:
+        if v == "20230121":
             return v
         raise VersionError(
-            "Only stable KiCad 7 schematic file formats newer than 2022 and"
-            f" older than or equal to '20230121' are supported. Got '{v}'."
+            "Only the stable KiCad 7 schematic file format i.e. '20230121' is"
+            f" supported. Got '{v}'. Please open and re-save the file with"
+            " KiCad 7 if you can."
         )
 
     generator: str = "edea"

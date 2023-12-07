@@ -71,7 +71,6 @@ class PinName(KicadSchExpr):
 class Property(KicadSchExpr):
     key: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     value: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    id: int = 0
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     do_not_autoplace: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     show_name: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
