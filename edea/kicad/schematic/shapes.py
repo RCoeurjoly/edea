@@ -8,10 +8,10 @@ from typing import ClassVar, Literal, Optional
 
 from pydantic.dataclasses import dataclass
 
+from edea.kicad._config import PydanticConfig
+from edea.kicad._str_enum import StrEnum
 from edea.kicad.common import Pts, Stroke
-from edea.kicad.config import PydanticConfig
 from edea.kicad.schematic.base import KicadSchExpr
-from edea.kicad.str_enum import StrEnum
 
 
 class FillType(StrEnum):

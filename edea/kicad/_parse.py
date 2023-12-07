@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 import dataclasses
 from reprlib import Repr
 from types import UnionType
-from typing import Any, Literal, TYPE_CHECKING, Type, Union, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Literal, Type, Union, get_args, get_origin
 
 from pydantic import ValidationError
 
@@ -14,9 +15,9 @@ ParsedKwargs = dict[str, Any]
 
 if TYPE_CHECKING:
     from edea.kicad.base import (
-        KicadExprClass,
-        KicadExpr,
         CustomParser,
+        KicadExpr,
+        KicadExprClass,
     )
 
 

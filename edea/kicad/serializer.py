@@ -7,7 +7,8 @@ def to_list(expr: KicadExpr) -> SExprList:
     """
     Turn an EDeA dataclass into an s-expression list.
     """
-    return [expr.kicad_expr_tag_name] + expr.to_list()
+    lst: SExprList = [expr.kicad_expr_tag_name]
+    return lst + expr.to_list()
 
 
 _special_chars = (

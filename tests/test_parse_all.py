@@ -5,13 +5,13 @@ SPDX-License-Identifier: EUPL-1.2
 """
 
 import os
+
 import pytest
 
-
-from edea.kicad.parser import from_str
-from edea.kicad.schematic import Schematic
-from edea.kicad.pcb import Pcb
 from edea.kicad.common import VersionError
+from edea.kicad.parser import from_str
+from edea.kicad.pcb import Pcb
+from edea.kicad.schematic import Schematic
 
 test_folder = os.path.dirname(os.path.realpath(__file__))
 kicad_folder = os.path.join(test_folder, "kicad_projects/kicad-test-files")

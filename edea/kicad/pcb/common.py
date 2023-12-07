@@ -4,10 +4,10 @@ from uuid import UUID, uuid4
 
 from pydantic.dataclasses import dataclass
 
+from edea.kicad._config import PydanticConfig
 from edea.kicad._fields import make_meta as m
+from edea.kicad._str_enum import StrEnum
 from edea.kicad.common import Effects, Pts, Stroke
-from edea.kicad.config import PydanticConfig
-from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
 from .layer import CanonicalLayerName, WildCardLayerName

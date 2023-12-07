@@ -1,7 +1,7 @@
 import os
 
-from hypothesis import given, infer
 import pytest
+from hypothesis import given, infer
 
 from edea.kicad.schematic import Schematic
 from edea.kicad.serializer import to_str

@@ -6,15 +6,15 @@ SPDX-License-Identifier: EUPL-1.2
 """
 
 import os
-import subprocess
 import shutil
+import subprocess
 
 import pytest
 
 from edea.kicad.common import VersionError
 from edea.kicad.parser import from_str
-from edea.kicad.schematic import Schematic
 from edea.kicad.pcb import Pcb
+from edea.kicad.schematic import Schematic
 from edea.kicad.serializer import to_str
 
 test_folder = os.path.dirname(os.path.realpath(__file__))

@@ -37,3 +37,13 @@ def get_full_seq_type(value: tuple | list) -> Type[tuple | list]:
             sub = get_full_seq_type(v)
         return list[sub]
     return typ
+
+
+def get_all_subclasses(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses

@@ -10,11 +10,10 @@ from typing import Any, Callable, ClassVar, Type, TypeVar
 
 from pydantic.dataclasses import dataclass
 
+from edea._utils import to_snake_case
 from edea.kicad import _equality, _parse, _serialize
 from edea.kicad._fields import get_type
 from edea.kicad.s_expr import SExprList
-from edea.util import to_snake_case
-
 
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
 

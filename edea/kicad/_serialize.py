@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 import dataclasses
 from types import UnionType
 from typing import TYPE_CHECKING, Type, Union, get_args, get_origin
 
+from edea._type_utils import get_full_seq_type
 from edea.kicad._fields import get_meta, get_type
-from edea.kicad._type_utils import get_full_seq_type
 from edea.kicad.is_kicad_expr import is_kicad_expr, is_kicad_expr_list
 from edea.kicad.number import is_number, number_to_str
 from edea.kicad.s_expr import QuotedStr, SExprList
