@@ -65,7 +65,7 @@ class StackupLayer(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Stackup(KicadPcbExpr):
-    layer: list[StackupLayer] = field(default_factory=list)
+    layers: list[StackupLayer] = field(default_factory=list)
     copper_finish: Optional[str] = None
     dielectric_constraints: Annotated[
         bool, m("kicad_bool_yes_no", "kicad_omits_default")
@@ -263,35 +263,35 @@ class Pcb(KicadPcbExpr):
         return lst, exprs
 
     setup: Setup = field(default_factory=Setup)
-    property: list[Property] = field(default_factory=list)
-    net: list[Net] = field(default_factory=list)
-    footprint: list[Footprint] = field(default_factory=list)
-    zone: list[Zone] = field(default_factory=list)
-    image: list[Image] = field(default_factory=list)
+    properties: list[Property] = field(default_factory=list)
+    nets: list[Net] = field(default_factory=list)
+    footprints: list[Footprint] = field(default_factory=list)
+    zones: list[Zone] = field(default_factory=list)
+    images: list[Image] = field(default_factory=list)
 
     # Graphics
-    gr_line: list[GraphicalLine] = field(default_factory=list)
-    gr_text: list[GraphicalText] = field(default_factory=list)
-    gr_text_box: list[GraphicalTextBox] = field(default_factory=list)
-    gr_rect: list[GraphicalRectangle] = field(default_factory=list)
-    gr_circle: list[GraphicalCircle] = field(default_factory=list)
-    gr_arc: list[GraphicalArc] = field(default_factory=list)
-    gr_curve: list[GraphicalCurve] = field(default_factory=list)
-    gr_poly: list[GraphicalPolygon] = field(default_factory=list)
-    bezier: list[GraphicalBezier] = field(default_factory=list)
-    gr_bbox: list[GraphicalBoundingBox] = field(default_factory=list)
-    dimension: list[GraphicalDimension] = field(default_factory=list)
+    gr_lines: list[GraphicalLine] = field(default_factory=list)
+    gr_text_items: list[GraphicalText] = field(default_factory=list)
+    gr_text_boxes: list[GraphicalTextBox] = field(default_factory=list)
+    gr_rects: list[GraphicalRectangle] = field(default_factory=list)
+    gr_circles: list[GraphicalCircle] = field(default_factory=list)
+    gr_arcs: list[GraphicalArc] = field(default_factory=list)
+    gr_curves: list[GraphicalCurve] = field(default_factory=list)
+    gr_polys: list[GraphicalPolygon] = field(default_factory=list)
+    beziers: list[GraphicalBezier] = field(default_factory=list)
+    gr_bboxes: list[GraphicalBoundingBox] = field(default_factory=list)
+    dimensions: list[GraphicalDimension] = field(default_factory=list)
     # end Graphics
 
     # Tracks
-    segment: list[Segment] = field(default_factory=list)
-    via: list[Via] = field(default_factory=list)
-    arc: list[Arc] = field(default_factory=list)
+    segments: list[Segment] = field(default_factory=list)
+    vias: list[Via] = field(default_factory=list)
+    arcs: list[Arc] = field(default_factory=list)
     # end Tracks
-    group: list[Group] = field(default_factory=list)
+    groups: list[Group] = field(default_factory=list)
 
     # UNDOCUMENTED: `target`
-    target: list[Target] = field(default_factory=list)
+    targets: list[Target] = field(default_factory=list)
 
     def size(self):
         """Calculate the size (width, height) of the board"""
@@ -302,12 +302,12 @@ class Pcb(KicadPcbExpr):
         is_missing_board_outline = True
 
         for gr in itertools.chain(
-            self.gr_line,
-            self.gr_rect,
-            self.gr_arc,
-            self.gr_poly,
-            self.gr_curve,
-            self.gr_circle,
+            self.gr_lines,
+            self.gr_rects,
+            self.gr_arcs,
+            self.gr_polys,
+            self.gr_curves,
+            self.gr_circles,
         ):
             if gr.layer == "Edge.Cuts":
                 if is_missing_board_outline:

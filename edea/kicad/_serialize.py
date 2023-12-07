@@ -67,12 +67,10 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
         return [[field.name, "yes" if value else "no"]]
 
     field_type = get_type(field)
-    origin = get_origin(field_type)
-    sub_types = get_args(field_type)
-    if origin is list and is_kicad_expr(sub_types[0]):
+    if is_kicad_expr_list(field_type):
         if value == []:
             return []
-        return [[field.name] + v.to_list() for v in value]
+        return [[v.kicad_expr_tag_name] + v.to_list() for v in value]
 
     return [[field.name] + _serialize_as(field_type, value, in_quotes)]
 

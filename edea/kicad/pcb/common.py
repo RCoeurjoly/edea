@@ -149,8 +149,8 @@ class Zone(KicadPcbExpr):
     fill: Annotated[ZoneFillSettings, m("kicad_omits_default")] = field(
         default_factory=ZoneFillSettings,
     )
-    polygon: list[Polygon] = field(default_factory=list)
-    filled_polygon: list[ZoneFillPolygon] = field(default_factory=list)
+    polygons: list[Polygon] = field(default_factory=list)
+    filled_polygons: list[ZoneFillPolygon] = field(default_factory=list)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -165,7 +165,7 @@ class Group(KicadPcbExpr):
 class RenderCache(KicadPcbExpr):
     name: Annotated[str, m("kicad_no_kw")]
     number: Annotated[float, m("kicad_no_kw")]
-    polygon: list[Polygon] = field(default_factory=list)
+    polygons: list[Polygon] = field(default_factory=list)
 
 
 @dataclass(config=PydanticConfig, eq=False)

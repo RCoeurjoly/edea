@@ -217,15 +217,15 @@ class FootprintPadOptions(KicadPcbExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class FootprintPadPrimitives(KicadPcbExpr):
-    gr_poly: list[GraphicalPolygon] = field(default_factory=list)
-    gr_line: list[GraphicalLine] = field(default_factory=list)
-    gr_rect: list[GraphicalRectangle] = field(default_factory=list)
-    gr_circle: list[GraphicalCircle] = field(default_factory=list)
-    gr_arc: list[GraphicalArc] = field(default_factory=list)
-    gr_text: list[GraphicalText] = field(default_factory=list)
-    bezier: list[GraphicalBezier] = field(default_factory=list)
-    gr_bbox: list[GraphicalBoundingBox] = field(default_factory=list)
-    gr_text_box: list[GraphicalTextBox] = field(default_factory=list)
+    gr_polys: list[GraphicalPolygon] = field(default_factory=list)
+    gr_lines: list[GraphicalLine] = field(default_factory=list)
+    gr_rects: list[GraphicalRectangle] = field(default_factory=list)
+    gr_circles: list[GraphicalCircle] = field(default_factory=list)
+    gr_arcs: list[GraphicalArc] = field(default_factory=list)
+    gr_text_items: list[GraphicalText] = field(default_factory=list)
+    beziers: list[GraphicalBezier] = field(default_factory=list)
+    gr_bboxes: list[GraphicalBoundingBox] = field(default_factory=list)
+    gr_text_boxes: list[GraphicalTextBox] = field(default_factory=list)
     width: Optional[float] = None
     fill: Annotated[bool, m("kicad_bool_yes_no", "kicad_omits_default")] = False
 
@@ -340,7 +340,7 @@ class Footprint(KicadPcbExpr):
     at: Optional[PositionIdentifier] = None
     descr: Optional[str] = None
     tags: Optional[str] = None
-    property: list[Property] = field(default_factory=list)
+    properties: list[Property] = field(default_factory=list)
     path: Optional[str] = None
     autoplace_cost90: Optional[AutoplaceCost] = None
     autoplace_cost180: Optional[AutoplaceCost] = None
@@ -355,19 +355,19 @@ class Footprint(KicadPcbExpr):
     net_tie_pad_groups: Annotated[list[str], m("kicad_omits_default")] = field(
         default_factory=list,
     )
-    fp_text: list[FootprintText] = field(default_factory=list)
-    image: list[Image] = field(default_factory=list)
-    fp_text_box: list[FootprintTextBox] = field(default_factory=list)
-    fp_line: list[FootprintLine] = field(default_factory=list)
-    fp_rect: list[FootprintRectangle] = field(default_factory=list)
-    fp_circle: list[FootprintCircle] = field(default_factory=list)
-    fp_arc: list[FootprintArc] = field(default_factory=list)
-    fp_poly: list[FootprintPolygon] = field(default_factory=list)
-    fp_curve: list[FootprintCurve] = field(default_factory=list)
-    dimension: list[GraphicalDimension] = field(default_factory=list)
-    pad: list[FootprintPad] = field(default_factory=list)
-    group: list[Group] = field(default_factory=list)
+    fp_text_items: list[FootprintText] = field(default_factory=list)
+    images: list[Image] = field(default_factory=list)
+    fp_text_boxes: list[FootprintTextBox] = field(default_factory=list)
+    fp_lines: list[FootprintLine] = field(default_factory=list)
+    fp_rects: list[FootprintRectangle] = field(default_factory=list)
+    fp_circles: list[FootprintCircle] = field(default_factory=list)
+    fp_arcs: list[FootprintArc] = field(default_factory=list)
+    fp_polys: list[FootprintPolygon] = field(default_factory=list)
+    fp_curves: list[FootprintCurve] = field(default_factory=list)
+    dimensions: list[GraphicalDimension] = field(default_factory=list)
+    pads: list[FootprintPad] = field(default_factory=list)
+    groups: list[Group] = field(default_factory=list)
 
     # UNDOCUMENTED: `zone`
-    zone: list[Zone] = field(default_factory=list)
-    model: list[Footprint3dModel] = field(default_factory=list)
+    zones: list[Zone] = field(default_factory=list)
+    models: list[Footprint3dModel] = field(default_factory=list)

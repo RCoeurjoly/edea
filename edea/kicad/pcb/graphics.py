@@ -212,7 +212,7 @@ class GraphicalPolygon(KicadPcbExpr):
         self, min_x: float, max_x: float, min_y: float, max_y: float
     ) -> tuple[float, float, float, float]:
         """Envelope the polygon in a bounding box."""
-        for pt in self.pts.xy:
+        for pt in self.pts.xys:
             min_x = min(min_x, pt.x)
             max_x = max(max_x, pt.x)
             min_y = min(min_y, pt.y)
@@ -233,7 +233,7 @@ class GraphicalBezier(KicadPcbExpr):
         self, min_x: float, max_x: float, min_y: float, max_y: float
     ) -> tuple[float, float, float, float]:
         """Envelope the curve in a bounding box."""
-        for pt in self.pts.xy:
+        for pt in self.pts.xys:
             min_x = min(min_x, pt.x)
             max_x = max(max_x, pt.x)
             min_y = min(min_y, pt.y)

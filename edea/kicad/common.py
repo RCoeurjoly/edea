@@ -113,8 +113,8 @@ class XY(KicadExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class Pts(KicadExpr):
-    xy: list[XY] = field(default_factory=list)
-    arc: list[PolygonArc] = field(default_factory=list)
+    xys: list[XY] = field(default_factory=list)
+    arcs: list[PolygonArc] = field(default_factory=list)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -138,7 +138,7 @@ class TitleBlock(KicadExpr):
     date: Annotated[str, m("kicad_omits_default")] = ""
     rev: Annotated[str, m("kicad_omits_default")] = ""
     company: Annotated[str, m("kicad_omits_default")] = ""
-    comment: Annotated[list[TitleBlockComment], m("kicad_omits_default")] = field(
+    comments: Annotated[list[TitleBlockComment], m("kicad_omits_default")] = field(
         default_factory=list,
     )
 

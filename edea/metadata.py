@@ -42,19 +42,19 @@ class Project:
     def metadata(self):
         data = EdeaProjectMetadata()
 
-        for symbol in self.schematic.symbol:
+        for symbol in self.schematic.symbols:
             if any(
                 # skip virtual symbols (e.g., gnd)
                 property.key == "Reference" and property.value.startswith("#")
-                for property in symbol.property
+                for property in symbol.properties
             ):
                 continue
 
             data.parts[str(symbol.uuid)] = {
-                property.key: property.value for property in symbol.property
+                property.key: property.value for property in symbol.properties
             }
 
-        data.sheets = len(self.schematic.sheet)
+        data.sheets = len(self.schematic.sheets)
         data.count_part = len(data.parts)
         data.count_unique_part = self._count_unique_part(data.parts)
 

@@ -98,7 +98,7 @@ class Pin(KicadSchExpr):
     hide: Annotated[bool, m("kicad_kw_bool")] = False
     name: PinName = field(default_factory=PinName)
     number: PinNumber = field(default_factory=PinNumber)
-    alternate: list[PinAlternate] = field(default_factory=list)
+    alternates: list[PinAlternate] = field(default_factory=list)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -137,21 +137,21 @@ class SymbolGraphicTextBox(KicadSchExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class SubSymbol(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
-    polyline: list[Polyline] = field(default_factory=list)
-    text: list[SymbolGraphicText] = field(default_factory=list)
-    rectangle: list[Rectangle] = field(default_factory=list)
-    text_box: list[SymbolGraphicTextBox] = field(default_factory=list)
-    circle: list[Circle] = field(default_factory=list)
-    arc: list[Arc] = field(default_factory=list)
-    pin: list[Pin] = field(default_factory=list)
-    bezier: list[Bezier] = field(default_factory=list)
+    polylines: list[Polyline] = field(default_factory=list)
+    text_items: list[SymbolGraphicText] = field(default_factory=list)
+    rectangles: list[Rectangle] = field(default_factory=list)
+    text_boxes: list[SymbolGraphicTextBox] = field(default_factory=list)
+    circles: list[Circle] = field(default_factory=list)
+    arcs: list[Arc] = field(default_factory=list)
+    pins: list[Pin] = field(default_factory=list)
+    beziers: list[Bezier] = field(default_factory=list)
     kicad_expr_tag_name: ClassVar[Literal["symbol"]] = "symbol"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class LibSymbol(KicadSchExpr):
     name: Annotated[str, m("kicad_no_kw")]
-    property: list[Property] = field(default_factory=list)
+    properties: list[Property] = field(default_factory=list)
     power: Annotated[bool, m("kicad_kw_bool_empty")] = False
     pin_numbers: Annotated[PinNumberSettings, m("kicad_omits_default")] = field(
         default_factory=PinNumberSettings,
@@ -161,11 +161,11 @@ class LibSymbol(KicadSchExpr):
     )
     in_bom: Annotated[bool, m("kicad_bool_yes_no")] = True
     on_board: Annotated[bool, m("kicad_bool_yes_no")] = True
-    pin: list[Pin] = field(default_factory=list)
-    symbol: list[SubSymbol] = field(default_factory=list)
-    polyline: list[Polyline] = field(default_factory=list)
-    text: list[SymbolGraphicText] = field(default_factory=list)
-    rectangle: list[Rectangle] = field(default_factory=list)
-    circle: list[Circle] = field(default_factory=list)
-    arc: list[Arc] = field(default_factory=list)
+    pins: list[Pin] = field(default_factory=list)
+    symbols: list[SubSymbol] = field(default_factory=list)
+    polylines: list[Polyline] = field(default_factory=list)
+    text_items: list[SymbolGraphicText] = field(default_factory=list)
+    rectangles: list[Rectangle] = field(default_factory=list)
+    circles: list[Circle] = field(default_factory=list)
+    arcs: list[Arc] = field(default_factory=list)
     kicad_expr_tag_name: ClassVar[Literal["symbol"]] = "symbol"
