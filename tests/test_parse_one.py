@@ -1,6 +1,6 @@
 from edea.kicad.parser import from_str
-from edea.kicad.schematic import Schematic
 from edea.kicad.pcb import Pcb
+from edea.kicad.schematic import Schematic
 
 file_name = "tests/kicad_projects/MP2451/MP2451"
 

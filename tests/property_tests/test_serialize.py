@@ -1,19 +1,19 @@
 from hypothesis import given
 
-from edea.kicad.base import KicadExpr
 import edea.kicad.common as common
-from edea.kicad.parser import from_list, from_str
-import edea.kicad.pcb.pcb as pcb
+import edea.kicad.pcb as pcb
 import edea.kicad.pcb.common as pcb_common
-import edea.kicad.pcb.graphics as pcb_graphics
 import edea.kicad.pcb.footprint as pcb_footprint
-import edea.kicad.schematic.schematic as schematic
+import edea.kicad.pcb.graphics as pcb_graphics
+import edea.kicad.schematic as schematic
 import edea.kicad.schematic.shapes as shapes
 import edea.kicad.schematic.symbol as symbol
+from edea.kicad.base import KicadExpr
+from edea.kicad.parser import from_list, from_str
 from edea.kicad.serializer import from_list_to_str, to_list
 
+from ._utils import any_kicad_expr_from_module
 from .config import configure_hypothesis
-from .utils import any_kicad_expr_from_module
 
 configure_hypothesis()
 

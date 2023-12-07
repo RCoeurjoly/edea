@@ -9,9 +9,10 @@ from typing import Annotated, ClassVar, Literal
 
 from pydantic.dataclasses import dataclass
 
+from edea.kicad._config import PydanticConfig
 from edea.kicad._fields import make_meta as m
+from edea.kicad._str_enum import StrEnum
 from edea.kicad.common import Effects, Stroke
-from edea.kicad.config import PydanticConfig
 from edea.kicad.schematic.base import KicadSchExpr
 from edea.kicad.schematic.shapes import (
     Arc,
@@ -22,7 +23,6 @@ from edea.kicad.schematic.shapes import (
     Polyline,
     Rectangle,
 )
-from edea.kicad.str_enum import StrEnum
 
 
 class PinElectricalType(StrEnum):

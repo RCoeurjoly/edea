@@ -1,6 +1,8 @@
-from typing import get_args, Type
+from typing import Type, get_args
+
 from hypothesis import strategies as st
-from edea.kicad.schematic import SymbolUseInstanceProject, SubSheetInstanceProject
+
+from edea.kicad.schematic import SubSheetInstanceProject, SymbolUseInstanceProject
 
 
 def configure_hypothesis():

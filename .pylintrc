@@ -48,7 +48,6 @@ limit-inference-results=100
 # usually to register additional checkers.
 load-plugins=
       pylint_pydantic,
-      pylint_relative_imports.relative_imports_checker,
 
 # Pickle collected data for later comparisons.
 persistent=yes

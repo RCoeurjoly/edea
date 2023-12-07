@@ -1,4 +1,4 @@
-from typing import Type, get_origin, get_args
+from typing import Type, get_args, get_origin
 
 
 def is_kicad_expr(t: Type) -> bool:

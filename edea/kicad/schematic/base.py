@@ -11,6 +11,7 @@ from edea.kicad.base import KicadExpr
 
 class KicadSchExpr(KicadExpr):
     @validator("at", pre=True, check_fields=False)
+    @classmethod
     def validate_at_rotation(cls, value):
         """
         In schematic files only four rotations are exposed in the KiCad GUI. We
