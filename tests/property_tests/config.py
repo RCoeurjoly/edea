@@ -19,13 +19,13 @@ def configure_hypothesis():
 
     # we need to differentiate project expressions based on what is in
     # their lists, so they need to be non-empty
-    def non_empty_path(x):
-        if len(x.path) == 0:
+    def non_empty_paths(x):
+        if len(x.paths) == 0:
             return False
         return True
 
     def non_empty_project(project_type: Type) -> st.SearchStrategy:
-        return st.builds(project_type).filter(non_empty_path)
+        return st.builds(project_type).filter(non_empty_paths)
 
     st.register_type_strategy(SymbolUseInstanceProject, non_empty_project)
     st.register_type_strategy(SubSheetInstanceProject, non_empty_project)
