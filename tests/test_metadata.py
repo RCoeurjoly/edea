@@ -1,6 +1,6 @@
 from json import loads
 
-from edea.kicad.project import Project
+from edea.metadata import Project
 
 
 def test_project_metadata():
