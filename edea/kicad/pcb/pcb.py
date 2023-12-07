@@ -3,9 +3,9 @@ Dataclasses describing the contents of .kicad_pcb files.
 
 SPDX-License-Identifier: EUPL-1.2
 """
+from dataclasses import field
 import itertools
 import math
-from dataclasses import field
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
@@ -13,7 +13,6 @@ from pydantic import root_validator, validator
 from pydantic.dataclasses import dataclass
 
 from edea.kicad.base import custom_serializer
-from edea.kicad.common import Image as BaseImage
 from edea.kicad.common import Paper, PaperStandard, TitleBlock, VersionError
 from edea.kicad.config import PydanticConfig
 from edea.kicad.meta import make_meta as m
@@ -21,7 +20,7 @@ from edea.kicad.s_expr import SExprList
 from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
-from .common import Group, Net, PositionIdentifier, Property, Zone
+from .common import Group, Image, Net, PositionIdentifier, Property, Zone
 from .footprint import Footprint
 from .graphics import (
     GraphicalArc,
@@ -94,6 +93,7 @@ class PlotOutputFormat(StrEnum):
 @dataclass(config=PydanticConfig, eq=False)
 class PlotSettings(KicadPcbExpr):
     layerselection: str = "0x00010fc_ffffffff"
+    plot_on_all_layers_selection: str = "0x0000000_00000000"
     disableapertmacros: bool = False
     usegerberextensions: bool = False
     usegerberattributes: bool = True
@@ -149,6 +149,9 @@ class Setup(KicadPcbExpr):
     pad_to_paste_clearance_ratio: float = field(
         default=100.0, metadata=m("kicad_omits_default")
     )
+    allow_soldermask_bridges_in_footprints: bool = field(
+        default=False, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
+    )
     aux_axis_origin: tuple[float, float] = field(
         default=(0.0, 0.0), metadata=m("kicad_omits_default")
     )
@@ -183,6 +186,9 @@ class Via(KicadPcbExpr):
     layers: list[str] = field(default_factory=list)
     remove_unused_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     keep_end_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    zone_layer_connections: list[CanonicalLayerName] = field(
+        default_factory=list, metadata=m("kicad_omits_default")
+    )
     free: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
 
     @root_validator(pre=True)
@@ -216,11 +222,6 @@ class Target(KicadPcbExpr):
     tstamp: Optional[UUID] = None
 
 
-@dataclass(config=PydanticConfig, eq=False)
-class Image(BaseImage, KicadPcbExpr):
-    layer: CanonicalLayerName = "F.Cu"
-
-
 @dataclass(config=PydanticConfig)
 class BoardSize:
     width_mm: float
@@ -229,7 +230,18 @@ class BoardSize:
 
 @dataclass(config=PydanticConfig, eq=False)
 class Pcb(KicadPcbExpr):
-    version: Literal["20211014"] = "20211014"
+    version: Literal["20221018"] = "20221018"
+
+    @validator("version")
+    @classmethod
+    def check_version(cls, v) -> Literal["20221018"]:
+        if v == "20221018":
+            return v
+        raise VersionError(
+            "Only the stable KiCad 7 PCB file format, i.e. '20221018' is supported. "
+            f"  Got '{v}'. Please open and re-save the file with KiCad 7 if you can."
+        )
+
     generator: str = "edea"
     general: General = field(default_factory=General)
     title_block: Optional[TitleBlock] = None
@@ -247,7 +259,7 @@ class Pcb(KicadPcbExpr):
     net: list[Net] = field(default_factory=list)
     footprint: list[Footprint] = field(default_factory=list)
     zone: list[Zone] = field(default_factory=list)
-    images: list[Image] = field(default_factory=list)
+    image: list[Image] = field(default_factory=list)
 
     # Graphics
     gr_line: list[GraphicalLine] = field(default_factory=list)
@@ -255,8 +267,8 @@ class Pcb(KicadPcbExpr):
     gr_text_box: list[GraphicalTextBox] = field(default_factory=list)
     gr_rect: list[GraphicalRectangle] = field(default_factory=list)
     gr_circle: list[GraphicalCircle] = field(default_factory=list)
-    gr_curve: list[GraphicalCurve] = field(default_factory=list)
     gr_arc: list[GraphicalArc] = field(default_factory=list)
+    gr_curve: list[GraphicalCurve] = field(default_factory=list)
     gr_poly: list[GraphicalPolygon] = field(default_factory=list)
     bezier: list[GraphicalBezier] = field(default_factory=list)
     gr_bbox: list[GraphicalBoundingBox] = field(default_factory=list)
@@ -272,17 +284,6 @@ class Pcb(KicadPcbExpr):
 
     # UNDOCUMENTED: `target`
     target: list[Target] = field(default_factory=list)
-
-    @validator("version")
-    @classmethod
-    def check_version(cls, v) -> Literal["20211014"]:
-        v = str(v)
-        if v != "20211014":
-            raise VersionError(
-                f"Only the stable KiCad 6 pcb file format, i.e. version '20211014', "
-                f"is supported. Got '{v}'."
-            )
-        return v
 
     def size(self):
         """Calculate the size (width, height) of the board"""

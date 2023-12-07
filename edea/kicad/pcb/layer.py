@@ -62,6 +62,7 @@ CanonicalLayerName = Literal[
     "User.8",
     "User.9",
     "Margin",
+    "Rescue",
 ]
 
 

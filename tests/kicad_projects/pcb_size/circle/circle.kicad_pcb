@@ -1,4 +1,4 @@
-(kicad_pcb (version 20211014) (generator pcbnew)
+(kicad_pcb (version 20221018) (generator pcbnew)
 
   (general
     (thickness 1.6)
@@ -41,6 +41,7 @@
     (pad_to_mask_clearance 0)
     (pcbplotparams
       (layerselection 0x00010fc_ffffffff)
+      (plot_on_all_layers_selection 0x0000000_00000000)
       (disableapertmacros false)
       (usegerberextensions false)
       (usegerberattributes true)
@@ -77,9 +78,9 @@
   (net 0 "")
 
   (gr_circle (center 106.68 78.74) (end 132.08 104.14)
-    (fill none) (layer "Edge.Cuts") (tstamp 26757df4-f23a-4ecf-9179-b10c5c5525d5))
+    (stroke (width 0.1) (type solid)) (fill none) (layer "Edge.Cuts") (tstamp 26757df4-f23a-4ecf-9179-b10c5c5525d5))
   (gr_circle (center 99.06 68.58) (end 109.22 78.74)
-    (fill none) (layer "Edge.Cuts") (tstamp 50fb8bee-85d3-4889-971e-1ec57671ac70))
+    (stroke (width 0.1) (type solid)) (fill none) (layer "Edge.Cuts") (tstamp 50fb8bee-85d3-4889-971e-1ec57671ac70))
   (dimension (type aligned) (layer "F.SilkS") (tstamp 220cd60d-43ce-4340-b249-83b81fe23031)
     (pts (xy 84.691591 68.58) (xy 113.428409 68.58))
     (height 25.4)

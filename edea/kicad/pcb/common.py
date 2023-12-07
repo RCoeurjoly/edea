@@ -1,10 +1,12 @@
 from dataclasses import field
+import dataclasses
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import validator
 from pydantic.dataclasses import dataclass
 
+from edea.kicad.base import ParsedKwargs
 from edea.kicad.common import Effects, Pts, Stroke
 from edea.kicad.config import PydanticConfig
 from edea.kicad.meta import make_meta as m
@@ -135,8 +137,8 @@ class ZoneFillSegment(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class ZonePolygon(KicadPcbExpr):
-    pts: Pts = field(default_factory=Pts)
+class Polygon(KicadPcbExpr):
+    pts: list[Pts] = field(default_factory=list)
     kicad_expr_tag_name: Literal["polygon"] = "polygon"
 
 
@@ -144,6 +146,16 @@ class Hatch(StrEnum):
     Edge = "edge"
     Full = "full"
     None_ = "none"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class ZoneAttrTearDrop(KicadPcbExpr):
+    type: Literal["padvia", "track_end"] = "padvia"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class ZoneAttr(KicadPcbExpr):
+    teardrop: ZoneAttrTearDrop
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -156,18 +168,19 @@ class Zone(KicadPcbExpr):
 
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     net: int = 0
+    net_name: str = ""
+    layer: Optional[str] = None
     tstamp: UUID = field(default_factory=uuid4)
+    name: Optional[str] = None
     hatch: tuple[Hatch, float] = (Hatch.None_, 0)
+    priority: int = 0
+    attr: Optional[ZoneAttr] = None
     connect_pads: ConnectionPads = field(default_factory=ConnectionPads)
     min_thickness: float = 0
     fill: ZoneFillSettings = field(default_factory=ZoneFillSettings)
-    layer: Optional[str] = None
     layers: list[str] = field(default_factory=list)
-    polygon: list[ZonePolygon] = field(default_factory=list)
+    polygon: list[Polygon] = field(default_factory=list)
     keepout: Optional[ZoneKeepOutSettings] = None
-    name: Optional[str] = None
-    priority: int = 0
-    net_name: str = ""
     filled_areas_thickness: bool = field(
         default=True, metadata=m("kicad_bool_yes_no", "kicad_omits_default")
     )
@@ -194,21 +207,61 @@ class Group(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
+class RenderCache(KicadPcbExpr):
+    name: str = field(metadata=m("kicad_no_kw"))
+    number: float = field(metadata=m("kicad_no_kw"))
+    polygon: list[Polygon] = field(default_factory=list)
+
+
+@dataclass(config=PydanticConfig, eq=False)
 class BaseTextBox(KicadPcbExpr):
-    text: str
-    layer: CanonicalLayerName
-    tstmap: UUID
-    effects: Effects
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    text: str = field(metadata=m("kicad_no_kw"))
     start: Optional[tuple[float, float]] = None
     end: Optional[tuple[float, float]] = None
     pts: Optional[Pts] = None
+    layer: CanonicalLayerName = "F.Cu"
+    tstamp: UUID = field(default_factory=uuid4)
+    effects: Effects = field(default_factory=Effects)
+    render_cache: Optional[RenderCache] = None
     angle: Optional[float] = None
     stroke: Optional[Stroke] = None
     hide: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+
+    # pylint: disable=duplicate-code
+    @classmethod
+    def _process_args_for_parsing(
+        cls, args: list[str], kwargs: ParsedKwargs
+    ) -> tuple[list[str], ParsedKwargs]:
+        if len(args) == 2 and args[0] == "locked":
+            args = [args[1]]
+            kwargs = {**kwargs, "locked": [["true"]]}
+        return args, kwargs
+
+    # pylint: disable=duplicate-code
+    def _process_fields_for_serialization(
+        self, fields: tuple[dataclasses.Field, ...]
+    ) -> tuple[dataclasses.Field, ...]:
+        # move locked back to the front
+        locked = None
+        for f in fields:
+            if f.name == "locked":
+                locked = f
+        if locked is None:
+            raise Exception('Expecting a "locked" field.')
+        rest = [f for f in fields if f.name != "locked"]
+        return tuple([locked] + rest)
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Net(KicadPcbExpr):
     number: int = field(metadata=m("kicad_no_kw"))
     name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class Image(KicadPcbExpr):
+    at: tuple[float, float]
+    layer: CanonicalLayerName = "F.Cu"
+    scale: Optional[float] = None
+    data: list[str] = field(default_factory=list)

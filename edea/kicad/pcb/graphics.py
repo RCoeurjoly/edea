@@ -1,29 +1,64 @@
-import math
+import dataclasses
 from dataclasses import field
+import math
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 import numpy as np
 from pydantic.dataclasses import dataclass
 
-from edea.kicad.common import Effects, Pts
+from edea.kicad.base import ParsedKwargs
+from edea.kicad.common import Effects, Pts, Stroke
 from edea.kicad.config import PydanticConfig
 from edea.kicad.meta import make_meta as m
 from edea.kicad.str_enum import StrEnum
 
 from .base import KicadPcbExpr
-from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier
+from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier, RenderCache
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class LayerKnockout(KicadPcbExpr):
+    name: CanonicalLayerName = field(
+        default="F.Cu", metadata=m("kicad_always_quotes", "kicad_no_kw")
+    )
+    knockout: bool = field(default=False, metadata=m("kicad_kw_bool"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class GraphicalText(KicadPcbExpr):
-    text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
+    text: str = field(default="", metadata=m("kicad_no_kw", "kicad_always_quotes"))
     at: PositionIdentifier = field(default_factory=PositionIdentifier)
     effects: Effects = field(default_factory=Effects)
-    layer: Optional[CanonicalLayerName] = None
+    render_cache: Optional[RenderCache] = None
+    layer: Optional[LayerKnockout] = None
     tstamp: Optional[UUID] = None
+    locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     kicad_expr_tag_name: Literal["gr_text"] = "gr_text"
+
+    # pylint: disable=duplicate-code
+    @classmethod
+    def _process_args_for_parsing(
+        cls, args: list[str], kwargs: ParsedKwargs
+    ) -> tuple[list[str], ParsedKwargs]:
+        if len(args) == 2 and args[0] == "locked":
+            args = [args[1]]
+            kwargs = {**kwargs, "locked": [["true"]]}
+        return args, kwargs
+
+    # pylint: disable=duplicate-code
+    def _process_fields_for_serialization(
+        self, fields: tuple[dataclasses.Field, ...]
+    ) -> tuple[dataclasses.Field, ...]:
+        # move locked back to the front
+        locked = None
+        for f in fields:
+            if f.name == "locked":
+                locked = f
+        if locked is None:
+            raise Exception('Expecting a "locked" field.')
+        rest = [f for f in fields if f.name != "locked"]
+        return tuple([locked] + rest)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -36,7 +71,8 @@ class GraphicalLine(KicadPcbExpr):
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     start: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
-    width: float = 0
+    width: Optional[float] = None
+    stroke: Stroke = field(default_factory=Stroke)
     layer: Optional[CanonicalLayerName] = None
     tstamp: Optional[UUID] = None
     angle: Optional[float] = None
@@ -59,7 +95,8 @@ class GraphicalRectangle(KicadPcbExpr):
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     start: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
-    width: float = 0
+    width: Optional[float] = None
+    stroke: Stroke = field(default_factory=Stroke)
     tstamp: Optional[UUID] = None
     layer: Optional[CanonicalLayerName] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
@@ -82,7 +119,8 @@ class GraphicalCircle(KicadPcbExpr):
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     center: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
-    width: float = 0
+    stroke: Optional[Stroke] = None
+    width: Optional[float] = None
     layer: Optional[CanonicalLayerName] = None
     tstamp: Optional[UUID] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
@@ -106,7 +144,8 @@ class GraphicalArc(KicadPcbExpr):
     start: tuple[float, float] = (0, 0)
     mid: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
-    width: float = 0
+    width: Optional[float] = None
+    stroke: Stroke = field(default_factory=Stroke)
     layer: Optional[CanonicalLayerName] = None
     tstamp: Optional[UUID] = None
     kicad_expr_tag_name: Literal["gr_arc"] = "gr_arc"
@@ -187,7 +226,8 @@ class GraphicalArc(KicadPcbExpr):
 class GraphicalPolygon(KicadPcbExpr):
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     pts: Pts = field(default_factory=Pts)
-    width: float = 0
+    stroke: Optional[Stroke] = None
+    width: Optional[float] = None
     layer: Optional[CanonicalLayerName] = None
     tstamp: Optional[UUID] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
@@ -210,7 +250,7 @@ class GraphicalBezier(KicadPcbExpr):
     locked: bool = field(default=False, metadata=m("kicad_kw_bool"))
     pts: Pts = field(default_factory=Pts)
     layer: Optional[CanonicalLayerName] = None
-    width: float = 0
+    stroke: Stroke = field(default_factory=Stroke)
     tstamp: Optional[UUID] = None
     kicad_expr_tag_name: Literal["bezier"] = "bezier"
 
