@@ -15,4 +15,8 @@ def list_module_kicad_expr(module):
 
 def any_kicad_expr_from_module(module):
     classes = list_module_kicad_expr(module)
-    return st.one_of([st.from_type(cls) for cls in classes])
+
+    def non_empty(x):
+        return len(x.to_list()) > 0
+
+    return st.one_of([st.from_type(cls).filter(non_empty) for cls in classes])

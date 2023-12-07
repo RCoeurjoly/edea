@@ -1,9 +1,9 @@
 from __future__ import annotations
 import dataclasses
 from types import UnionType
-from typing import Type, Union, get_args, get_origin, TYPE_CHECKING
+from typing import TYPE_CHECKING, Type, Union, get_args, get_origin
 
-from edea.kicad._fields import get_meta
+from edea.kicad._fields import get_meta, get_type
 from edea.kicad._type_utils import get_full_seq_type
 from edea.kicad.is_kicad_expr import is_kicad_expr, is_kicad_expr_list
 from edea.kicad.number import is_number, number_to_str
@@ -31,9 +31,8 @@ def to_list(kicad_expr: KicadExpr) -> SExprList:
 
 
 def _serialize_field(field: dataclasses.Field, value) -> SExprList:
-    if field.name == "kicad_expr_tag_name" or value is None:
+    if value is None:
         return []
-
     if get_meta(field, "kicad_omits_default"):
         # KiCad doesn't put anything in the s-expression if this field is at
         # its default value, so we don't either.
@@ -47,8 +46,9 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
     in_quotes = get_meta(field, "kicad_always_quotes")
 
     if get_meta(field, "kicad_no_kw"):
+        field_type = get_type(field)
         # It's just the value, not an expression, i.e. a positional argument.
-        return [_value_to_str(field.type, value, in_quotes)]
+        return [_value_to_str(field_type, value, in_quotes)]
 
     if get_meta(field, "kicad_kw_bool_empty"):
         # It's a keyword boolean but for some reason it's inside brackets, like
@@ -65,14 +65,15 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
         # KiCad uses "yes" and "no" to indicate this boolean value
         return [[field.name, "yes" if value else "no"]]
 
-    origin = get_origin(field.type)
-    sub_types = get_args(field.type)
+    field_type = get_type(field)
+    origin = get_origin(field_type)
+    sub_types = get_args(field_type)
     if origin is list and is_kicad_expr(sub_types[0]):
         if value == []:
             return []
         return [[field.name] + v.to_list() for v in value]
 
-    return [[field.name] + _serialize_as(field.type, value, in_quotes)]
+    return [[field.name] + _serialize_as(field_type, value, in_quotes)]
 
 
 def _serialize_as(annotation: Type, value, in_quotes) -> SExprList:

@@ -4,7 +4,7 @@ Dataclasses describing the graphic items found in .kicad_sch files.
 SPDX-License-Identifier: EUPL-1.2
 """
 from dataclasses import field
-from typing import Optional, Literal
+from typing import ClassVar, Literal, Optional
 
 from pydantic.dataclasses import dataclass
 
@@ -23,20 +23,20 @@ class FillType(StrEnum):
 @dataclass(config=PydanticConfig, eq=False)
 class FillSimple(KicadSchExpr):
     type: FillType = FillType.NONE
-    kicad_expr_tag_name: Literal["fill"] = "fill"
+    kicad_expr_tag_name: ClassVar[Literal["fill"]] = "fill"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FillColor(KicadSchExpr):
     color: tuple[int, int, int, float] = (0, 0, 0, 1.0)
-    kicad_expr_tag_name: Literal["fill"] = "fill"
+    kicad_expr_tag_name: ClassVar[Literal["fill"]] = "fill"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FillTypeColor(KicadSchExpr):
     type: Literal["color"] = "color"
     color: tuple[int, int, int, float] = (0, 0, 0, 1.0)
-    kicad_expr_tag_name: Literal["fill"] = "fill"
+    kicad_expr_tag_name: ClassVar[Literal["fill"]] = "fill"
 
 
 Fill = FillSimple | FillColor | FillTypeColor

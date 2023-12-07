@@ -6,11 +6,12 @@ SPDX-License-Identifier: EUPL-1.2
 """
 import dataclasses
 import inspect
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, ClassVar, Type, TypeVar
 
 from pydantic.dataclasses import dataclass
 
-from edea.kicad import _parse, _serialize, _equality
+from edea.kicad import _equality, _parse, _serialize
+from edea.kicad._fields import get_type
 from edea.kicad.s_expr import SExprList
 from edea.util import to_snake_case
 
@@ -44,7 +45,7 @@ def custom_parser(field_name: str):
 
 @dataclass
 class KicadExpr:
-    _is_edea_kicad_expr = True
+    _is_edea_kicad_expr: ClassVar = True
 
     @classmethod
     @property
@@ -115,6 +116,7 @@ class KicadExpr:
         for field in dataclasses.fields(self):
             v_self = getattr(self, field.name)
             v_other = getattr(other, field.name)
-            if not _equality.fields_equal(field.type, v_self, v_other):
+            field_type = get_type(field)
+            if not _equality.fields_equal(field_type, v_self, v_other):
                 return False
         return True
