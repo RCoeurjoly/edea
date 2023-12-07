@@ -47,15 +47,20 @@ def test_serialize_all_sch_files(sch_path, tmp_path_factory):
         capture_output=True,
     )
 
-    # skip files that already have warnings/errors
-    if process_kicad.returncode != 0 or (
-        process_kicad.stderr != b""
+    kicad_stderr = [
+        line
+        for line in process_kicad.stderr.split(b"\n")
+        if
         # kicad-cli lock file errors happen when we run tests in parallel but
         # don't affect anything we are doing
-        and b"Invalid lock file" not in process_kicad.stderr
-        and b"Failed to access lock" not in process_kicad.stderr
-        and b"Failed to inspect the lock file" not in process_kicad.stderr
-    ):
+        line != b""
+        and b"Invalid lock file" not in line
+        and b"Failed to access lock" not in line
+        and b"Failed to inspect the lock file" not in line
+    ]
+
+    # skip files that already have warnings/errors
+    if process_kicad.returncode != 0 or kicad_stderr != []:
         return pytest.skip()
 
     contents = to_str(sch)
@@ -68,20 +73,25 @@ def test_serialize_all_sch_files(sch_path, tmp_path_factory):
         capture_output=True,
     )
 
-    assert (
-        process.stderr == b""
+    test_stderr = [
+        line
+        for line in process.stderr.split(b"\n")
+        if
         # kicad-cli lock file errors happen when we run tests in parallel but
         # don't affect anything we are doing
-        or b"Invalid lock file" in process.stderr
-        or b"Failed to access lock" in process.stderr
-        or b"Failed to inspect the lock file " in process.stderr
-    ), (
-        f"got output on stderr: {process.stderr}\n"
+        line != b""
+        and b"Invalid lock file" not in line
+        and b"Failed to access lock" not in line
+        and b"Failed to inspect the lock file" not in line
+    ]
+
+    assert len(test_stderr) == 0, (
+        f"got output on stderr: {[s.decode('utf8') for s in test_stderr]}\n"
         f"when trying to read: '{str(tmp_sch)}'\n"
         f"generated from: '{str(sch_path)}'"
     )
     assert process.stdout == b"" or process.stdout == process_kicad.stdout, (
-        f"unexpected output on stdout: {process.stdout}\n"
+        f"unexpected output on stdout: {process.stdout.decode('utf8')}\n"
         f"expecting: {process_kicad.stdout}\n"
         f"when trying to read: '{str(tmp_sch)}'\n"
         f"generated from: '{str(sch_path)}'"
@@ -121,15 +131,20 @@ def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
         capture_output=True,
     )
 
-    # skip files that already have warnings/errors
-    if process_kicad.returncode != 0 or (
-        process_kicad.stderr != b""
+    kicad_stderr = [
+        line
+        for line in process_kicad.stderr.split(b"\n")
+        if
         # kicad-cli lock file errors happen when we run tests in parallel but
         # don't affect anything we are doing
-        and b"Invalid lock file" not in process_kicad.stderr
-        and b"Failed to access lock" not in process_kicad.stderr
-        and b"Failed to inspect the lock file" not in process_kicad.stderr
-    ):
+        line != b""
+        and b"Invalid lock file" not in line
+        and b"Failed to access lock" not in line
+        and b"Failed to inspect the lock file" not in line
+    ]
+
+    # skip files that already have warnings/errors
+    if process_kicad.returncode != 0 or kicad_stderr != []:
         return pytest.skip()
 
     contents = to_str(pcb)
@@ -151,20 +166,25 @@ def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
         capture_output=True,
     )
 
-    assert (
-        process.stderr == b""
+    test_stderr = [
+        line
+        for line in process.stderr.split(b"\n")
+        if
         # kicad-cli lock file errors happen when we run tests in parallel but
         # don't affect anything we are doing
-        or b"Invalid lock file" in process.stderr
-        or b"Failed to access lock" in process.stderr
-        or b"Failed to inspect the lock file" in process.stderr
-    ), (
-        f"got output on stderr: {process.stderr}\n"
+        line != b""
+        and b"Invalid lock file" not in line
+        and b"Failed to access lock" not in line
+        and b"Failed to inspect the lock file" not in line
+    ]
+
+    assert len(test_stderr) == 0, (
+        f"got output on stderr: {[s.decode('utf8') for s in test_stderr]}\n"
         f"when trying to read: '{str(tmp_pcb)}'\n"
         f"generated from: '{str(pcb_path)}'"
     )
     assert process.stdout == b"" or process.stdout == process_kicad.stdout, (
-        f"unexpected output on stdout: {process.stdout}\n"
+        f"unexpected output on stdout: {process.stdout.decode('utf8')}\n"
         f"expecting: {process_kicad.stdout}\n"
         f"when trying to read: '{str(tmp_pcb)}'\n"
         f"generated from: '{str(pcb_path)}'"

@@ -65,6 +65,14 @@ CanonicalLayerName = Literal[
     "Rescue",
 ]
 
+WildCardLayerName = Literal[
+    "*.Adhes",
+    "*.Cu",
+    "*.Mask",
+    "*.Paste",
+    "*.SilkS",
+    "F&B.Cu",
+]
 
 LayerType = Literal["jumper", "mixed", "power", "signal", "user"]
 

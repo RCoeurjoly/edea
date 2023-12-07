@@ -13,17 +13,14 @@ from pydantic.dataclasses import dataclass
 from edea.kicad.color import Color
 from edea.kicad.common import Image, Paper, PaperStandard, TitleBlock, VersionError
 from edea.kicad.config import PydanticConfig
-from edea.kicad.meta import make_meta as m
+from edea.kicad._fields import make_meta as m
 from edea.kicad.schematic.base import KicadSchExpr
 from edea.kicad.schematic.shapes import (
     Arc,
-    Circle,
     Fill,
     FillSimple,
     FillColor,
-    Polyline,
     Pts,
-    Rectangle,
     Stroke,
 )
 from edea.kicad.schematic.symbol import Effects, LibSymbol, Property
@@ -51,8 +48,9 @@ class SymbolUseInstancePath(KicadSchExpr):
     name: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
     reference: str = field(metadata=m("kicad_always_quotes"))
     unit: int = 1
-    value: str = field(default="", metadata=m("kicad_always_quotes"))
-    footprint: str = field(default="", metadata=m("kicad_always_quotes"))
+    value: str | None = field(default=None, metadata=m("kicad_always_quotes"))
+    footprint: str | None = field(default=None, metadata=m("kicad_always_quotes"))
+    kicad_expr_tag_name: Literal["path"] = "path"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -70,21 +68,21 @@ class SymbolUseInstances(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class SymbolUse(KicadSchExpr):
-    lib_id: str = field(metadata=m("kicad_always_quotes"))
     lib_name: Optional[str] = None
+    lib_id: str = field(default="", metadata=m("kicad_always_quotes"))
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
+    mirror: Literal["x", "y", None] = None
     unit: int = 1
     convert: Optional[int] = None
     in_bom: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
     on_board: bool = field(default=True, metadata=m("kicad_bool_yes_no"))
     dnp: bool = field(default=False, metadata=m("kicad_bool_yes_no"))
-    mirror: Literal["x", "y", None] = None
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     uuid: UUID = field(default_factory=uuid4)
     default_instance: Optional[DefaultInstance] = None
     property: list[Property] = field(default_factory=list)
     pin: list[PinAssignment] = field(default_factory=list)
-    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
-    instances: SymbolUseInstances = field(default_factory=SymbolUseInstances)
+    instances: SymbolUseInstances | None = field(default=None)
     kicad_expr_tag_name: Literal["symbol"] = "symbol"
 
 
@@ -149,23 +147,23 @@ class LabelShape(StrEnum):
 @dataclass(config=PydanticConfig, eq=False)
 class GlobalLabel(KicadSchExpr):
     text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    at: tuple[float, float, Literal[0, 90, 180, 270]]
     shape: LabelShape = LabelShape.BIDIRECTIONAL
+    at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     property: list[Property] = field(default_factory=list)
-    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class HierarchicalLabel(KicadSchExpr):
     text: str = field(metadata=m("kicad_no_kw", "kicad_always_quotes"))
-    at: tuple[float, float, Literal[0, 90, 180, 270]]
     shape: LabelShape = LabelShape.BIDIRECTIONAL
+    at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
+    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     property: list[Property] = field(default_factory=list)
-    fields_autoplaced: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -201,13 +199,20 @@ class SymbolInstances(KicadSchExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class PolylineTopLevel(Polyline):
+class PolylineTopLevel(KicadSchExpr):
+    pts: Pts = field(default_factory=Pts)
+    stroke: Stroke = field(default_factory=Stroke)
+    fill: Fill | None = field(default=None)
     uuid: UUID = field(default_factory=uuid4)
     kicad_expr_tag_name: Literal["polyline"] = "polyline"
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class RectangleTopLevel(Rectangle):
+class RectangleTopLevel(KicadSchExpr):
+    start: tuple[float, float]
+    end: tuple[float, float]
+    stroke: Stroke = field(default_factory=Stroke)
+    fill: Fill = field(default_factory=FillSimple)
     uuid: UUID = field(default_factory=uuid4)
     kicad_expr_tag_name: Literal["rectangle"] = "rectangle"
 
@@ -219,7 +224,11 @@ class ArcTopLevel(Arc):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class CircleTopLevel(Circle):
+class CircleTopLevel(KicadSchExpr):
+    center: tuple[float, float]
+    radius: float
+    stroke: Stroke = field(default_factory=Stroke)
+    fill: Fill = field(default_factory=FillSimple)
     uuid: UUID = field(default_factory=uuid4)
     kicad_expr_tag_name: Literal["circle"] = "circle"
 
@@ -285,7 +294,7 @@ class Sheet(KicadSchExpr):
     uuid: UUID = field(default_factory=uuid4)
     property: list[Property] = field(default_factory=list)
     pin: list[SheetPin] = field(default_factory=list)
-    instances: SubSheetInstances = field(default_factory=SubSheetInstances)
+    instances: SubSheetInstances | None = field(default=None)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -326,16 +335,16 @@ class Schematic(KicadSchExpr):
 
     generator: str = "edea"
     uuid: UUID = field(default_factory=uuid4)
-    title_block: Optional[TitleBlock] = None
     paper: Paper = field(default_factory=PaperStandard)
+    title_block: Optional[TitleBlock] = None
     lib_symbols: LibSymbols = field(default_factory=LibSymbols)
     arc: list[ArcTopLevel] = field(default_factory=list)
     circle: list[CircleTopLevel] = field(default_factory=list)
     sheet: list[Sheet] = field(default_factory=list)
     symbol: list[SymbolUse] = field(default_factory=list)
-    polyline: list[PolylineTopLevel] = field(default_factory=list)
     rectangle: list[RectangleTopLevel] = field(default_factory=list)
     wire: list[Wire] = field(default_factory=list)
+    polyline: list[PolylineTopLevel] = field(default_factory=list)
     bus: list[Bus] = field(default_factory=list)
     image: list[Image] = field(default_factory=list)
     junction: list[Junction] = field(default_factory=list)
@@ -347,10 +356,10 @@ class Schematic(KicadSchExpr):
     hierarchical_label: list[HierarchicalLabel] = field(default_factory=list)
     global_label: list[GlobalLabel] = field(default_factory=list)
     netclass_flag: list[NetclassFlag] = field(default_factory=list)
-    sheet_instances: SheetInstances = field(default_factory=SheetInstances)
+    bus_alias: list[BusAlias] = field(default_factory=list)
+    sheet_instances: SheetInstances | None = field(default=None)
     symbol_instances: SymbolInstances = field(
         default_factory=SymbolInstances, metadata=m("kicad_omits_default")
     )
-    bus_alias: list[BusAlias] = field(default_factory=list)
 
     kicad_expr_tag_name: Literal["kicad_sch"] = "kicad_sch"

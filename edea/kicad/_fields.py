@@ -1,5 +1,6 @@
-from dataclasses import Field
-from typing import Literal
+import dataclasses
+from types import UnionType
+from typing import Literal, Union, get_args, get_origin
 
 MetaTag = Literal[
     # KiCad doesn't have a keyword for the property. The property appears
@@ -28,5 +29,25 @@ def make_meta(*args: MetaTag):
     return meta
 
 
-def get_meta(field: Field, tag: MetaTag):
+def get_meta(field: dataclasses.Field, tag: MetaTag):
     return field.metadata.get(tag)
+
+
+def is_optional(field: dataclasses.Field):
+    if field.name == "kicad_expr_tag_name":
+        return True
+    if get_meta(field, "kicad_kw_bool"):
+        return True
+    if get_meta(field, "kicad_kw_bool_empty"):
+        return True
+    if get_meta(field, "kicad_omits_default"):
+        return True
+    origin = get_origin(field.type)
+    # any list can be empty and thus omitted
+    if origin is list:
+        return True
+    is_union = origin is Union or origin is UnionType or origin is Literal
+    if not is_union:
+        return False
+    sub_types = get_args(field.type)
+    return type(None) in sub_types or None in sub_types

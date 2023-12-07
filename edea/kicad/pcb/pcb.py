@@ -9,13 +9,13 @@ import math
 from typing import Literal, Optional
 from uuid import UUID, uuid4
 
-from pydantic import root_validator, validator
+from pydantic import validator
 from pydantic.dataclasses import dataclass
 
-from edea.kicad.base import custom_serializer
+from edea.kicad.base import custom_serializer, custom_parser
 from edea.kicad.common import Paper, PaperStandard, TitleBlock, VersionError
 from edea.kicad.config import PydanticConfig
-from edea.kicad.meta import make_meta as m
+from edea.kicad._fields import make_meta as m
 from edea.kicad.s_expr import SExprList
 from edea.kicad.str_enum import StrEnum
 
@@ -99,8 +99,12 @@ class PlotSettings(KicadPcbExpr):
     usegerberattributes: bool = True
     usegerberadvancedattributes: bool = True
     creategerberjobfile: bool = True
+    gerberprecision: Optional[int] = None
+    # UNDOCUMENTED: `dashed_line_dash_ratio`, `dashed_line_gap_ratio`
+    dashed_line_dash_ratio: Optional[float] = None
+    dashed_line_gap_ratio: Optional[float] = None
     svgprecision: int = 4
-    excludeedgelayer: bool = False
+    excludeedgelayer: bool = field(default=False, metadata=m("kicad_omits_default"))
     plotframeref: bool = False
     viasonmask: bool = False
     mode: Literal[1, 2] = 1
@@ -119,21 +123,10 @@ class PlotSettings(KicadPcbExpr):
     sketchpadsonfab: bool = False
     subtractmaskfromsilk: bool = False
     outputformat: PlotOutputFormat = PlotOutputFormat.GERBER
-    svguseinch: bool = False
     mirror: bool = False
     drillshape: int = 0
     scaleselection: int = 0
-    outputdirectory: str = ""
-    gerberprecision: Optional[int] = None
-    # UNDOCUMENTED: `dashed_line_dash_ratio`, `dashed_line_gap_ratio`
-    dashed_line_dash_ratio: Optional[float] = None
-    dashed_line_gap_ratio: Optional[float] = None
-
-    @validator("mode", pre=True)
-    def parse_mode(cls, v):
-        if isinstance(v, str):
-            return int(v)
-        return v
+    outputdirectory: str = field(default="", metadata=m("kicad_always_quotes"))
 
     kicad_expr_tag_name: Literal["pcbplotparams"] = "pcbplotparams"
 
@@ -181,23 +174,15 @@ class Via(KicadPcbExpr):
     at: tuple[float, float] = (0, 0)
     size: float = 0
     drill: float = 0
-    net: int = 0
-    tstamp: UUID = field(default_factory=uuid4)
     layers: list[str] = field(default_factory=list)
     remove_unused_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     keep_end_layers: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
+    free: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
     zone_layer_connections: list[CanonicalLayerName] = field(
         default_factory=list, metadata=m("kicad_omits_default")
     )
-    free: bool = field(default=False, metadata=m("kicad_kw_bool_empty"))
-
-    @root_validator(pre=True)
-    def validate(cls, fields):
-        values = list(fields.values())
-        if values[0] == "locked":
-            fields["locked"] = "locked"
-            fields["type"] = "through"
-        return fields
+    net: int = 0
+    tstamp: UUID = field(default_factory=uuid4)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -207,9 +192,9 @@ class Arc(KicadPcbExpr):
     mid: tuple[float, float] = (0, 0)
     end: tuple[float, float] = (0, 0)
     width: float = 0.0
+    layer: CanonicalLayerName = "F.Cu"
     net: int = 0
     tstamp: UUID = field(default_factory=uuid4)
-    layer: CanonicalLayerName = "F.Cu"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -244,8 +229,8 @@ class Pcb(KicadPcbExpr):
 
     generator: str = "edea"
     general: General = field(default_factory=General)
-    title_block: Optional[TitleBlock] = None
     paper: Paper = field(default_factory=PaperStandard)
+    title_block: Optional[TitleBlock] = None
 
     layers: list[Layer] = field(default_factory=list, metadata=m("kicad_always_quotes"))
 
@@ -253,6 +238,32 @@ class Pcb(KicadPcbExpr):
     def _layers_to_list(self, layers: list[Layer]) -> list[SExprList]:
         lst: SExprList = ["layers"]
         return [lst + [layer_to_list(layer) for layer in layers]]
+
+    @classmethod
+    @custom_parser("layers")
+    def _list_to_layers(cls, exprs: SExprList) -> tuple[list[Layer], SExprList]:
+        exp = None
+        for e in exprs:
+            if isinstance(e, list) and len(e) > 0 and e[0] == "layers":
+                exp = e
+                break
+
+        if exp is None:
+            raise ValueError("Not found")
+
+        exprs.remove(exp)
+
+        rest = exp[1:]
+        lst: list[Layer] = []
+        for e in rest:
+            if not isinstance(e, list):
+                raise ValueError(f"Expecting layer got: '{e}'")
+            if len(e) < 3 or len(e) > 4:
+                raise ValueError(
+                    f"Expecting layer expression of length 3 or 4 got: '{e}'"
+                )
+            lst.append(tuple(e))  # type: ignore
+        return lst, exprs
 
     setup: Setup = field(default_factory=Setup)
     property: list[Property] = field(default_factory=list)

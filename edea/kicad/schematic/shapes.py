@@ -28,12 +28,18 @@ class FillSimple(KicadSchExpr):
 
 @dataclass(config=PydanticConfig, eq=False)
 class FillColor(KicadSchExpr):
+    color: tuple[int, int, int, float] = (0, 0, 0, 1.0)
+    kicad_expr_tag_name: Literal["fill"] = "fill"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class FillTypeColor(KicadSchExpr):
     type: Literal["color"] = "color"
     color: tuple[int, int, int, float] = (0, 0, 0, 1.0)
     kicad_expr_tag_name: Literal["fill"] = "fill"
 
 
-Fill = FillSimple | FillColor
+Fill = FillSimple | FillColor | FillTypeColor
 
 
 @dataclass(config=PydanticConfig, eq=False)

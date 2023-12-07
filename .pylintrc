@@ -104,7 +104,11 @@ disable=
         too-many-instance-attributes,
         too-many-locals,
         too-many-return-statements,
+        # handled by ruff
         unused-import,
+        # suggests worse code when there are only two elements to compare
+        consider-using-in,
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
