@@ -5,8 +5,17 @@ SPDX-License-Identifier: EUPL-1.2
 """
 import itertools
 import math
+import posixpath
+from copy import deepcopy
 from dataclasses import field
-from typing import Annotated, ClassVar, Literal, Optional
+from typing import (
+    Annotated,
+    ClassVar,
+    Literal,
+    Optional,
+    Protocol,
+    Sequence,
+)
 from uuid import UUID, uuid4
 
 from pydantic import validator
@@ -23,15 +32,15 @@ from .base import KicadPcbExpr
 from .common import Group, Image, Net, PositionIdentifier, Property, Zone
 from .footprint import Footprint
 from .graphics import (
-    GraphicalArc,
+    GraphicalArcTopLevel,
     GraphicalBezier,
     GraphicalBoundingBox,
-    GraphicalCircle,
+    GraphicalCircleTopLevel,
     GraphicalCurve,
     GraphicalDimension,
-    GraphicalLine,
-    GraphicalPolygon,
-    GraphicalRectangle,
+    GraphicalLineTopLevel,
+    GraphicalPolygonTopLevel,
+    GraphicalRectangleTopLevel,
     GraphicalText,
     GraphicalTextBox,
 )
@@ -199,7 +208,7 @@ class Target(KicadPcbExpr):
     size: float
     width: float
     layer: CanonicalLayerName
-    tstamp: Optional[UUID] = None
+    tstamp: UUID = field(default_factory=uuid4)
 
 
 @dataclass(config=PydanticConfig)
@@ -270,14 +279,14 @@ class Pcb(KicadPcbExpr):
     images: list[Image] = field(default_factory=list)
 
     # Graphics
-    gr_lines: list[GraphicalLine] = field(default_factory=list)
+    gr_lines: list[GraphicalLineTopLevel] = field(default_factory=list)
     gr_text_items: list[GraphicalText] = field(default_factory=list)
     gr_text_boxes: list[GraphicalTextBox] = field(default_factory=list)
-    gr_rects: list[GraphicalRectangle] = field(default_factory=list)
-    gr_circles: list[GraphicalCircle] = field(default_factory=list)
-    gr_arcs: list[GraphicalArc] = field(default_factory=list)
+    gr_rects: list[GraphicalRectangleTopLevel] = field(default_factory=list)
+    gr_circles: list[GraphicalCircleTopLevel] = field(default_factory=list)
+    gr_arcs: list[GraphicalArcTopLevel] = field(default_factory=list)
     gr_curves: list[GraphicalCurve] = field(default_factory=list)
-    gr_polys: list[GraphicalPolygon] = field(default_factory=list)
+    gr_polys: list[GraphicalPolygonTopLevel] = field(default_factory=list)
     beziers: list[GraphicalBezier] = field(default_factory=list)
     gr_bboxes: list[GraphicalBoundingBox] = field(default_factory=list)
     dimensions: list[GraphicalDimension] = field(default_factory=list)
@@ -292,6 +301,61 @@ class Pcb(KicadPcbExpr):
 
     # UNDOCUMENTED: `target`
     targets: list[Target] = field(default_factory=list)
+
+    def insert_layout(self, name: str, layout: "Pcb") -> None:
+        """Insert another PCB layout into this one"""
+        group: Group = Group(name=name)
+
+        self.arcs += _copy_and_group(group, layout.arcs)
+        self.beziers += _copy_and_group(group, layout.beziers)
+        self.dimensions += _copy_and_group(group, layout.dimensions)
+        self.gr_arcs += _copy_and_group(group, layout.gr_arcs)
+        self.gr_circles += _copy_and_group(group, layout.gr_circles)
+        self.gr_curves += _copy_and_group(group, layout.gr_curves)
+        self.gr_lines += _copy_and_group(group, layout.gr_lines)
+        self.gr_polys += _copy_and_group(group, layout.gr_polys)
+        self.gr_rects += _copy_and_group(group, layout.gr_rects)
+        self.gr_text_boxes += _copy_and_group(group, layout.gr_text_boxes)
+        self.gr_text_items += _copy_and_group(group, layout.gr_text_items)
+        self.targets += _copy_and_group(group, layout.targets)
+
+        self.gr_bboxes += deepcopy(layout.gr_bboxes)
+        self.images += deepcopy(layout.images)
+
+        new_nets: list[Net] = []
+        net_lookup: dict[int, Net] = {}
+        net_start_n = 0
+        for net in self.nets:
+            net_start_n = max(net_start_n, net.number)
+        for net in layout.nets:
+            new_net = Net(
+                number=net_start_n + net.number + 1,
+                name=posixpath.join(f"/{name}", net.name),
+            )
+            net_lookup[net.number] = new_net
+            new_nets.append(new_net)
+        self.nets += new_nets
+
+        new_footprints: list[Footprint] = _copy_and_group(group, layout.footprints)
+        for fp in new_footprints:
+            for pad in fp.pads:
+                if pad.net is not None:
+                    pad.net = deepcopy(net_lookup[pad.net.number])
+        self.footprints += new_footprints
+
+        new_segments = _copy_and_group(group, layout.segments)
+        _reassign_nets(net_lookup, new_segments)
+        self.segments += new_segments
+
+        new_vias = _copy_and_group(group, layout.vias)
+        _reassign_nets(net_lookup, new_vias)
+        self.vias += new_vias
+
+        new_zones = _copy_and_group(group, layout.zones)
+        _reassign_nets(net_lookup, new_zones)
+        self.zones += new_zones
+
+        self.groups += deepcopy(layout.groups) + [group]
 
     def size(self):
         """Calculate the size (width, height) of the board"""
@@ -333,6 +397,25 @@ class Pcb(KicadPcbExpr):
         return any(math.isinf(x) for x in (min_x, min_y, max_x, max_y))
 
     kicad_expr_tag_name: ClassVar[Literal["kicad_pcb"]] = "kicad_pcb"
+
+
+class _HasTstamp(Protocol):
+    tstamp: UUID
+
+
+class _HasNetInt(Protocol):
+    net: int
+
+
+def _reassign_nets(net_lookup: dict[int, Net], xs: Sequence[_HasNetInt]) -> None:
+    for x in xs:
+        x.net = net_lookup[x.net].number
+
+
+def _copy_and_group(group: Group, xs: Sequence[_HasTstamp]) -> list:
+    for x in xs:
+        group.members.append(x.tstamp)
+    return list(deepcopy(xs))
 
 
 class MissingBoardOutlineError(ValueError):

@@ -336,8 +336,8 @@ class Footprint(KicadPcbExpr):
     placed: Annotated[bool, m("kicad_kw_bool")] = False
     layer: CanonicalLayerName = "F.Cu"
     tedit: Optional[str] = None
-    tstamp: Optional[UUID] = None
-    at: Optional[PositionIdentifier] = None
+    tstamp: UUID = field(default_factory=uuid4)
+    at: PositionIdentifier = field(default_factory=PositionIdentifier)
     descr: Optional[str] = None
     tags: Optional[str] = None
     properties: list[Property] = field(default_factory=list)
