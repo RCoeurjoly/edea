@@ -3,6 +3,7 @@ Dataclasses describing the contents of .kicad_sch files.
 
 SPDX-License-Identifier: EUPL-1.2
 """
+import pathlib
 from dataclasses import field
 from typing import Annotated, ClassVar, Literal, Optional
 from uuid import UUID, uuid4
@@ -73,8 +74,73 @@ class SymbolUse(KicadSchExpr):
     default_instance: Optional[DefaultInstance] = None
     properties: list[Property] = field(default_factory=list)
     pins: list[PinAssignment] = field(default_factory=list)
-    instances: SymbolUseInstances | None = field(default=None)
+    instances: Optional[SymbolUseInstances] = None
     kicad_expr_tag_name: ClassVar[Literal["symbol"]] = "symbol"
+
+    @validator("properties")
+    @classmethod
+    def _validate_properties(cls, properties):
+        keys = [prop.key for prop in properties]
+        if "Reference" not in keys:
+            raise ValueError(
+                '"reference" (Reference) is missing from symbol properties'
+            )
+        if "Value" not in keys:
+            raise ValueError('"value" (Value) is missing from symbol properties')
+        return properties
+
+    reference: Annotated[str, m("exclude_from_files")]  # type: ignore
+    value: Annotated[str, m("exclude_from_files")]  # type: ignore
+
+    @property
+    def reference(self) -> str:
+        for prop in self.properties:
+            if prop.key == "Reference":
+                return prop.value
+        raise KeyError("Reference not found")
+
+    @reference.setter
+    def reference(self, value: str):
+        # when it's missing in __init__ it's a "property" object, we just
+        # ignore that
+        if isinstance(value, property):
+            return
+        for prop in self.properties:
+            if prop.key == "Reference":
+                prop.value = value
+                break
+        else:
+            self.properties.append(
+                Property(
+                    key="Reference",
+                    value=value,
+                )
+            )
+
+    @property
+    def value(self) -> str:
+        for prop in self.properties:
+            if prop.key == "Value":
+                return prop.value
+        raise KeyError("Value not found")
+
+    @value.setter
+    def value(self, value: str):
+        # when it's missing in __init__ it's a "property" object, we just
+        # ignore that
+        if isinstance(value, property):
+            return
+        for prop in self.properties:
+            if prop.key == "Value":
+                prop.value = value
+                break
+        else:
+            self.properties.append(
+                Property(
+                    key="Value",
+                    value=value,
+                )
+            )
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -260,17 +326,84 @@ class SubSheetInstances(KicadSchExpr):
     kicad_expr_tag_name: ClassVar[Literal["instances"]] = "instances"
 
 
-@dataclass(config=PydanticConfig, eq=False)
+@dataclass(config=PydanticConfig, eq=False, kw_only=True)
 class Sheet(KicadSchExpr):
-    at: tuple[float, float]
-    size: tuple[float, float]
-    fields_autoplaced: Annotated[bool, m("kicad_kw_bool_empty")] = False
+    at: tuple[float, float] = (15.24, 15.24)
+    size: tuple[float, float] = (15.24, 15.24)
+    fields_autoplaced: Annotated[bool, m("kicad_kw_bool_empty")] = True
     stroke: Stroke = field(default_factory=Stroke)
     fill: FillColor = field(default_factory=FillColor)
     uuid: UUID = field(default_factory=uuid4)
     properties: list[Property] = field(default_factory=list)
-    pin: list[SheetPin] = field(default_factory=list)
-    instances: SubSheetInstances | None = field(default=None)
+    pins: list[SheetPin] = field(default_factory=list)
+    instances: Optional[SubSheetInstances] = None
+
+    @validator("properties")
+    @classmethod
+    def _validate_properties(cls, properties):
+        keys = [prop.key for prop in properties]
+        if "Sheetname" not in keys:
+            raise ValueError('"name" (Sheetname) is missing from sheet properties')
+        if "Sheetfile" not in keys:
+            raise ValueError('"file" (Sheetfile) is missing from sheet properties')
+        return properties
+
+    name: Annotated[str, m("exclude_from_files")]  # type: ignore
+    file: Annotated[pathlib.Path, m("exclude_from_files")]  # type: ignore
+
+    @property
+    def name(self) -> str:
+        for prop in self.properties:
+            if prop.key == "Sheetname":
+                return prop.value
+        raise KeyError("Sheetname not found")
+
+    @name.setter
+    def name(self, value: str):
+        # when it's missing in __init__ it's a "property" object, we just
+        # ignore that
+        if isinstance(value, property):
+            return
+        for prop in self.properties:
+            if prop.key == "Sheetname":
+                prop.value = value
+                break
+        else:
+            self.properties.append(
+                Property(
+                    key="Sheetname",
+                    value=value,
+                    at=(self.at[0], self.at[1] - 0.7116, 0),
+                    effects=Effects(justify=["left", "bottom"]),
+                )
+            )
+
+    @property
+    def file(self) -> pathlib.Path:
+        for prop in self.properties:
+            if prop.key == "Sheetfile":
+                return pathlib.Path(prop.value)
+        raise KeyError("Sheetfile not found")
+
+    @file.setter
+    def file(self, value: pathlib.Path):
+        # when it's missing in __init__ it's a "property" object, we just
+        # ignore that
+        if isinstance(value, property):
+            return
+        for prop in self.properties:
+            if prop.key == "Sheetfile":
+                prop.value = str(value)
+                break
+        else:
+            self.properties.append(
+                Property(
+                    key="Sheetfile",
+                    value=str(value),
+                    at=(self.at[0], self.at[1] + self.size[1] + 0.5846, 0),
+                    effects=Effects(justify=["left", "top"]),
+                )
+            )
 
 
 @dataclass(config=PydanticConfig, eq=False)

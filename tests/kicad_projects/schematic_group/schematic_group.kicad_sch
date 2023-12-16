@@ -1,0 +1,31 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid 2ac66c2b-893c-488e-9ff2-a0939bf160de)
+
+  (paper "A4")
+
+  (lib_symbols
+  )
+
+
+  (sheet (at 43.18 34.29) (size 12.7 13.97) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid e708b7f5-3c3c-45ae-bb48-29c918e85621)
+    (property "Sheetname" "sub_sheet_1" (at 43.18 33.5784 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "sub_sheet_1.kicad_sch" (at 43.18 48.8446 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "schematic_group"
+        (path "/2ac66c2b-893c-488e-9ff2-a0939bf160de" (page "2"))
+      )
+    )
+  )
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)

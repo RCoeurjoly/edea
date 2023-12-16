@@ -10,7 +10,7 @@ from edea.kicad.pcb import Pcb
 from edea.kicad.schematic import Schematic
 
 
-class EdeaProjectMetadata(BaseModel):
+class EdeaModuleMetadata(BaseModel):
     """Metadata for the EDeA module."""
 
     area_mm: float | None = None
@@ -40,7 +40,7 @@ class Project:
 
     @cached_property
     def metadata(self):
-        data = EdeaProjectMetadata()
+        data = EdeaModuleMetadata()
 
         for symbol in self.schematic.symbols:
             if any(

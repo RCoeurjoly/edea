@@ -5,12 +5,11 @@ SPDX-License-Identifier: EUPL-1.2
 """
 import re
 
-# we need to import these unused modules for get_all_subclasses to work
-import edea.kicad.pcb  # noqa F401
-import edea.kicad.schematic  # noqa: F401
 from edea._type_utils import get_all_subclasses
 from edea.kicad.base import KicadExpr
+from edea.kicad.pcb import Pcb
 from edea.kicad.s_expr import QuotedStr, SExprList
+from edea.kicad.schematic import Schematic
 
 all_classes: list[KicadExpr] = get_all_subclasses(KicadExpr)
 
@@ -34,7 +33,8 @@ def from_list(l_expr: SExprList) -> KicadExpr:
                 break
     if result is None:
         if len(errors) >= 1:
-            raise errors[0]
+            message = f"from_list [{' | -- or -- | '.join(arg for e in errors for arg in e.args)}]"
+            raise ValueError(message)
         else:
             raise ValueError(f"Unknown KiCad expression starting with '{tag_name}'")
     return result
@@ -91,3 +91,17 @@ def from_str(text: str) -> KicadExpr:
     """
     expr = from_str_to_list(text)
     return from_list(expr)
+
+
+def parse_schematic(text: str) -> Schematic:
+    sch = from_str(text)
+    if not isinstance(sch, Schematic):
+        raise ValueError("Invalid schematic file.")
+    return sch
+
+
+def parse_pcb(text: str) -> Pcb:
+    pcb = from_str(text)
+    if not isinstance(pcb, Pcb):
+        raise ValueError("Invalid PCB file.")
+    return pcb

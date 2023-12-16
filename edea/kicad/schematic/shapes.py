@@ -22,20 +22,20 @@ class FillType(StrEnum):
 
 @dataclass(config=PydanticConfig, eq=False)
 class FillSimple(KicadSchExpr):
-    type: FillType = FillType.NONE
+    type: FillType = FillType.BACKGROUND
     kicad_expr_tag_name: ClassVar[Literal["fill"]] = "fill"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FillColor(KicadSchExpr):
-    color: tuple[int, int, int, float] = (0, 0, 0, 1.0)
+    color: tuple[int, int, int, float] = (0, 0, 0, 0)
     kicad_expr_tag_name: ClassVar[Literal["fill"]] = "fill"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class FillTypeColor(KicadSchExpr):
     type: Literal["color"] = "color"
-    color: tuple[int, int, int, float] = (0, 0, 0, 1.0)
+    color: tuple[int, int, int, float] = (0, 0, 0, 0)
     kicad_expr_tag_name: ClassVar[Literal["fill"]] = "fill"
 
 

@@ -29,6 +29,7 @@ for root, dirs, files in os.walk(kicad_folder):
 
 
 @pytest.mark.parametrize("sch_path", kicad_sch_files)
+@pytest.mark.long_running
 def test_parse_all_sch(sch_path):
     with open(sch_path, encoding="utf-8") as f:
         try:
@@ -42,6 +43,7 @@ def test_parse_all_sch(sch_path):
 
 
 @pytest.mark.parametrize("pcb_path", kicad_pcb_files)
+@pytest.mark.long_running
 def test_parse_all_pcb(pcb_path):
     with open(pcb_path, encoding="utf-8") as f:
         try:

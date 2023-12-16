@@ -36,7 +36,9 @@ def from_list(cls: Type[KicadExprClass], exprs: SExprList) -> KicadExprClass:
 
     try:
         parsed_kwargs, exprs = _parse(fields, exprs, custom_parsers)
-    except (ValidationError, TypeError, ValueError) as e:
+    except ValidationError as e:
+        raise ValueError(f"{cls._name_for_errors()} -> {e}") from e
+    except (TypeError, ValueError) as e:
         args = "".join(e.args)
         raise ValueError(f"{cls._name_for_errors()} -> {args}") from e
 
@@ -80,6 +82,8 @@ def _parse(
     # pylint: disable=too-many-statements
     parsed_kwargs = {}
     for field in fields:
+        if get_meta(field, "exclude_from_files"):
+            continue
         if len(exprs) == 0:
             index = fields.index(field)
             remaining = [f.name for f in fields[index:] if not is_optional(f)]
@@ -106,6 +110,8 @@ def _parse(
             ):
                 exprs.pop(0)
                 parsed_kwargs[field.name] = True
+            else:
+                parsed_kwargs[field.name] = False
             continue
 
         if get_meta(field, "kicad_kw_bool_empty"):
@@ -116,6 +122,8 @@ def _parse(
             ):
                 exprs.pop(0)
                 parsed_kwargs[field.name] = True
+            else:
+                parsed_kwargs[field.name] = False
             continue
 
         field_type = get_type(field)

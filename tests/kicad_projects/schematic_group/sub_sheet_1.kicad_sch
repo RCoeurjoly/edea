@@ -1,0 +1,16 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid 4a529533-3de1-4cd0-acb1-378ff73cb891)
+
+  (paper "A4")
+
+  (lib_symbols
+  )
+
+
+  (rectangle (start 123.19 68.58) (end 142.24 78.74)
+    (stroke (width 0) (type default))
+    (fill (type none))
+    (uuid 460c9bdb-5574-41c4-a36f-739b08077d69)
+  )
+)
