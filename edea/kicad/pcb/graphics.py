@@ -30,7 +30,7 @@ class GraphicalText(KicadPcbExpr):
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     at: PositionIdentifier = field(default_factory=PositionIdentifier)
     layer: Optional[LayerKnockout] = None
-    tstamp: Optional[UUID] = None
+    tstamp: UUID = field(default_factory=uuid4)
     effects: Effects = field(default_factory=Effects)
     render_cache: Optional[RenderCache] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_text"]] = "gr_text"
@@ -49,7 +49,6 @@ class GraphicalLine(KicadPcbExpr):
     width: Optional[float] = None
     stroke: Optional[Stroke] = None
     layer: Optional[CanonicalLayerName] = None
-    tstamp: Optional[UUID] = None
     angle: Optional[float] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_line"]] = "gr_line"
 
@@ -66,6 +65,11 @@ class GraphicalLine(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
+class GraphicalLineTopLevel(GraphicalLine):
+    tstamp: UUID = field(default_factory=uuid4)
+
+
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalRectangle(KicadPcbExpr):
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
@@ -74,7 +78,6 @@ class GraphicalRectangle(KicadPcbExpr):
     stroke: Optional[Stroke] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
     layer: Optional[CanonicalLayerName] = None
-    tstamp: Optional[UUID] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_rect"]] = "gr_rect"
 
     def envelope(
@@ -90,6 +93,12 @@ class GraphicalRectangle(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
+class GraphicalRectangleTopLevel(GraphicalRectangle):
+    tstamp: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["gr_rect"]] = "gr_rect"
+
+
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalCircle(KicadPcbExpr):
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     center: tuple[float, float] = (0, 0)
@@ -98,7 +107,6 @@ class GraphicalCircle(KicadPcbExpr):
     width: Optional[float] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
     layer: Optional[CanonicalLayerName] = None
-    tstamp: Optional[UUID] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_circle"]] = "gr_circle"
 
     def envelope(
@@ -114,6 +122,12 @@ class GraphicalCircle(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
+class GraphicalCircleTopLevel(GraphicalCircle):
+    tstamp: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["gr_circle"]] = "gr_circle"
+
+
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalArc(KicadPcbExpr):
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     start: tuple[float, float] = (0, 0)
@@ -122,7 +136,6 @@ class GraphicalArc(KicadPcbExpr):
     width: Optional[float] = None
     stroke: Optional[Stroke] = None
     layer: Optional[CanonicalLayerName] = None
-    tstamp: Optional[UUID] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_arc"]] = "gr_arc"
 
     def center(self) -> tuple[float, float]:
@@ -198,6 +211,12 @@ class GraphicalArc(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
+class GraphicalArcTopLevel(GraphicalArc):
+    tstamp: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["gr_arc"]] = "gr_arc"
+
+
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalPolygon(KicadPcbExpr):
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     pts: Pts = field(default_factory=Pts)
@@ -205,7 +224,6 @@ class GraphicalPolygon(KicadPcbExpr):
     width: Optional[float] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
     layer: Optional[CanonicalLayerName] = None
-    tstamp: Optional[UUID] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_poly"]] = "gr_poly"
 
     def envelope(
@@ -221,12 +239,18 @@ class GraphicalPolygon(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
+class GraphicalPolygonTopLevel(GraphicalPolygon):
+    tstamp: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["gr_poly"]] = "gr_poly"
+
+
+@dataclass(config=PydanticConfig, eq=False)
 class GraphicalBezier(KicadPcbExpr):
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     layer: Optional[CanonicalLayerName] = None
-    tstamp: Optional[UUID] = None
+    tstamp: UUID = field(default_factory=uuid4)
     kicad_expr_tag_name: ClassVar[Literal["bezier"]] = "bezier"
 
     def envelope(

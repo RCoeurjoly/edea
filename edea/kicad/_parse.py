@@ -149,7 +149,7 @@ def _parse(
         if no_kw:
             exp = exprs.pop(0)
             if not isinstance(exp, SExprAtom):
-                raise ValueError(f"Expecting single value got: {exp}")
+                raise ValueError(f"{field.name} -> Expecting single value got: {exp}")
             parsed_kwargs[field.name] = _parse_atom_as(field_type, exp)
             continue
 
@@ -161,7 +161,7 @@ def _parse(
                 found = True
                 break
         if not found and not is_optional(field):
-            raise ValueError("Could not be found")
+            raise ValueError(f"{field.name} -> Could not be found")
 
     return parsed_kwargs, exprs
 

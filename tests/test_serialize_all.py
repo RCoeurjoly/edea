@@ -7,7 +7,6 @@ SPDX-License-Identifier: EUPL-1.2
 
 import os
 import shutil
-import subprocess
 
 import pytest
 
@@ -16,6 +15,8 @@ from edea.kicad.parser import from_str
 from edea.kicad.pcb import Pcb
 from edea.kicad.schematic import Schematic
 from edea.kicad.serializer import to_str
+
+from ._kicad_cli import kicad_cli
 
 test_folder = os.path.dirname(os.path.realpath(__file__))
 kicad_folder = os.path.join(test_folder, "kicad_projects/kicad-test-files")
@@ -44,25 +45,12 @@ def test_serialize_all_sch_files(sch_path, tmp_path_factory):
 
     tmp_dir = tmp_path_factory.mktemp("kicad_files")
     tmp_net_kicad = tmp_dir / "test_kicad.net"
-    process_kicad = subprocess.run(
-        ["kicad-cli", "sch", "export", "netlist", sch_path, "-o", tmp_net_kicad],
-        capture_output=True,
+    process_kicad = kicad_cli(
+        ["sch", "export", "netlist", sch_path, "-o", tmp_net_kicad]
     )
 
-    kicad_stderr = [
-        line
-        for line in process_kicad.stderr.split(b"\n")
-        if
-        # kicad-cli lock file errors happen when we run tests in parallel but
-        # don't affect anything we are doing
-        line != b""
-        and b"Invalid lock file" not in line
-        and b"Failed to access lock" not in line
-        and b"Failed to inspect the lock file" not in line
-    ]
-
     # skip files that already have warnings/errors
-    if process_kicad.returncode != 0 or kicad_stderr != []:
+    if process_kicad.returncode != 0 or process_kicad.stderr != "":
         return pytest.skip()
 
     contents = to_str(sch)
@@ -70,30 +58,15 @@ def test_serialize_all_sch_files(sch_path, tmp_path_factory):
     with open(tmp_sch, "w") as f:
         f.write(contents)
     tmp_net_edea = tmp_dir / "test_edea.net"
-    process = subprocess.run(
-        ["kicad-cli", "sch", "export", "netlist", tmp_sch, "-o", tmp_net_edea],
-        capture_output=True,
-    )
+    process = kicad_cli(["sch", "export", "netlist", tmp_sch, "-o", tmp_net_edea])
 
-    test_stderr = [
-        line
-        for line in process.stderr.split(b"\n")
-        if
-        # kicad-cli lock file errors happen when we run tests in parallel but
-        # don't affect anything we are doing
-        line != b""
-        and b"Invalid lock file" not in line
-        and b"Failed to access lock" not in line
-        and b"Failed to inspect the lock file" not in line
-    ]
-
-    assert len(test_stderr) == 0, (
-        f"got output on stderr: {[s.decode('utf8') for s in test_stderr]}\n"
+    assert process.stderr == "", (
+        f"got output on stderr: {process.stderr}\n"
         f"when trying to read: '{str(tmp_sch)}'\n"
         f"generated from: '{str(sch_path)}'"
     )
-    assert process.stdout == b"" or process.stdout == process_kicad.stdout, (
-        f"unexpected output on stdout: {process.stdout.decode('utf8')}\n"
+    assert process.stdout == "" or process.stdout == process_kicad.stdout, (
+        f"unexpected output on stdout: {process.stdout}\n"
         f"expecting: {process_kicad.stdout}\n"
         f"when trying to read: '{str(tmp_sch)}'\n"
         f"generated from: '{str(sch_path)}'"
@@ -120,9 +93,8 @@ def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
 
     tmp_dir = tmp_path_factory.mktemp("kicad_files")
     tmp_svg_kicad = tmp_dir / "test_pcb_kicad.svg"
-    process_kicad = subprocess.run(
+    process_kicad = kicad_cli(
         [
-            "kicad-cli",
             "pcb",
             "export",
             "svg",
@@ -130,24 +102,11 @@ def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
             pcb_path,
             "-o",
             tmp_svg_kicad,
-        ],
-        capture_output=True,
+        ]
     )
 
-    kicad_stderr = [
-        line
-        for line in process_kicad.stderr.split(b"\n")
-        if
-        # kicad-cli lock file errors happen when we run tests in parallel but
-        # don't affect anything we are doing
-        line != b""
-        and b"Invalid lock file" not in line
-        and b"Failed to access lock" not in line
-        and b"Failed to inspect the lock file" not in line
-    ]
-
     # skip files that already have warnings/errors
-    if process_kicad.returncode != 0 or kicad_stderr != []:
+    if process_kicad.returncode != 0 or process_kicad.stderr != "":
         return pytest.skip()
 
     contents = to_str(pcb)
@@ -155,9 +114,8 @@ def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
     with open(tmp_pcb, "w") as f:
         f.write(contents)
     tmp_svg_edea = tmp_dir / "test_pcb_edea.svg"
-    process = subprocess.run(
+    process = kicad_cli(
         [
-            "kicad-cli",
             "pcb",
             "export",
             "svg",
@@ -165,29 +123,16 @@ def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
             tmp_pcb,
             "-o",
             tmp_svg_edea,
-        ],
-        capture_output=True,
+        ]
     )
 
-    test_stderr = [
-        line
-        for line in process.stderr.split(b"\n")
-        if
-        # kicad-cli lock file errors happen when we run tests in parallel but
-        # don't affect anything we are doing
-        line != b""
-        and b"Invalid lock file" not in line
-        and b"Failed to access lock" not in line
-        and b"Failed to inspect the lock file" not in line
-    ]
-
-    assert len(test_stderr) == 0, (
-        f"got output on stderr: {[s.decode('utf8') for s in test_stderr]}\n"
+    assert process.stderr == "", (
+        f"got output on stderr: {process.stderr}\n"
         f"when trying to read: '{str(tmp_pcb)}'\n"
         f"generated from: '{str(pcb_path)}'"
     )
-    assert process.stdout == b"" or process.stdout == process_kicad.stdout, (
-        f"unexpected output on stdout: {process.stdout.decode('utf8')}\n"
+    assert process.stdout == "" or process.stdout == process_kicad.stdout, (
+        f"unexpected output on stdout: {process.stdout}\n"
         f"expecting: {process_kicad.stdout}\n"
         f"when trying to read: '{str(tmp_pcb)}'\n"
         f"generated from: '{str(pcb_path)}'"
