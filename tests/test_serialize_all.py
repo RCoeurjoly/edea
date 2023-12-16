@@ -32,6 +32,7 @@ for root, dirs, files in os.walk(kicad_folder):
 
 
 @pytest.mark.parametrize("sch_path", kicad_sch_files)
+@pytest.mark.long_running
 def test_serialize_all_sch_files(sch_path, tmp_path_factory):
     with open(sch_path, encoding="utf-8") as f:
         try:
@@ -107,6 +108,7 @@ def test_serialize_all_sch_files(sch_path, tmp_path_factory):
 
 
 @pytest.mark.parametrize("pcb_path", kicad_pcb_files)
+@pytest.mark.long_running
 def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
     with open(pcb_path, encoding="utf-8") as f:
         try:

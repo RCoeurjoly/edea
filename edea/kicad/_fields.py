@@ -19,6 +19,8 @@ MetaTag = Literal[
     "kicad_bool_yes_no",
     # KiCad always quotes this string property, no matter its contents
     "kicad_always_quotes",
+    # this field is for our convenience and is not part of the kicad file format
+    "exclude_from_files",
 ]
 
 
@@ -45,6 +47,8 @@ def get_type(field: dataclasses.Field):
 
 
 def is_optional(field: dataclasses.Field):
+    if get_meta(field, "exclude_from_files"):
+        return True
     if get_meta(field, "kicad_kw_bool"):
         return True
     if get_meta(field, "kicad_kw_bool_empty"):

@@ -32,7 +32,7 @@ def to_list(kicad_expr: KicadExpr) -> SExprList:
 
 
 def _serialize_field(field: dataclasses.Field, value) -> SExprList:
-    if value is None:
+    if get_meta(field, "exclude_from_files") or value is None:
         return []
     if get_meta(field, "kicad_omits_default"):
         # KiCad doesn't put anything in the s-expression if this field is at
