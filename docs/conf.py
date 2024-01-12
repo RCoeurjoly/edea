@@ -28,6 +28,7 @@ copyright = f'{datetime.now().year}, {re.sub(r" <[^>]+>", "", author)} under {li
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinxcontrib.asciinema',
     "sphinx.ext.autodoc",
     # "sphinxcontrib.autodoc_pydantic",
 ]
@@ -55,5 +56,5 @@ html_theme_options = asdict(
 )
 
 autodoc_type_aliases = {
-    "CanonicalLayerName": "edea.types.pcb.layer.CanonicalLayerName",
+    "CanonicalLayerName": "edea.kicad.pcb.layer.CanonicalLayerName",
 }

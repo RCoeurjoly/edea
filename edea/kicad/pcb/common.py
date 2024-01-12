@@ -20,7 +20,7 @@ class Property(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class PositionIdentifier(KicadPcbExpr):
+class Position(KicadPcbExpr):
     x: Annotated[float, m("kicad_no_kw")] = 0
     y: Annotated[float, m("kicad_no_kw")] = 0
     angle: Annotated[float, m("kicad_no_kw", "kicad_omits_default")] = 0

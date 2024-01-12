@@ -1,4 +1,4 @@
-Types
+Kicad
 =====
 
 .. toctree::

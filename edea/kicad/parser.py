@@ -3,6 +3,7 @@ Methods for turning strings and lists into EDeA dataclasses.
 
 SPDX-License-Identifier: EUPL-1.2
 """
+import pathlib
 import re
 
 from edea._type_utils import get_all_subclasses
@@ -94,14 +95,20 @@ def from_str(text: str) -> KicadExpr:
 
 
 def parse_schematic(text: str) -> Schematic:
-    sch = from_str(text)
-    if not isinstance(sch, Schematic):
-        raise ValueError("Invalid schematic file.")
-    return sch
+    sexpr = from_str_to_list(text)
+    return Schematic.from_list(sexpr[1:])
 
 
 def parse_pcb(text: str) -> Pcb:
-    pcb = from_str(text)
-    if not isinstance(pcb, Pcb):
-        raise ValueError("Invalid PCB file.")
-    return pcb
+    sexpr = from_str_to_list(text)
+    return Pcb.from_list(sexpr[1:])
+
+
+def load_schematic(path: pathlib.Path | str) -> Schematic:
+    with open(path, "r", encoding="utf-8") as f:
+        return parse_schematic(f.read())
+
+
+def load_pcb(path: pathlib.Path | str) -> Pcb:
+    with open(path, "r", encoding="utf-8") as f:
+        return parse_pcb(f.read())
