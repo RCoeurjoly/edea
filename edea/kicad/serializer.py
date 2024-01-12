@@ -1,4 +1,8 @@
+import pathlib
+
 from edea.kicad.base import KicadExpr
+from edea.kicad.pcb import Pcb
+from edea.kicad.schematic import Schematic
 
 from .s_expr import QuotedStr, SExprList
 
@@ -60,6 +64,8 @@ _special_chars = (
     "\u2000",
     # em quad
     "\u2001",
+    # en space
+    "\u2002",
 )
 
 
@@ -86,3 +92,15 @@ def _escape(s: str):
     Escapes back-slashes and escapes double quotes.
     """
     return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def write_pcb(path: pathlib.Path | str, pcb: Pcb) -> None:
+    contents = to_str(pcb)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(contents)
+
+
+def write_schematic(path: pathlib.Path | str, sch: Schematic) -> None:
+    contents = to_str(sch)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(contents)

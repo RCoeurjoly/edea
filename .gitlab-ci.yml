@@ -77,7 +77,7 @@ release:
 pages:
   stage: deploy
   script:
-    # download old docs for to support multiple versions
+    # download old docs to support multiple versions
     - |
       DOWNLOAD_URL='https://gitlab.com/api/v4/projects/35843774/jobs/artifacts/main/download?job=pages'
       curl -L --output old.zip "$DOWNLOAD_URL"
@@ -101,4 +101,4 @@ pages:
     - changes:
         - .gitlab-ci.yml
         - docs/**/*
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH == "release" || $CI_COMMIT_BRANCH == "pages"
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "release" || $CI_COMMIT_BRANCH == "pages"

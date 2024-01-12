@@ -12,7 +12,7 @@ from edea.kicad._str_enum import StrEnum
 from edea.kicad.common import Effects, Pts, Stroke
 
 from .base import KicadPcbExpr
-from .common import BaseTextBox, CanonicalLayerName, PositionIdentifier, RenderCache
+from .common import BaseTextBox, CanonicalLayerName, Position, RenderCache
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -28,7 +28,7 @@ class LayerKnockout(KicadPcbExpr):
 class GraphicalText(KicadPcbExpr):
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
-    at: PositionIdentifier = field(default_factory=PositionIdentifier)
+    at: Position = field(default_factory=Position)
     layer: Optional[LayerKnockout] = None
     tstamp: UUID = field(default_factory=uuid4)
     effects: Effects = field(default_factory=Effects)

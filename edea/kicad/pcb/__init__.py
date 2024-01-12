@@ -5,7 +5,6 @@ SPDX-License-Identifier: EUPL-1.2
 """
 import itertools
 import math
-import posixpath
 from copy import deepcopy
 from dataclasses import field
 from typing import (
@@ -29,7 +28,7 @@ from edea.kicad.common import Paper, PaperStandard, TitleBlock, VersionError
 from edea.kicad.s_expr import SExprList
 
 from .base import KicadPcbExpr
-from .common import Group, Image, Net, PositionIdentifier, Property, Zone
+from .common import Group, Image, Net, Position, Property, Zone
 from .footprint import Footprint
 from .graphics import (
     GraphicalArcTopLevel,
@@ -204,7 +203,7 @@ class Arc(KicadPcbExpr):
 @dataclass(config=PydanticConfig, eq=False)
 class Target(KicadPcbExpr):
     type: Annotated[str, m("kicad_no_kw")]
-    at: PositionIdentifier
+    at: Position
     size: float
     width: float
     layer: CanonicalLayerName
@@ -302,7 +301,9 @@ class Pcb(KicadPcbExpr):
     # UNDOCUMENTED: `target`
     targets: list[Target] = field(default_factory=list)
 
-    def insert_layout(self, name: str, layout: "Pcb") -> None:
+    def insert_layout(
+        self, name: str, layout: "Pcb", uuid_prefix: Optional[UUID] = None
+    ) -> None:
         """Insert another PCB layout into this one"""
         group: Group = Group(name=name)
 
@@ -327,20 +328,22 @@ class Pcb(KicadPcbExpr):
         net_start_n = 0
         for net in self.nets:
             net_start_n = max(net_start_n, net.number)
+
         for net in layout.nets:
-            new_net = Net(
-                number=net_start_n + net.number + 1,
-                name=posixpath.join(f"/{name}", net.name),
-            )
+            new_name = net.name
+            if net.name.startswith("/"):
+                new_name = f"/{name}{net.name}"
+            new_net = Net(number=net_start_n + net.number + 1, name=new_name)
             net_lookup[net.number] = new_net
             new_nets.append(new_net)
         self.nets += new_nets
-
         new_footprints: list[Footprint] = _copy_and_group(group, layout.footprints)
         for fp in new_footprints:
             for pad in fp.pads:
                 if pad.net is not None:
                     pad.net = deepcopy(net_lookup[pad.net.number])
+            if uuid_prefix is not None and fp.path is not None:
+                fp.path = f"/{uuid_prefix}/{fp.path}"
         self.footprints += new_footprints
 
         new_segments = _copy_and_group(group, layout.segments)

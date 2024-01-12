@@ -1,8 +1,8 @@
 import pathlib
 
-from edea.kicad.parser import parse_pcb
+from edea.kicad.parser import load_pcb
 from edea.kicad.pcb import Pcb
-from edea.kicad.serializer import to_str
+from edea.kicad.serializer import write_pcb
 
 from ._kicad_cli import kicad_cli
 
@@ -16,18 +16,15 @@ def test_insert_layout_basic():
 
 def test_insert_layout_from_file(tmp_path: pathlib.Path):
     mp2451_path = "tests/kicad_projects/MP2451/MP2451.kicad_pcb"
-    with open(mp2451_path, encoding="utf-8") as f:
-        mp2451 = parse_pcb(f.read())
+    mp2451 = load_pcb(mp2451_path)
 
     ferret_path = "tests/kicad_projects/ferret/ferret.kicad_pcb"
-    with open(ferret_path, encoding="utf-8") as f:
-        ferret = parse_pcb(f.read())
+    ferret = load_pcb(ferret_path)
 
     ferret.insert_layout("MP2451", mp2451)
 
     test_path = tmp_path / "test.kicad_pcb"
-    with open(test_path, "w", encoding="utf-8") as f:
-        f.write(to_str(ferret))
+    write_pcb(test_path, ferret)
 
     tmp_svg = tmp_path / "test.svg"
     process = kicad_cli(

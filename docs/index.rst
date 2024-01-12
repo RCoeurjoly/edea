@@ -5,5 +5,6 @@ EDeA Documentation
    :maxdepth: 2
    :caption: Contents:
    
-   types/index
-   
+   kicad/index
+   metadata
+   cli

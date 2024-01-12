@@ -15,7 +15,7 @@ from .common import (
     Image,
     KicadPcbExpr,
     Net,
-    PositionIdentifier,
+    Position,
     Property,
     Zone,
 )
@@ -58,7 +58,7 @@ class FootprintText(KicadPcbExpr):
     type: Annotated[Literal["reference", "value", "user"], m("kicad_no_kw")] = "user"
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     text: Annotated[str, m("kicad_always_quotes", "kicad_no_kw")] = ""
-    at: PositionIdentifier = field(default_factory=PositionIdentifier)
+    at: Position = field(default_factory=Position)
     layer: LayerKnockout = field(default_factory=LayerKnockout)
     hide: Annotated[bool, m("kicad_kw_bool")] = False
     effects: Effects = field(default_factory=Effects)
@@ -251,7 +251,7 @@ class FootprintPad(KicadPcbExpr):
         m("kicad_no_kw"),
     ]
     locked: Annotated[bool, m("kicad_kw_bool")] = False
-    at: PositionIdentifier = field(default_factory=PositionIdentifier)
+    at: Position = field(default_factory=Position)
     size: tuple[float, float] = (0, 0)
     drill: Optional[FootprintPadDrill] = None
     property: list[str] = field(default_factory=list)
@@ -337,7 +337,7 @@ class Footprint(KicadPcbExpr):
     layer: CanonicalLayerName = "F.Cu"
     tedit: Optional[str] = None
     tstamp: UUID = field(default_factory=uuid4)
-    at: PositionIdentifier = field(default_factory=PositionIdentifier)
+    at: Position = field(default_factory=Position)
     descr: Optional[str] = None
     tags: Optional[str] = None
     properties: list[Property] = field(default_factory=list)
