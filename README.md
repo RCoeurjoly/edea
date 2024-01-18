@@ -1,9 +1,16 @@
 # edea python library
 
-The core python module for the edea project.
+The core python module and CLI for the edea project.
 
 
 ## Installation
+
+```
+pip install edea
+```
+
+### Installing pre-release modules
+
 ```sh
 pip install edea --index-url https://gitlab.com/api/v4/projects/35843774/packages/pypi/simple
 ```
