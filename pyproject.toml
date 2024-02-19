@@ -50,5 +50,10 @@ markers = [
 ]
 
 
+[tool.coverage.run]
+omit = [
+    "edea/cli.py",
+]
+
 [tool.poetry.scripts]
 edea = "edea.cli:cli"

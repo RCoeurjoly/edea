@@ -1,14 +1,14 @@
 import datetime
-import shutil
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
+from httpx import get
 from pydantic import BaseModel, root_validator
 
 from edea.kicad.checker.reporter import KicadDrcReporter, KicadErcReporter
-from edea.kicad.design_rules import Severity
-from edea.kicad.parser import load_design_rules
+from edea.kicad.design_rules import DesignRules, Severity
+from edea.kicad.parser import load_design_rules, parse_design_rules
 
 
 class CheckResult(BaseModel):
@@ -47,6 +47,7 @@ class CheckResult(BaseModel):
 def check(
     project_dir: Path | str,
     custom_design_rules_path: Path | None = None,
+    custom_design_rules_url: str | None = None,
     level: Severity = Severity.ignore,
 ) -> CheckResult:
     p = Path(project_dir)
@@ -63,7 +64,9 @@ def check(
 
     check_both = p.is_dir() or p.suffix == ".kicad_pro"
     if kicad_pcb_path.exists() and (check_both or p.suffix == ".kicad_pcb"):
-        with custom_design_rules(custom_design_rules_path, kicad_pcb_path.parent):
+        with custom_design_rules(
+            custom_design_rules_path, custom_design_rules_url, kicad_pcb_path.parent
+        ):
             dr = KicadDrcReporter.from_kicad_file(kicad_pcb_path)
 
     if kicad_sch_path.exists() and (check_both or p.suffix == ".kicad_sch"):
@@ -83,40 +86,60 @@ def check(
 
 
 @contextmanager
-def custom_design_rules(custom_rules_path: Path | None, project_path: Path):
-    """Copy the design rules to project directory and delete it on exiting the context."""
-    if custom_rules_path is None:
+def custom_design_rules(
+    custom_rules_path: Path | None,
+    custom_design_rules_url: str | None,
+    project_path: Path,
+):
+    """Add the design rules to project and delete it on exiting the context."""
+    if custom_rules_path is None and custom_design_rules_url is None:
         yield
         return
 
-    if custom_rules_path.suffix != ".kicad_dru":
-        raise ValueError("The custom design rules have to be in `kicad_dru` format.")
-
-    pcb_file = list(project_path.glob("*.kicad_pro"))
-    if len(pcb_file) == 0:
+    pro_files = list(project_path.glob("*.kicad_pro"))
+    if len(pro_files) == 0:
         raise FileNotFoundError("Couldn't find project file")
     else:
-        pcb_file = pcb_file[0]
+        pro_file = pro_files[0]
 
-    dest = project_path / pcb_file.with_suffix(".kicad_dru").name
+    if custom_rules_path is not None and custom_rules_path.suffix != ".kicad_dru":
+        raise ValueError("The custom design rules have to be in `kicad_dru` format.")
 
-    if dest.exists():
+    dest = project_path / pro_file.with_suffix(".kicad_dru").name
+
+    has_design_rules_file = dest.exists()
+    if has_design_rules_file:
         original_text = dest.read_text()
-        try:
-            project_rules = load_design_rules(dest)
+        project_rules = load_design_rules(dest)
+    else:
+        original_text = ""  # just to make pylance happy
+        project_rules = DesignRules()
+
+    try:
+        # loading rules could fail.
+        if custom_rules_path is not None:
             custom_rules = load_design_rules(custom_rules_path)
             project_rules.extend(custom_rules)
-            project_rules.noramlize()
-            dest.write_text(str(project_rules))
-            yield dest
-        finally:
-            # this operation should be idempotent
+        if custom_design_rules_url is not None:
+            remote_dr = _get_remote_dr_file_content(custom_design_rules_url)
+            remote_rules = parse_design_rules(remote_dr)
+            project_rules.extend(remote_rules)
+        project_rules.noramlize()
+        dest.write_text(str(project_rules))
+        yield dest
+    except Exception as e:
+        raise ValueError(f"Couldn't load design rules: {e}") from e
+    finally:
+        # this operation should be idempotent
+        if has_design_rules_file:
             dest.write_text(original_text)
-    else:
-        # otherwise, copy the custom rules to the project directory
-        try:
-            shutil.copy(custom_rules_path, dest)
-            yield dest
-        finally:
-            if dest.exists():
-                dest.unlink()
+        else:
+            dest.unlink()
+
+
+def _get_remote_dr_file_content(rule_set_url: str):
+    response = get(rule_set_url)
+    response.raise_for_status()
+
+    json: dict[str, str] = response.json()
+    return json["body"]

@@ -223,6 +223,12 @@ def check(
         Optional[pathlib.Path],
         typer.Option(help="Path to custom design rules (.kicad_dru)"),
     ] = None,
+    custom_dr_url: Annotated[
+        Optional[str],
+        typer.Option(
+            help="URL to custom design rules hosted on edea portal server.",
+        ),
+    ] = None,
     drc: Annotated[bool, typer.Option(help="Check design rules")] = True,
     erc: Annotated[bool, typer.Option(help="Check electrical rules")] = True,
     ignore_regex: Annotated[
@@ -243,7 +249,7 @@ def check(
         edea check example/example.kicad_pcb  # checks design rules
     """
     try:
-        result = checker.check(project_or_file, custom_dr, level)
+        result = checker.check(project_or_file, custom_dr, custom_dr_url, level)
     except (FileNotFoundError, ValueError) as e:
         raise UsageError(str(e)) from e
 

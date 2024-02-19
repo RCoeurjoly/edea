@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -99,6 +100,55 @@ def test_custom_rules_with_existing_rules():
         pcb_file,
         Path("tests/kicad_projects/custom_design_rules.kicad_dru"),
     )
+    assert with_custom_rules_result.dr is not None
+    assert len(with_custom_rules_result.dr.violations) == 384
+
+    without_custom_rules_result = check(pcb_file)
+    assert without_custom_rules_result.dr is not None
+    assert len(without_custom_rules_result.dr.violations) == 330
+
+    assert rules_file.read_text() == original_text
+
+
+@pytest.mark.only
+@patch("edea.kicad.checker.get")
+def test_custom_rules_url(mock_get):
+    # begin mock
+    mock_response = Mock()
+    mock_response.json.return_value = {
+        "id": "2fdd7f4f-77ab-4912-86e2-4448230a4ed0",
+        "user_id": "a788991f-9c1e-46f7-b992-6320a8575c9f",
+        "short_code": None,
+        "private": False,
+        "repository": {
+            "id": "d04c0719-e352-423b-b9df-abf85e84809a",
+            "url": "https://gitlab.com/edea-dev/test-rules",
+        },
+        "name": "JLCPCB-KiCad-DRC",
+        "description": "LCPCB Design Rules for KiCad 7.0, implemented as Custom Rules in PCB Editor",
+        "readme_path": "readme.md",
+        "body": """
+            (version 1)
+            (rule "fixture"
+            (layer outer)
+            (severity error)
+            (condition "A.Type == 'pad' && B.Layer == '?.Silkscreen'")
+            (constraint silk_clearance (min 0.1mm))
+            )""",
+    }
+    mock_get.return_value = mock_response
+    # end mock
+
+    pcb_file = Path("tests/kicad_projects/ferret/ferret.kicad_pcb")
+    rules_file = Path("tests/kicad_projects/ferret/ferret.kicad_dru")
+    url = "https://edea-ps.com/v1/rules/user/JLCPCB-KiCad-DRC"
+    original_text = rules_file.read_text()
+    with_custom_rules_result = check(
+        pcb_file,
+        None,
+        url,
+    )
+
     assert with_custom_rules_result.dr is not None
     assert len(with_custom_rules_result.dr.violations) == 384
 
