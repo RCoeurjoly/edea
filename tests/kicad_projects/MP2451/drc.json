@@ -1,0 +1,129 @@
+{
+  "source": "tests/kicad_projects/MP2451/MP2451.kicad_pcb",
+  "kicad_version": "7.99.0",
+  "violations": [
+    {
+      "type": "invalid_outline",
+      "description": "Board has malformed outline (no edges found on Edge.Cuts layer)",
+      "severity": "error",
+      "items": [
+        {
+          "uuid": "b975e17d-c39f-4980-87d7-82ef20cb0778",
+          "description": "PCB",
+          "pos": { "x": 0.0, "y": 0.0 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Capacitor_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-00006083000f",
+          "description": "Footprint C1",
+          "pos": { "x": 152.7, "y": 93.2 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Capacitor_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-000060830020",
+          "description": "Footprint C2",
+          "pos": { "x": 149.8, "y": 90.5 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Capacitor_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-000060830031",
+          "description": "Footprint C3",
+          "pos": { "x": 147.2, "y": 88.0 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Capacitor_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-000060830042",
+          "description": "Footprint C4",
+          "pos": { "x": 147.7, "y": 86.5 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Diode_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-00006083005b",
+          "description": "Footprint D1",
+          "pos": { "x": 152.7, "y": 88.4 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Inductor_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-00006083006c",
+          "description": "Footprint L1",
+          "pos": { "x": 150.1, "y": 88.0 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Resistor_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-00006083007d",
+          "description": "Footprint R1",
+          "pos": { "x": 148.2, "y": 88.0 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Resistor_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-00006083008e",
+          "description": "Footprint R2",
+          "pos": { "x": 148.2, "y": 90.0 }
+        }
+      ]
+    },
+    {
+      "type": "lib_footprint_issues",
+      "description": "The current configuration does not include the library 'Package_TO_SOT_SMD'.",
+      "severity": "warning",
+      "items": [
+        {
+          "uuid": "00000000-0000-0000-0000-0000608300a4",
+          "description": "Footprint U1",
+          "pos": { "x": 149.55, "y": 92.85 }
+        }
+      ]
+    }
+  ],
+  "unconnected_items": [],
+  "schematic_parity": [],
+  "coordinate_units": "mm"
+}

@@ -145,7 +145,6 @@ def _parse(
                     exprs.pop(0)
                     parsed_kwargs[field.name] = v
             continue
-
         if no_kw:
             exp = exprs.pop(0)
             if not isinstance(exp, SExprAtom):

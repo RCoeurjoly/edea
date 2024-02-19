@@ -1,10 +1,9 @@
 EDeA Documentation
-================================
+===================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 3
+   :caption: Content:
    
-   kicad/index
-   metadata
+   reference/index
    cli

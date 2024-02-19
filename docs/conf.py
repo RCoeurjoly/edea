@@ -28,7 +28,7 @@ copyright = f'{datetime.now().year}, {re.sub(r" <[^>]+>", "", author)} under {li
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinxcontrib.asciinema',
+    "sphinxcontrib.asciinema",
     "sphinx.ext.autodoc",
     # "sphinxcontrib.autodoc_pydantic",
 ]
@@ -40,7 +40,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 html_theme = "sphinxawesome_theme"
 html_theme_options = asdict(
     ThemeOptions(
