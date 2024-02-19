@@ -7,14 +7,7 @@ import itertools
 import math
 from copy import deepcopy
 from dataclasses import field
-from typing import (
-    Annotated,
-    ClassVar,
-    Literal,
-    Optional,
-    Protocol,
-    Sequence,
-)
+from typing import Annotated, ClassVar, Literal, Optional, Protocol, Sequence
 from uuid import UUID, uuid4
 
 from pydantic import validator

@@ -14,11 +14,7 @@ from edea.kicad.s_expr import QuotedStr, SExprAtom, SExprList
 ParsedKwargs = dict[str, Any]
 
 if TYPE_CHECKING:
-    from edea.kicad.base import (
-        CustomParser,
-        KicadExpr,
-        KicadExprClass,
-    )
+    from edea.kicad.base import CustomParser, KicadExpr, KicadExprClass
 
 
 def from_list(cls: Type[KicadExprClass], exprs: SExprList) -> KicadExprClass:
