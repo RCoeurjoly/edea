@@ -10,13 +10,12 @@ import shutil
 
 import pytest
 
+from edea.kicad._kicad_cli import kicad_cli
 from edea.kicad.common import VersionError
 from edea.kicad.parser import from_str
 from edea.kicad.pcb import Pcb
 from edea.kicad.schematic import Schematic
 from edea.kicad.serializer import to_str
-
-from ._kicad_cli import kicad_cli
 
 test_folder = os.path.dirname(os.path.realpath(__file__))
 kicad_folder = os.path.join(test_folder, "kicad_projects/kicad-test-files")

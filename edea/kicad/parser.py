@@ -8,6 +8,7 @@ import re
 
 from edea._type_utils import get_all_subclasses
 from edea.kicad.base import KicadExpr
+from edea.kicad.design_rules import DesignRules
 from edea.kicad.pcb import Pcb
 from edea.kicad.s_expr import QuotedStr, SExprList
 from edea.kicad.schematic import Schematic
@@ -104,6 +105,13 @@ def parse_pcb(text: str) -> Pcb:
     return Pcb.from_list(sexpr[1:])
 
 
+def parse_design_rules(text: str) -> DesignRules:
+    # A workaround to because the file consists of seperate s-expression
+    # so it gets wrapped in this expression
+    sexpr = from_str_to_list(f"(design_rules {text})")
+    return DesignRules.from_list(sexpr[1:])
+
+
 def load_schematic(path: pathlib.Path | str) -> Schematic:
     with open(path, "r", encoding="utf-8") as f:
         return parse_schematic(f.read())
@@ -112,3 +120,8 @@ def load_schematic(path: pathlib.Path | str) -> Schematic:
 def load_pcb(path: pathlib.Path | str) -> Pcb:
     with open(path, "r", encoding="utf-8") as f:
         return parse_pcb(f.read())
+
+
+def load_design_rules(path: pathlib.Path | str) -> DesignRules:
+    with open(path, "r", encoding="utf-8") as f:
+        return parse_design_rules(f.read())

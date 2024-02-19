@@ -1,5 +1,6 @@
 image: registry.gitlab.com/edea-dev/ci-runner:latest
 
+
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
@@ -75,7 +76,6 @@ release:
     - if: $CI_COMMIT_BRANCH == "release"
 
 pages:
-  stage: deploy
   script:
     # download old docs to support multiple versions
     - |
@@ -98,7 +98,4 @@ pages:
     paths:
       - public
   rules:
-    - changes:
-        - .gitlab-ci.yml
-        - docs/**/*
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "release" || $CI_COMMIT_BRANCH == "pages"

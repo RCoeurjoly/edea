@@ -1,10 +1,9 @@
 import pathlib
 
+from edea.kicad._kicad_cli import kicad_cli
 from edea.kicad.parser import load_pcb
 from edea.kicad.pcb import Pcb
 from edea.kicad.serializer import write_pcb
-
-from ._kicad_cli import kicad_cli
 
 
 def test_insert_layout_basic():

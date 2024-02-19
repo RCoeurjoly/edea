@@ -8,3 +8,4 @@ Kicad
     schematic/index
     pcb/index
     project
+    checker
