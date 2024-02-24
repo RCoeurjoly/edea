@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "edea"
-version = "0.7.0"
+version = "0.7.2"
 description = "KiCAD file format parser and tools"
 authors = [
     "Elen Eisendle <ln@calcifer.ee>",

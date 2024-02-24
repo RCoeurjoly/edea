@@ -13,7 +13,7 @@ class Process:
     stderr: str
 
 
-kicad_cli_executable = "kicad-cli-nightly"
+kicad_cli_executable = "kicad-cli"
 min_kicad_cli_version = parse_version("8.0.0")
 
 
@@ -35,7 +35,7 @@ def kicad_cli(command: list[str | pathlib.Path]):
     if not is_configured:
         raise RuntimeError(
             f"KiCad CLI is not configured. Make sure {kicad_cli_executable} "
-            "is in your PATH and is at least version {min_kicad_cli_version}"
+            f"is in your PATH and is at least version {min_kicad_cli_version}"
         )
 
     process = subprocess.run(
