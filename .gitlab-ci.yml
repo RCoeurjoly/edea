@@ -18,7 +18,9 @@ cache:
     - .hypothesis
 
 before_script:
-  - python3 --version # For debugging
+  # For debugging
+  - python3 --version 
+  - kicad-cli version
   - poetry install
 
 test:
