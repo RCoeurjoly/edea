@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2024-02-26
+
+### Fixed
+
+- Loading `DRC` and `ERC` reports from json files.
+
+
 ## [0.7.2] - 2024-02-24
 
 ### Changed

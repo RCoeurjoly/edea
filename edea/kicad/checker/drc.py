@@ -54,6 +54,7 @@ class Violation(BaseModel):
 class KicadDrcReport(BaseModel):
     class Config:
         extra = Extra.forbid
+        allow_population_by_field_name = True
 
     field_schema: str | None = Field(
         alias="$schema", description="JSON schema reference"
