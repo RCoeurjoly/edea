@@ -3,6 +3,7 @@ Methods for turning strings and lists into EDeA dataclasses.
 
 SPDX-License-Identifier: EUPL-1.2
 """
+
 import pathlib
 import re
 
@@ -106,6 +107,10 @@ def parse_pcb(text: str) -> Pcb:
 
 
 def parse_design_rules(text: str) -> DesignRules:
+    # remove comments from the file, i.e., lines starting with `#`
+    text = "\n".join(
+        line for line in text.splitlines() if not line.strip().startswith("#")
+    )
     # A workaround to because the file consists of seperate s-expression
     # so it gets wrapped in this expression
     sexpr = from_str_to_list(f"(design_rules {text})")

@@ -1,5 +1,4 @@
 from dataclasses import field
-from textwrap import dedent
 from typing import Annotated, Literal, Optional
 
 from pydantic import validator
@@ -57,9 +56,12 @@ class ConstraintArgType(StrEnum):
 @dataclass(config=PydanticConfig, eq=False)
 class Rule(KicadExpr):
     name: Annotated[str, m("kicad_always_quotes", "kicad_no_kw")]
-    constraint: tuple[ConstraintArgType, tuple[str, ...] | str]
+    constraint: (
+        tuple[ConstraintArgType, tuple[str, ...] | str]
+        | tuple[ConstraintArgType, tuple[str, ...] | str, tuple[str, ...] | str]
+    )
     layer: Optional[str] = None
-    severity: Severity = Severity.warning
+    severity: Optional[Severity] = None
     condition: Optional[Annotated[str, m("kicad_always_quotes")]] = ""
 
     def __hash__(self) -> int:
@@ -71,20 +73,28 @@ class Rule(KicadExpr):
     @classmethod
     def _v_constraint(cls, value):
         if isinstance(value[1], tuple):
+            if len(value) == 3:
+                # The second half of the consttraint should be treated as a whole
+                return (value[0], " ".join(value[1]), " ".join(value[2]))
             # The second half of the consttraint should be treated as a whole
             return (value[0], " ".join(value[1]))
+
         return value[1]
 
     def __str__(self) -> str:
-        return dedent(
-            f"""\
-            (rule "{self.name}"
-              (layer {self.layer})
-              (severity {self.severity})
-              (condition "{self.condition}")
-              (constraint {self.constraint[0]} ({self.constraint[1]}))
-            )"""
+        """Not the nicest code but it makes the output look like the original file."""
+        constrain_expr = f"({self.constraint[1]})" + (
+            f" ({self.constraint[2]})" if len(self.constraint) == 3 else ""
         )
+        lines = [
+            f'(rule "{self.name}"',
+            f'  {"(layer " + str(self.layer) + ")" if self.layer is not None else ""}',
+            f'  {"(severity " + str(self.severity) + ")" if self.severity else ""}',
+            f"""  {'(condition "' + str(self.condition) + '")' if self.condition else ""}""",
+            f"  (constraint {self.constraint[0]} {constrain_expr})",
+            ")",
+        ]
+        return "\n".join(line for line in lines if line.strip()).strip()
 
 
 @dataclass(config=PydanticConfig, eq=False)

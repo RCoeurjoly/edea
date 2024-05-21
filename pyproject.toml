@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "edea"
-version = "0.7.3"
+version = "0.8.0"
 description = "KiCAD file format parser and tools"
 authors = [
     "Elen Eisendle <ln@calcifer.ee>",
@@ -14,7 +14,8 @@ license = "EUPL-1.2"
 python = "<3.13,>=3.10"
 pydantic = "^1.10.2"
 numpy = "^1.26.1"
-typer = {extras = ["all"], version = "^0.9.0"}
+typer = { extras = ["all"], version = "^0.9.0" }
+gitpython = "^3.1.43"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
@@ -31,8 +32,9 @@ sphinxcontrib-asciinema = "^0.3.8"
 sphinxawesome-theme = "5.1.0"
 nox = "^2023.4.22"
 pytest-only = "^2.0.0"
-datamodel-code-generator = {extras = ["http"], version = "^0.25.2"}
+datamodel-code-generator = { extras = ["http"], version = "^0.25.2" }
 watchfiles = "^0.21.0"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -51,9 +53,7 @@ markers = [
 
 
 [tool.coverage.run]
-omit = [
-    "edea/cli.py",
-]
+omit = []
 
 [tool.poetry.scripts]
 edea = "edea.cli:cli"

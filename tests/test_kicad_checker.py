@@ -102,11 +102,11 @@ def test_custom_rules_with_existing_rules():
         Path("tests/kicad_projects/custom_design_rules.kicad_dru"),
     )
     assert with_custom_rules_result.dr is not None
-    assert len(with_custom_rules_result.dr.violations) == 367
+    assert len(with_custom_rules_result.dr.violations) == 365
 
     without_custom_rules_result = check(pcb_file)
     assert without_custom_rules_result.dr is not None
-    assert len(without_custom_rules_result.dr.violations) == 313
+    assert len(without_custom_rules_result.dr.violations) == 311
 
     assert rules_file.read_text() == original_text
 
@@ -150,11 +150,11 @@ def test_custom_rules_url(mock_get):
     )
 
     assert with_custom_rules_result.dr is not None
-    assert len(with_custom_rules_result.dr.violations) == 367
+    assert len(with_custom_rules_result.dr.violations) == 365
 
     without_custom_rules_result = check(pcb_file)
     assert without_custom_rules_result.dr is not None
-    assert len(without_custom_rules_result.dr.violations) == 313
+    assert len(without_custom_rules_result.dr.violations) == 311
 
     assert rules_file.read_text() == original_text
 

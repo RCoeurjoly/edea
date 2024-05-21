@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2024-05-12
+
+### Fixed
+
+- Parsing and serializing rules.
+
+### Added
+- `edea add module` command in the CLI.
+- `edea add rules` command in the CLI.
+- More tests to the CLI.
+
 ## [0.7.3] - 2024-02-26
 
 ### Fixed
