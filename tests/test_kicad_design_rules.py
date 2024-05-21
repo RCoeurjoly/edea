@@ -1,6 +1,7 @@
 from pathlib import Path
+from textwrap import dedent
 
-from edea.kicad.parser import load_design_rules
+from edea.kicad.parser import load_design_rules, parse_design_rules
 
 
 def test_loading_desing_rules():
@@ -30,3 +31,28 @@ def test_rules_serialization():
     p = Path("tests/kicad_projects/custom_design_rules.kicad_dru")
     r = load_design_rules(p)
     assert str(r) == p.read_text()
+
+
+def test_rules_with_comments():
+    rules = parse_design_rules(
+        """
+        # This is a comment
+        (version 1)        
+        (rule "Hole diameter"
+        (constraint hole_size (min 0.2mm) (max 6.3mm))
+        )
+    """
+    )
+
+    assert (
+        str(rules)
+        == dedent(
+            """
+        (version 1)
+
+        (rule "Hole diameter"
+          (constraint hole_size (min 0.2mm) (max 6.3mm))
+        )
+        """
+        ).removeprefix("\n")
+    )

@@ -9,6 +9,7 @@ from pydantic import BaseModel, root_validator
 from edea.kicad.checker.reporter import KicadDrcReporter, KicadErcReporter
 from edea.kicad.design_rules import DesignRules, Severity
 from edea.kicad.parser import load_design_rules, parse_design_rules
+from edea.kicad.project import KicadProject
 
 
 class CheckResult(BaseModel):
@@ -85,6 +86,19 @@ def check(
     )
 
 
+def find_design_rules_file(project_path: Path):
+    pro_file = KicadProject.find_pro_file_in_path(project_path)
+    dest = project_path / pro_file.with_suffix(".kicad_dru").name
+    has_design_rules_file = dest.exists()
+
+    if has_design_rules_file:
+        project_rules = load_design_rules(dest)
+    else:
+        project_rules = DesignRules()
+
+    return dest, project_rules
+
+
 @contextmanager
 def custom_design_rules(
     custom_rules_path: Path | None,
@@ -95,25 +109,12 @@ def custom_design_rules(
     if custom_rules_path is None and custom_design_rules_url is None:
         yield
         return
-
-    pro_files = list(project_path.glob("*.kicad_pro"))
-    if len(pro_files) == 0:
-        raise FileNotFoundError("Couldn't find project file")
-    else:
-        pro_file = pro_files[0]
-
-    if custom_rules_path is not None and custom_rules_path.suffix != ".kicad_dru":
-        raise ValueError("The custom design rules have to be in `kicad_dru` format.")
-
-    dest = project_path / pro_file.with_suffix(".kicad_dru").name
-
+    dest, project_rules = find_design_rules_file(project_path)
     has_design_rules_file = dest.exists()
     if has_design_rules_file:
         original_text = dest.read_text()
-        project_rules = load_design_rules(dest)
     else:
         original_text = ""  # just to make pylance happy
-        project_rules = DesignRules()
 
     try:
         # loading rules could fail.

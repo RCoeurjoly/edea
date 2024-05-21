@@ -25,6 +25,7 @@ before_script:
 
 test:
   script:
+    - git config --global --add safe.directory "$(pwd)"
     - nox -- --cov=edea
     - nox -- --doctest-modules edea
     - poetry run coverage report

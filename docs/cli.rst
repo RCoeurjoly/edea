@@ -1,10 +1,14 @@
 CLI
 ====
 
-Adding a submdoule
+Adding a module
 ------------------
-.. asciinema:: K8DnICB6V9rQetUwehf0knkY6
+.. asciinema:: 658607
+    
+Adding rules
+------------------
+.. asciinema:: 659037
 
 Running the checker
---------------------------
+--------------------
 .. asciinema:: zGctzWSCepWDlRLR6DB9ySx2P

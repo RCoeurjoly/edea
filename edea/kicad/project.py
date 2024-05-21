@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pathlib
 from typing import Any, NamedTuple, Optional
 from uuid import UUID
 
@@ -279,3 +280,12 @@ class KicadProject(BaseModel):
     schematic: ProjectSchematic
     sheets: list[ProjectSheet]
     text_variables: dict[str, Any]
+
+    @staticmethod
+    def find_pro_file_in_path(project_path: pathlib.Path):
+        pro_files = list(project_path.glob("*.kicad_pro"))
+        if len(pro_files) == 0:
+            raise FileNotFoundError("Couldn't find project file")
+        else:
+            pro_file = pro_files[0]
+        return pro_file

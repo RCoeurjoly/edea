@@ -1,6 +1,12 @@
 CLI
 ====
+
 .. automodule:: edea.cli
-   :members: add, check
+   :members: check, version
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: edea.cli.add
+   :members: module, rules
    :undoc-members:
    :show-inheritance:
