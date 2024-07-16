@@ -17,6 +17,7 @@ numpy = "^1.26.1"
 typer = { extras = ["all"], version = "^0.9.0" }
 gitpython = "^3.1.43"
 
+setuptools = "^70.3.0"
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
 black = "^23.11.0"
@@ -35,6 +36,11 @@ pytest-only = "^2.0.0"
 datamodel-code-generator = { extras = ["http"], version = "^0.25.2" }
 watchfiles = "^0.21.0"
 pytest-mock = "^3.14.0"
+
+[[tool.poetry.source]]
+name = "gitlab"
+url = "https://gitlab.com/api/v4/projects/35843774/packages/pypi/simple"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
