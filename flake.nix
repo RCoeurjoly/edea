@@ -3,7 +3,9 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
+    # In nixos-unstable-small, kicad is broken
+    # https://github.com/NixOS/nixpkgs/issues/327181
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     poetry2nix = {
       url = "github:nix-community/poetry2nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,7 +23,6 @@
         packages = {
           myapp = mkPoetryApplication {
             projectDir = self;
-            python = pkgs.python311;
           };
           default = self.packages.${system}.myapp;
         };
@@ -43,9 +44,8 @@
         devShells.poetry = pkgs.mkShell {
           packages = [
             pkgs.poetry
-            # pkgs.kicad
+            pkgs.kicad-small
           ];
-          python = pkgs.python311;
         };
       });
 }
