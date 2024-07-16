@@ -19,7 +19,10 @@
       in
       {
         packages = {
-          myapp = mkPoetryApplication { projectDir = self; };
+          myapp = mkPoetryApplication {
+            projectDir = self;
+            python = pkgs.python311;
+          };
           default = self.packages.${system}.myapp;
         };
 
@@ -40,8 +43,9 @@
         devShells.poetry = pkgs.mkShell {
           packages = [
             pkgs.poetry
-            pkgs.kicad
+            # pkgs.kicad
           ];
+          python = pkgs.python311;
         };
       });
 }
