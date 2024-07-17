@@ -60,7 +60,10 @@
           edea = mkPoetryApplication {
             projectDir = self;
             overrides =
-              [ defaultPoetryOverrides customOverrides ];
+              [
+                defaultPoetryOverrides
+                customOverrides
+              ];
           };
           default = self.packages.${system}.edea;
         };
