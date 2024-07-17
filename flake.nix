@@ -17,14 +17,26 @@
       let
         # see https://github.com/nix-community/poetry2nix/tree/master#api for more functions and examples.
         pkgs = nixpkgs.legacyPackages.${system};
-        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
+        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication defaultPoetryOverrides;
+        
+      customOverrides = self: super: {
+        # Overrides go here
+        pyright = super.pyright.overridePythonAttrs (
+          old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ self.setuptools ];
+          }
+        );
+      };
       in
-      {
+        {
+          
         packages = {
-          myapp = mkPoetryApplication {
+          edea = mkPoetryApplication {
             projectDir = self;
+            overrides =
+              [ defaultPoetryOverrides customOverrides ];
           };
-          default = self.packages.${system}.myapp;
+          default = self.packages.${system}.edea;
         };
 
         # Shell for app dependencies.
