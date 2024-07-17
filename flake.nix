@@ -64,6 +64,7 @@
                 defaultPoetryOverrides
                 customOverrides
               ];
+             propagatedBuildInputs = [ pkgs.kicad-small ]; 
           };
           default = self.packages.${system}.edea;
         };
