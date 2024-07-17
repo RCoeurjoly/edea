@@ -7,6 +7,7 @@
     # https://github.com/NixOS/nixpkgs/issues/327181
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     poetry2nix = {
+      # url = "git+file:///home/roland/poetry2nix";
       url = "github:nix-community/poetry2nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
