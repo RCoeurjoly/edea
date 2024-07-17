@@ -27,6 +27,31 @@
             buildInputs = (old.buildInputs or [ ]) ++ [ self.setuptools ];
           }
         );
+
+        pytest-only = super.pytest-only.overridePythonAttrs (
+          old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ self.poetry ];
+          }
+        );
+        
+        datamodel-code-generator = super.datamodel-code-generator.overridePythonAttrs (
+          old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ self.poetry ];
+          }
+        );
+        
+        sphinxawesome-theme = super.sphinxawesome-theme.overridePythonAttrs (
+          old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ self.poetry ];
+          }
+        );
+
+        sphinxcontrib-asciinema = super.sphinxcontrib-asciinema.overridePythonAttrs (
+          old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ self.setuptools ];
+          }
+        );
+
       };
       in
         {
