@@ -43,7 +43,7 @@ formatting:
 
 lint:
   script:
-    - poetry run ruff edea tests --exclude tests/kicad_projects/kicad-test-files
+    - poetry run ruff check edea tests --exclude tests/kicad_projects/kicad-test-files
     - poetry run pylint edea
 
 typecheck:
