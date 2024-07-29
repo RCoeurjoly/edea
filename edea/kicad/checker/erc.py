@@ -18,6 +18,10 @@ from edea.kicad.checker.drc import CoordinateUnits, Violation
 
 class Sheet(BaseModel):
     class Config:
+        """
+        :meta private:
+        """
+
         extra = Extra.forbid
 
     uuid_path: str
@@ -25,8 +29,23 @@ class Sheet(BaseModel):
     violations: List[Violation]
 
 
-class KicadErcReport(BaseModel):
+class KicadERCReport(BaseModel):
+    """
+    A KiCad Electrical Rule Check (ERC) report.
+
+    :param field_schema: The JSON schema reference.
+    :param source: The source file path.
+    :param date: The time at generation of report.
+    :param kicad_version: The KiCad version used to generate the report.
+    :param sheets: List of sheets containing violations.
+    :param coordinate_units: The units that all coordinates in this report are encoded in.
+    """
+
     class Config:
+        """
+        :meta private:
+        """
+
         extra = Extra.forbid
         allow_population_by_field_name = True
 
@@ -45,4 +64,9 @@ class KicadErcReport(BaseModel):
 
     @property
     def violations(self) -> List[Violation]:
+        """
+        Gets a list of all violations from all sheets in the report.
+
+        :returns: List of violations.
+        """
         return [v for sheet in self.sheets for v in sheet.violations]

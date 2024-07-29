@@ -1,53 +1,51 @@
 import importlib.metadata
 import os
-import re
 import sys
 from dataclasses import asdict
 from datetime import datetime
 
-from sphinxawesome_theme import LinkIcon, ThemeOptions
+from sphinxawesome_theme import LinkIcon, ThemeOptions, postprocess  # type: ignore
+
 
 sys.path.insert(0, os.path.abspath(".."))
-
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 distribution = importlib.metadata.distribution("edea")
 project = distribution.name
 release = distribution.metadata["version"]
+author = "EDeA Dev Team"
 license = distribution.metadata["license"]
-author = "Elen Eisendle <ln@calcifer.ee>, Kaspar Emanuel <kaspar@kitspace.org>, Abdulrhmn Ghanem <abdoghanem160@gmail.com>, and contributors"
-copyright = f'{datetime.now().year}, {re.sub(r" <[^>]+>", "", author)} under {license}.'
+copyright = f"{datetime.now().year}, {author} under {license}."
 
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "sphinxcontrib.asciinema",
+    "myst_parser",
+    "sphinx_favicon",
+    "sphinx_inline_tabs",
+    "sphinx_last_updated_by_git",
+    "sphinx_sitemap",
     "sphinx.ext.autodoc",
-    # "sphinxcontrib.autodoc_pydantic",
+    "sphinx.ext.coverage",
+    "sphinxcontrib.asciinema",
+    "sphinxext.opengraph",
 ]
+
+coverage_statistics_to_stdout = True
 
 templates_path = ["templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
-# html_static_path = ["_static"]
+html_static_path = ["_static"]
+html_baseurl = "https://edea-dev.gitlab.io/edea/latest/"
+html_css_files = ["custom.css"]
 html_theme = "sphinxawesome_theme"
+html_permalinks_icon = postprocess.Icons.permalinks_icon
 html_theme_options = asdict(
     ThemeOptions(
         awesome_external_links=True,
         awesome_headerlinks=True,
         extra_header_link_icons={
-            "GitLab": LinkIcon(
+            "repository on GitLab": LinkIcon(
                 link="https://gitlab.com/edea-dev/edea",
                 icon=open("gitlab.svg").read(),
             )
@@ -58,3 +56,15 @@ html_theme_options = asdict(
 autodoc_type_aliases = {
     "CanonicalLayerName": "edea.kicad.pcb.layer.CanonicalLayerName",
 }
+autodoc_member_order = "bysource"
+
+viewcode_follow_imported_members = True
+
+
+favicons = [
+    {"sizes": "16x16", "href": "favicon-16x16.png"},
+    {"sizes": "32x32", "href": "favicon-32x32.png"},
+]
+
+ogp_description_length = 0
+ogp_site_url = "https://edea-dev.gitlab.io/edea/latest/"

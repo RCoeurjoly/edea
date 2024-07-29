@@ -4,12 +4,12 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from edea.kicad.checker import CheckResult, KicadDrcReporter, KicadErcReporter, check
+from edea.kicad.checker import CheckResult, KicadDRCReporter, KicadERCReporter, check
 from edea.kicad.design_rules import Severity
 
 
 def test_drc():
-    drc_output = KicadDrcReporter.from_kicad_file(
+    drc_output = KicadDRCReporter.from_kicad_file(
         "tests/kicad_projects/MP2451/MP2451.kicad_pcb"
     )
     fixture = drc_output.dict(exclude={"date"})
@@ -30,7 +30,7 @@ def test_check_kicad_pcb_file():
 
 
 def test_erc():
-    erc_output = KicadErcReporter.from_kicad_file(
+    erc_output = KicadERCReporter.from_kicad_file(
         "tests/kicad_projects/MP2451/MP2451.kicad_sch"
     )
     fixture = erc_output.dict(exclude={"date"})

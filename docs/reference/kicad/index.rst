@@ -1,11 +1,18 @@
-Kicad
+KiCad
 =====
 
 .. toctree::
     :maxdepth: 2
-    :caption: Contents:
+    :caption: Content:
     
-    schematic/index
+    base
+    checker
+    common
+    design_rules
+    parser
     pcb/index
     project
-    checker
+    s_expr
+    schematic_group
+    schematic/index
+    serializer

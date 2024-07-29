@@ -26,6 +26,10 @@ class CoordinateUnits(StrEnum):
 
 class Coordinate(BaseModel):
     class Config:
+        """
+        :meta private:
+        """
+
         extra = Extra.forbid
 
     x: float = Field(..., description="x coordinate")
@@ -34,6 +38,10 @@ class Coordinate(BaseModel):
 
 class AffectedItem(BaseModel):
     class Config:
+        """
+        :meta private:
+        """
+
         extra = Extra.forbid
 
     uuid: UUID
@@ -43,6 +51,10 @@ class AffectedItem(BaseModel):
 
 class Violation(BaseModel):
     class Config:
+        """
+        :meta private:
+        """
+
         extra = Extra.forbid
 
     type: str = Field(..., description="KiCad type name for the violation")
@@ -51,8 +63,12 @@ class Violation(BaseModel):
     items: List[AffectedItem]
 
 
-class KicadDrcReport(BaseModel):
+class KicadDRCReport(BaseModel):
     class Config:
+        """
+        :meta private:
+        """
+
         extra = Extra.forbid
         allow_population_by_field_name = True
 

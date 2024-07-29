@@ -1,3 +1,5 @@
+"""Adding sub-schematics to a KiCad schematic group."""
+
 import os
 import pathlib
 from dataclasses import dataclass
@@ -17,11 +19,25 @@ from edea.kicad.serializer import write_schematic
 
 @dataclass
 class SchematicFile:
+    """
+    A KiCad schematic file, containing the file path and the loaded schematic data.
+
+    :param filepath: The path to the schematic file.
+    :param data: The loaded schematic data object.
+    """
+
     filepath: pathlib.Path
     data: Schematic
 
 
 class SchematicGroup:
+    """
+    A group of KiCad schematic files.
+
+    :param top_level: The Schematic object representing the top-level schematic data.
+    :param top_level_filename: The path to the top-level schematic file.
+    """
+
     _top_level: SchematicFile
     _added_sub_schematics: list[SchematicFile]
 
@@ -34,6 +50,11 @@ class SchematicGroup:
 
     @classmethod
     def load_from_disk(cls, top_level: pathlib.Path | str) -> "SchematicGroup":
+        """
+        Loads a :py:class:`SchematicGroup` from a top-level schematic file on disk.
+
+        :param top_level: The path to the top-level schematic file.
+        """
         if not isinstance(top_level, pathlib.Path):
             top_level = pathlib.Path(top_level)
         sch = load_schematic(top_level)
@@ -46,6 +67,18 @@ class SchematicGroup:
         sch: Schematic,
         output_path: pathlib.Path | str,
     ) -> UUID:
+        """
+        Add a sub-schematic to the schematic group.
+
+        :param sch: The :py:class:`~edea.kicad.schematic.__init__.Schematic` object representing the sub-schematic data to be added.
+        :param output_path: The path to save the sub-schematic file.
+
+        :returns: The UUID of the newly added sub-schematic sheet.
+
+        :raises ValueError: If the 'output_path' already exists as the top-level schematic
+                            or as another sub-schematic within the group.
+        :raises IndexError: If there are no existing sub-schematics.
+        """
         if isinstance(output_path, str):
             output_path = pathlib.Path(output_path)
 
@@ -102,6 +135,11 @@ class SchematicGroup:
         return sheet.uuid
 
     def write_to_disk(self, output_folder: pathlib.Path | str):
+        """
+        Writes the whote SchematicGroup to disk, including the top-level schematic and all sub-schematics.
+
+        :param output_folder: The path to the output folder where the schematic files will be saved.
+        """
         if not isinstance(output_folder, pathlib.Path):
             output_folder = pathlib.Path(output_folder)
 
@@ -116,6 +154,13 @@ class SchematicGroup:
 
 
 def _check_path(path: pathlib.Path):
+    """
+    Performs basic path validation for KiCad schematic files.
+
+    :param path: The path to be validated.
+
+    :raises ValueError: If the path contains parent directory references ("..") or is an absolute path.
+    """
     if ".." in path.parts:
         raise ValueError(f"Path must be in the current directory, got: {path}")
     if path.is_absolute():

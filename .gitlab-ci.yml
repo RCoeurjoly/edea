@@ -22,10 +22,10 @@ before_script:
   - python3 --version 
   - kicad-cli version
   - poetry install
+  - git config --global --add safe.directory "$(pwd)"
 
 test:
   script:
-    - git config --global --add safe.directory "$(pwd)"
     - nox -- --cov=edea
     - nox -- --doctest-modules edea
     - poetry run coverage report
@@ -43,8 +43,12 @@ formatting:
 
 lint:
   script:
-    - poetry run ruff edea tests --exclude tests/kicad_projects/kicad-test-files
+    - poetry run ruff check edea tests --exclude tests/kicad_projects/kicad-test-files
     - poetry run pylint edea
+    - poetry run pydoclint edea
+    - poetry run sphinx-build -b linkcheck docs docs/_build
+    - vale docs
+
 
 typecheck:
   script:
@@ -58,8 +62,6 @@ test-long-running:
   only:
     - web
   script:
-    # not sure why this is needed but submodule update fails without it
-    - git config --global --add safe.directory "$(pwd)"
     - git submodule update --init
     - poetry run pytest -k 'load_all_kicad_pro'
     # the serialize test parses and serializes so we just run that
@@ -81,14 +83,12 @@ release:
 pages:
   script:
     # download old docs to support multiple versions
-    - |
-      DOWNLOAD_URL='https://gitlab.com/api/v4/projects/35843774/jobs/artifacts/main/download?job=pages'
-      curl -L --output old.zip "$DOWNLOAD_URL"
-      unzip -q old.zip -d .
+    # - |
+    #   DOWNLOAD_URL='https://gitlab.com/api/v4/projects/35843774/jobs/artifacts/main/download?job=pages'
+    #   curl -L --output old.zip "$DOWNLOAD_URL"
+    #   unzip -q old.zip -d .
 
     # build new doccs
-    ## import annotations in all edea/kicad/pcb files to make sphinx type alias work
-    - find edea/kicad/pcb -type f -name "*.py" -exec sed -i '1i\from __future__ import annotations' {} +
     - poetry run sphinx-build -b html docs docs/_build
     ## add new docs to old docs
     - mkdir -p "public/$(poetry version --short)"
@@ -97,6 +97,8 @@ pages:
     # if the current version of the docs is the latest, copy it to public/latest
     - poetry run python docs/is_latest.py && rm -rf public/latest && mkdir public/latest && cp -r docs/_build/* public/latest || echo "not latest"
     - poetry run python docs/generate_versions.json.py public/versions.json
+    - cp docs/_redirects public/_redirects
+    - cp docs/_build/sitemap.xml public/sitemap.xml
   artifacts:
     paths:
       - public

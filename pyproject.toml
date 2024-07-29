@@ -1,14 +1,17 @@
 [tool.poetry]
 name = "edea"
-version = "0.8.0"
+version = "0.8.1"
 description = "KiCAD file format parser and tools"
+readme = "README.md"
+repository = "https://gitlab.com/edea-dev/edea"
+documentation = "https://edea-dev.gitlab.io/edea/latest/get_started.html"
 authors = [
     "Elen Eisendle <ln@calcifer.ee>",
-    "Zoé Bőle <zoe@astech.hu>",
     "Kaspar Emanuel <kaspar@kitspace.org>",
     "Abdulrhmn Ghanem <abdoghanem160@gmail.com>",
 ]
 license = "EUPL-1.2"
+
 
 [tool.poetry.dependencies]
 python = "<3.13,>=3.10"
@@ -16,6 +19,8 @@ pydantic = "^1.10.2"
 numpy = "^1.26.1"
 typer = { extras = ["all"], version = "^0.9.0" }
 gitpython = "^3.1.43"
+requests = "^2.32.3"
+packaging = "^24.1"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.4"
@@ -26,15 +31,25 @@ pyright = "1.1.338"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
 pytest-xdist = "^3.1.0"
-ruff = "^0.1.6"
+ruff = "^0.5.2"
 pylint-pydantic = "^0.3.1"
-sphinxcontrib-asciinema = "^0.3.8"
-sphinxawesome-theme = "5.1.0"
 nox = "^2023.4.22"
 pytest-only = "^2.0.0"
 datamodel-code-generator = { extras = ["http"], version = "^0.25.2" }
 watchfiles = "^0.21.0"
 pytest-mock = "^3.14.0"
+poethepoet = "^0.27.0"
+pydoclint = "^0.5.4"
+matplotlib = "^3.9.1"
+sphinxcontrib-asciinema = "^0.3.8"
+sphinxawesome-theme = "^5.2.0"
+sphinx-autobuild = "^2024.4.16"
+sphinx-inline-tabs = "^2023.4.21"
+sphinxext-opengraph = "^0.9.1"
+myst-parser = "^3.0.1"
+sphinx-favicon = "^1.0.1"
+sphinx-last-updated-by-git = "^0.3.7"
+sphinx-sitemap = "^2.6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -53,7 +68,16 @@ markers = [
 
 
 [tool.coverage.run]
-omit = []
+omit = ["edea/cli.py"]
 
 [tool.poetry.scripts]
 edea = "edea.cli:cli"
+
+[tool.poe.tasks]
+fmt = "poetry run black edea tests docs --exclude tests/kicad_projects"
+
+[tool.poe.tasks.docs]
+shell = "rm -rf docs/_build && sphinx-autobuild --watch edea docs docs/_build"
+
+[tool.poe.tasks.docs-lint]
+shell = "pydoclint edea && vale docs"

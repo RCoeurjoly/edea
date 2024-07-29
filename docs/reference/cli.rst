@@ -1,5 +1,5 @@
-CLI
-====
+Command line tool
+=================
 
 .. automodule:: edea.cli
    :members: check, version
