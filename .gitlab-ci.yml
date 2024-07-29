@@ -108,7 +108,7 @@ build:nix:
 
   image:
     name: "nixos/nix:2.12.0"
-
+  before_script: [] # Override the global before_script
   script:
     - mkdir -p "$HOME/.config/nix"
     - echo 'experimental-features = nix-command flakes' > "$HOME/.config/nix/nix.conf"
