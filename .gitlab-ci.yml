@@ -1,71 +1,69 @@
-build_default:
-  stage: build
-  image: registry.gitlab.com/edea-dev/ci-runner:latest
+image: registry.gitlab.com/edea-dev/ci-runner:latest
 
 
-  # Change pip's cache directory to be inside the project directory since we can
-  # only cache local items.
-  variables:
-    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
-  # Pip's cache doesn't store the python packages
-  # https://pip.pypa.io/en/stable/topics/caching/
-  #
-  # If you want to also cache the installed packages, you have to install
-  # them in a virtualenv and cache it as well.
-  cache:
-    paths:
-      - .cache/pip
-      - .venv
-      - .hypothesis
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/topics/caching/
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - .venv
+    - .hypothesis
 
-  before_script:
-    # For debugging
-    - python3 --version 
-    - kicad-cli version
-    - poetry install
+before_script:
+  # For debugging
+  - python3 --version 
+  - kicad-cli version
+  - poetry install
 
-  test:
-    script:
-      - git config --global --add safe.directory "$(pwd)"
-      - nox -- --cov=edea
-      - nox -- --doctest-modules edea
-      - poetry run coverage report
-      - poetry run coverage xml
-    coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
-    artifacts:
-      reports:
-        coverage_report:
-          coverage_format: cobertura
-          path: coverage.xml
+test:
+  script:
+    - git config --global --add safe.directory "$(pwd)"
+    - nox -- --cov=edea
+    - nox -- --doctest-modules edea
+    - poetry run coverage report
+    - poetry run coverage xml
+  coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
-  formatting:
-    script:
-      - poetry run black --check edea tests --exclude tests/kicad_projects
+formatting:
+  script:
+    - poetry run black --check edea tests --exclude tests/kicad_projects
 
-  lint:
-    script:
-      - poetry run ruff check edea tests --exclude tests/kicad_projects/kicad-test-files
-      - poetry run pylint edea
+lint:
+  script:
+    - poetry run ruff check edea tests --exclude tests/kicad_projects/kicad-test-files
+    - poetry run pylint edea
 
-  typecheck:
-    script:
-      - poetry run pyright edea
+typecheck:
+  script:
+    - poetry run pyright edea
 
-  bandit:
-    script:
-      - poetry run bandit -r edea
+bandit:
+  script:
+    - poetry run bandit -r edea
 
-  test-long-running:
-    only:
-      - web
-    script:
-      # not sure why this is needed but submodule update fails without it
-      - git config --global --add safe.directory "$(pwd)"
-      - git submodule update --init
-      - poetry run pytest -k 'load_all_kicad_pro'
-      # the serialize test parses and serializes so we just run that
-      - poetry run pytest -k 'serialize_all'
+test-long-running:
+  only:
+    - web
+  script:
+    # not sure why this is needed but submodule update fails without it
+    - git config --global --add safe.directory "$(pwd)"
+    - git submodule update --init
+    - poetry run pytest -k 'load_all_kicad_pro'
+    # the serialize test parses and serializes so we just run that
+    - poetry run pytest -k 'serialize_all'
 
 release:
   stage: deploy
@@ -105,7 +103,7 @@ pages:
   rules:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "release" || $CI_COMMIT_BRANCH == "pages"
 
-build_nix:
+build:nix:
   stage: build
 
   image:
