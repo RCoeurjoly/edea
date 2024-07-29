@@ -104,16 +104,17 @@ pages:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "release" || $CI_COMMIT_BRANCH == "pages"
 
 build:nix:
-  stage: build
+  # stage: build
 
   image:
     name: "nixos/nix:2.12.0"
   before_script: [] # Override the global before_script
+  cache: [] 
   script:
     - mkdir -p "$HOME/.config/nix"
     - echo 'experimental-features = nix-command flakes' > "$HOME/.config/nix/nix.conf"
-    - nix build .#
+    - nix build .# --log-format bar-with-logs
 
   artifacts:
     paths:
-      - "result/"
+      - "result"
