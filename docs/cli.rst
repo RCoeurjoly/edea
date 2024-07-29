@@ -1,14 +1,16 @@
-CLI
-====
+.. _cli:
 
-Adding a module
-------------------
+Command line interface
+======================
+
+Adding a module 📦️
+--------------------
 .. asciinema:: 658607
     
-Adding rules
-------------------
+Adding rules 📏️
+-----------------
 .. asciinema:: 659037
 
-Running the checker
---------------------
+Running the checker 🔍️
+-----------------------
 .. asciinema:: zGctzWSCepWDlRLR6DB9ySx2P

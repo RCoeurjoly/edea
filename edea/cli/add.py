@@ -1,7 +1,5 @@
 """
 sub-command for adding edea modules or rules to a project
-
-SPDX-License-Identifier: EUPL-1.2
 """
 
 import os
@@ -20,7 +18,7 @@ from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 
 from edea.kicad.common import VersionError
-from edea.kicad.design_rules import DesignRules
+from edea.kicad.design_rules import DesignRuleSet
 from edea.kicad.parser import load_design_rules, load_pcb, load_schematic
 from edea.kicad.pcb import Pcb
 from edea.kicad.project import KicadProject
@@ -237,7 +235,7 @@ def _add_rules_from_local_path(local_path: pathlib.Path):
     if has_design_rules_file:
         project_rules = load_design_rules(dest)
     else:
-        project_rules = DesignRules()
+        project_rules = DesignRuleSet()
 
     custom_rules = load_design_rules(local_path)
     project_rules.extend(custom_rules)

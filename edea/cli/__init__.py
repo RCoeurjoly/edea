@@ -1,7 +1,5 @@
 """
 edea command line tool
-
-SPDX-License-Identifier: EUPL-1.2
 """
 
 import importlib.metadata
@@ -130,7 +128,7 @@ def check(
 
     rich.print(
         f"Design rules checked for [bright_cyan]{result.source}[/bright_cyan] \n"
-        f"using Kicad [bright_magenta]{result.version}[/bright_magenta]"
+        f"using KiCad [bright_magenta]{result.version}[/bright_magenta]"
         f" at [bright_magenta]{result.timestamp}[/bright_magenta]."
     )
 
@@ -165,6 +163,7 @@ def version():
     Print the version of edea.
 
     .. code-block:: bash
+
         edea version
     """
 

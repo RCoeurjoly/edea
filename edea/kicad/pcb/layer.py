@@ -86,6 +86,13 @@ Layer = (
 
 
 def layer_to_list(layer: Layer) -> SExprList:
+    """
+    Converts a KiCad Layer object into a corresponding S-expression list.
+
+    :param layer: The KiCad Layer object to be converted.
+
+    :return: S-expression list representing the KiCad layer data.
+    """
     lst = [str(layer[0]), QuotedStr(layer[1]), layer[2]]
     if len(layer) > 3:
         lst.append(QuotedStr(layer[3]))  # type: ignore
