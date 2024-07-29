@@ -128,7 +128,8 @@ build:nix:
     # - nix build .# --log-format bar-with-logs
     - cachix authtoken $CACHIX_TOKEN
     # - cachix watch-exec "$CACHIX_CACHE_NAME" nix build .#container
-    - nix-build | cachix push edea-test-cachix
+    # - nix-build | cachix push edea-test-cachix
+    - nix build --json | jq -r '.[].outputs | to_entries[].value' | cachix push edea-test-cachix 
 
   artifacts:
     paths:
