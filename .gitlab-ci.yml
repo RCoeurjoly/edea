@@ -106,8 +106,7 @@ pages:
 build:nix:
   # stage: build
 
-  image:
-    name: "nixos/nix:2.12.0"
+  image: docker.nix-community.org/nixpkgs/cachix-flakes
 
   # before_script: [] # Override the global before_script
   
@@ -117,11 +116,6 @@ build:nix:
     CACHIX_CACHE_NAME: edea-test-cachix
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
-  before_script:
-    - nix-env --install --attr nixpkgs.cachix
-    - nix-env --install --attr nixpkgs.skopeo
-    - cachix use "$CACHIX_CACHE_NAME"
-
   script:
     - mkdir -p "$HOME/.config/nix"
     - echo 'experimental-features = nix-command flakes' > "$HOME/.config/nix/nix.conf"
@@ -129,7 +123,8 @@ build:nix:
     - cachix authtoken $CACHIX_TOKEN
     # - cachix watch-exec "$CACHIX_CACHE_NAME" nix build .#container
     # - nix-build | cachix push edea-test-cachix
-    - nix build --json | jq -r '.[].outputs | to_entries[].value' | cachix push edea-test-cachix 
+    - cachix watch-exec $CACHIX_CACHE_NAME -- nix build -L
+    # - nix build --json | jq -r '.[].outputs | to_entries[].value' | cachix push edea-test-cachix 
 
   artifacts:
     paths:
