@@ -1,6 +1,15 @@
 {
   description = "Application packaged using poetry2nix";
 
+  nixConfig = {
+    extra-substituters = [
+      "https://edea-test-cachix.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "edea-test-cachix.cachix.org-1:4cGBfU4APGmQPPMpyRZdr9g9wQiMGRcBr1hmFqG/wDw="
+      ];
+  };
+
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     # In nixos-unstable-small, kicad is broken
