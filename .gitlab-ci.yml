@@ -110,7 +110,7 @@ build:nix:
   image: docker.nix-community.org/nixpkgs/cachix-flakes
 
   before_script:
-    # We should only execute a single command in this phase
+    # We should only execute a single command in this phase, so this overrides the global before_script
     - cachix authtoken $CACHIX_TOKEN
   
   cache: [] 
@@ -120,11 +120,7 @@ build:nix:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
   script:
-    # - nix build .# --log-format bar-with-logs
-    # - cachix watch-exec "$CACHIX_CACHE_NAME" nix build .#container
-    # - nix-build | cachix push edea-test-cachix
     - cachix watch-exec $CACHIX_CACHE_NAME -- nix build -L
-    # - nix build --json | jq -r '.[].outputs | to_entries[].value' | cachix push edea-test-cachix 
 
   artifacts:
     paths:
