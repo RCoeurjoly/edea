@@ -106,9 +106,12 @@ pages:
 build:nix:
   # stage: build
 
+  # https://docs.cachix.org/continuous-integration-setup/gitlab
   image: docker.nix-community.org/nixpkgs/cachix-flakes
 
-  # before_script: [] # Override the global before_script
+  before_script:
+    # We should only execute a single command in this phase
+    - cachix authtoken $CACHIX_TOKEN
   
   cache: [] 
 
@@ -117,10 +120,7 @@ build:nix:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
   script:
-    - mkdir -p "$HOME/.config/nix"
-    - echo 'experimental-features = nix-command flakes' > "$HOME/.config/nix/nix.conf"
     # - nix build .# --log-format bar-with-logs
-    - cachix authtoken $CACHIX_TOKEN
     # - cachix watch-exec "$CACHIX_CACHE_NAME" nix build .#container
     # - nix-build | cachix push edea-test-cachix
     - cachix watch-exec $CACHIX_CACHE_NAME -- nix build -L
