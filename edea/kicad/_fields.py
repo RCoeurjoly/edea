@@ -1,6 +1,7 @@
 import dataclasses
+from functools import lru_cache
 from types import UnionType
-from typing import Annotated, Literal, Union, get_args, get_origin
+from typing import Annotated, Literal, Type, Union, cast, get_args, get_origin
 
 MetaTag = Literal[
     # KiCad doesn't have a keyword for the property. The property appears
@@ -29,7 +30,8 @@ def make_meta(*args: MetaTag):
     return args
 
 
-def get_meta(field: dataclasses.Field, tag: MetaTag):
+@lru_cache(maxsize=None)
+def has_meta_tag(field: dataclasses.Field, tag: MetaTag):
     origin = get_origin(field.type)
     if origin is Annotated:
         sub_types = get_args(field.type)
@@ -38,22 +40,24 @@ def get_meta(field: dataclasses.Field, tag: MetaTag):
     return False
 
 
-def get_type(field: dataclasses.Field):
+@lru_cache(maxsize=None)
+def get_type(field: dataclasses.Field) -> Type:
     origin = get_origin(field.type)
     if origin is Annotated:
         sub_types = get_args(field.type)
         return sub_types[0]
-    return field.type
+    return cast(Type, field.type)
 
 
+@lru_cache(maxsize=None)
 def is_optional(field: dataclasses.Field):
-    if get_meta(field, "exclude_from_files"):
+    if has_meta_tag(field, "exclude_from_files"):
         return True
-    if get_meta(field, "kicad_kw_bool"):
+    if has_meta_tag(field, "kicad_kw_bool"):
         return True
-    if get_meta(field, "kicad_kw_bool_empty"):
+    if has_meta_tag(field, "kicad_kw_bool_empty"):
         return True
-    if get_meta(field, "kicad_omits_default"):
+    if has_meta_tag(field, "kicad_omits_default"):
         return True
     field_type = get_type(field)
     origin = get_origin(field_type)

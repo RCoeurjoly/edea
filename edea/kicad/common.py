@@ -16,6 +16,7 @@ class StrokeType(StrEnum):
     Available stroke types that can be used for lines, outlines, etc.
 
     `KiCad stroke definition <https://dev-docs.kicad.org/en/file-formats/sexpr-intro/index.html#_stroke_definition>`_
+
     """
 
     DEFAULT = "default"
@@ -60,6 +61,7 @@ class Stroke(KicadExpr):
     width: float = 0
     type: StrokeType = StrokeType.DEFAULT
     color: Annotated[Color, m("kicad_omits_default")] = (0, 0, 0, 0.0)
+    kicad_expr_tag_name: ClassVar[Literal["stroke"]] = "stroke"
 
 
 class PaperFormat(StrEnum):
@@ -140,9 +142,9 @@ class PaperStandard(KicadExpr):
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("paper").
     """
 
-    format: Annotated[
-        PaperFormat, m("kicad_no_kw", "kicad_always_quotes")
-    ] = PaperFormat.A4
+    format: Annotated[PaperFormat, m("kicad_no_kw", "kicad_always_quotes")] = (
+        PaperFormat.A4
+    )
     orientation: Annotated[
         PaperOrientation, m("kicad_no_kw", "kicad_omits_default")
     ] = PaperOrientation.LANDSCAPE
@@ -212,6 +214,7 @@ class XY(KicadExpr):
 
     x: Annotated[float, m("kicad_no_kw")]
     y: Annotated[float, m("kicad_no_kw")]
+    kicad_expr_tag_name: ClassVar[Literal["xy"]] = "xy"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -229,6 +232,7 @@ class Pts(KicadExpr):
 
     xys: list[XY] = field(default_factory=list)
     arcs: list[PolygonArc] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["pts"]] = "pts"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -249,6 +253,7 @@ class Image(KicadExpr):
     scale: Optional[float] = None
     uuid: UUID = field(default_factory=uuid4)
     data: list[str] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["image"]] = "image"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -291,6 +296,7 @@ class TitleBlock(KicadExpr):
     comments: Annotated[list[TitleBlockComment], m("kicad_omits_default")] = field(
         default_factory=list,
     )
+    kicad_expr_tag_name: ClassVar[Literal["title_block"]] = "title_block"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -320,6 +326,7 @@ class Font(KicadExpr):
         0,
         1.0,
     )
+    kicad_expr_tag_name: ClassVar[Literal["font"]] = "font"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -344,6 +351,7 @@ class Effects(KicadExpr):
     )
     hide: Annotated[bool, m("kicad_kw_bool")] = False
     href: Annotated[Optional[str], m("kicad_always_quotes")] = None
+    kicad_expr_tag_name: ClassVar[Literal["effects"]] = "effects"
 
 
 class VersionError(ValueError):

@@ -6,7 +6,15 @@ import itertools
 import math
 from copy import deepcopy
 from dataclasses import field
-from typing import Annotated, Any, ClassVar, Literal, Optional, Protocol, Sequence
+from typing import (
+    Annotated,
+    Any,
+    ClassVar,
+    Literal,
+    Optional,
+    Protocol,
+    Sequence,
+)
 from uuid import UUID, uuid4
 
 from pydantic import validator
@@ -15,23 +23,35 @@ from pydantic.dataclasses import dataclass
 from edea.kicad._config import PydanticConfig
 from edea.kicad._fields import make_meta as m
 from edea.kicad._str_enum import StrEnum
-from edea.kicad.base import custom_parser, custom_serializer
-from edea.kicad.common import Paper, PaperStandard, TitleBlock, VersionError
+from edea.kicad.base import (
+    CustomizationDataTransformRegistry,
+    custom_parser,
+    custom_serializer,
+)
+from edea.kicad.common import (
+    XY,
+    Effects,
+    Paper,
+    PaperStandard,
+    Pts,
+    TitleBlock,
+    VersionError,
+)
 from edea.kicad.s_expr import SExprList
 
 from .base import KicadPcbExpr
-from .common import Group, Image, Net, Position, Property, Zone
+from .common import Group, Image, Net, Position, Property, TearDrops, Zone
 from .footprint import Footprint
 from .graphics import (
-    GraphicalArcTopLevel,
+    GraphicalArc,
     GraphicalBezier,
     GraphicalBoundingBox,
-    GraphicalCircleTopLevel,
+    GraphicalCircle,
     GraphicalCurve,
     GraphicalDimension,
-    GraphicalLineTopLevel,
-    GraphicalPolygonTopLevel,
-    GraphicalRectangleTopLevel,
+    GraphicalLine,
+    GraphicalPolygon,
+    GraphicalRectangle,
     GraphicalText,
     GraphicalTextBox,
 )
@@ -43,10 +63,18 @@ class General(KicadPcbExpr):
     """
     General board config.
 
+    :param: legacy_teardrops: Whether to use legacy teardrops or not.
     :param thickness: The overall board thickness.
+
+    .. note::
+        The `legacy_teardrops` was added in 20240108 (KiCad 8).
     """
 
     thickness: float = 0
+    legacy_teardrops: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
+    kicad_expr_tag_name: ClassVar[Literal["general"]] = "general"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -78,10 +106,14 @@ class StackupLayer(KicadPcbExpr):
     :param material: The material of the layer.
     :param epsilon_r: The dielectric constant of the layer material.
     :param loss_tangent: The loss tangent of the layer material.
+    :param addsublayer: Whether the layer is an additional sublayer or not.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("layer").
 
     .. note::
         The `type` field is an arbitrary string, not a `CanonicalLayer`.
+
+    .. note::
+        The `addsublayer` field was added in 20240108 (KiCad 8).
 
     """
 
@@ -93,6 +125,7 @@ class StackupLayer(KicadPcbExpr):
     material: Annotated[Optional[str], m("kicad_always_quotes")] = None
     epsilon_r: Optional[float] = None
     loss_tangent: Optional[float] = None
+    addsublayer: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: ClassVar[Literal["layer"]] = "layer"
 
 
@@ -110,6 +143,9 @@ class Stackup(KicadPcbExpr):
     :param castellated_pads: Whether castellated pads are used on the PCB or not.
     :param edge_plating: Whether edge plating is applied to the PCB or not.
 
+    .. note::
+        The `castellated_pads` became optional in 20240108 (KiCad 8).
+
     """
 
     layers: list[StackupLayer] = field(default_factory=list)
@@ -120,10 +156,11 @@ class Stackup(KicadPcbExpr):
     edge_connector: Annotated[
         Literal["yes", "bevelled", None], m("kicad_omits_default")
     ] = None
-    castellated_pads: Annotated[
-        bool, m("kicad_bool_yes_no", "kicad_omits_default")
-    ] = False
+    castellated_pads: Annotated[bool, m("kicad_bool_yes_no", "kicad_omits_default")] = (
+        False
+    )
     edge_plating: Annotated[bool, m("kicad_bool_yes_no", "kicad_omits_default")] = False
+    kicad_expr_tag_name: ClassVar[Literal["stackup"]] = "stackup"
 
 
 class PlotOutputFormat(StrEnum):
@@ -174,6 +211,9 @@ class PlotSettings(KicadPcbExpr):
     :param dashed_line_gap_ratio: The gap-to-dash ratio for dashed lines.
     :param svgprecision: The precision (number of decimal places) used for SVG output.
     :param excludeedgelayer: Whether to exclude the edge layer from plotting.
+    :param pdf_front_fp_property_popups: Whether to include front footprints in PDF property popups.
+    :param pdf_back_fp_property_popups: Whether to include back footprints in PDF property popups.
+    :param plotfptext: Whether to plot footprint text or not.
     :param plotframeref: Whether to plot frame references.
     :param viasonmask: Whether to plot vias on the mask layer.
     :param mode: The plot mode (1 or 2, interpretation depends on context).
@@ -201,6 +241,9 @@ class PlotSettings(KicadPcbExpr):
     .. warning::
         The `dashed_line_dash_ratio`, `dashed_line_gap_ratio`, and `psa4output` are undocumented in the KiCad file format documentation.
 
+    .. note::
+        The `pdf_front_fp_property_popups`, `pdf_back_fp_property_popups`, and `plotfptext` were added in 20240108 (KiCad 8).
+
     """
 
     layerselection: str = "0x00010fc_ffffffff"
@@ -215,6 +258,15 @@ class PlotSettings(KicadPcbExpr):
     dashed_line_gap_ratio: Optional[float] = None
     svgprecision: int = 4
     excludeedgelayer: Annotated[bool, m("kicad_omits_default")] = False
+    pdf_front_fp_property_popups: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
+    pdf_back_fp_property_popups: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
+    plotfptext: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
     plotframeref: bool = False
     viasonmask: bool = False
     mode: Literal[1, 2] = 1
@@ -237,7 +289,6 @@ class PlotSettings(KicadPcbExpr):
     drillshape: int = 0
     scaleselection: int = 0
     outputdirectory: Annotated[str, m("kicad_always_quotes")] = ""
-
     kicad_expr_tag_name: ClassVar[Literal["pcbplotparams"]] = "pcbplotparams"
 
 
@@ -272,6 +323,7 @@ class Setup(KicadPcbExpr):
     )
     grid_origin: Annotated[tuple[float, float], m("kicad_omits_default")] = (0.0, 0.0)
     pcbplotparams: PlotSettings = field(default_factory=PlotSettings)
+    kicad_expr_tag_name: ClassVar[Literal["setup"]] = "setup"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -286,6 +338,10 @@ class Segment(KicadPcbExpr):
     :param layer: The canonical layer the track segment resides on.
     :param net: The net ordinal number which net in the net section that the segment is part of.
     :param tstamp: The unique identifier (UUID) for the line object.
+    :param uuid: The unique identifier (UUID) for the line object.
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
 
     """
 
@@ -295,7 +351,9 @@ class Segment(KicadPcbExpr):
     width: float = 0.0
     layer: CanonicalLayerName = "F.Cu"
     net: int = 0
-    tstamp: UUID = field(default_factory=uuid4)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["segment"]] = "segment"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -314,7 +372,15 @@ class Via(KicadPcbExpr):
     :param free: Whether the via is free to be moved outside it's assigned net.
     :param zone_layer_connections: A list of zone layers the via connects to.
     :param net: The net ordinal number which net in the net section that the segment is part of.
+    :param teardrops: The teardrops settings for the via.
     :param tstamp: The unique identifier (UUID) for the line object.
+    :param uuid: The unique identifier (UUID) for the line object.
+
+    .. note::
+        The `teardrops` field was added in 20240108 (KiCad 8).
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
 
     """
 
@@ -335,7 +401,10 @@ class Via(KicadPcbExpr):
         default_factory=list,
     )
     net: int = 0
-    tstamp: UUID = field(default_factory=uuid4)
+    teardrops: Optional[TearDrops] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["via"]] = "via"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -351,6 +420,10 @@ class Arc(KicadPcbExpr):
     :param layer: The canonical layer the track arc resides on.
     :param net: The net ordinal number which net in the net section that the segment is part of.
     :param tstamp: The unique identifier (UUID) of the line object.
+    :param uuid: The unique identifier (UUID) of the line object.
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
 
     """
 
@@ -361,7 +434,9 @@ class Arc(KicadPcbExpr):
     width: float = 0.0
     layer: CanonicalLayerName = "F.Cu"
     net: int = 0
-    tstamp: UUID = field(default_factory=uuid4)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["arc"]] = "arc"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -375,6 +450,10 @@ class Target(KicadPcbExpr):
     :param width: The width of the target.
     :param layer: The layer on which the target is placed.
     :param tstamp: A unique identifier (UUID) for the target.
+    :param uuid: A unique identifier (UUID) for the target.
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
 
     """
 
@@ -383,7 +462,9 @@ class Target(KicadPcbExpr):
     size: float
     width: float
     layer: CanonicalLayerName
-    tstamp: UUID = field(default_factory=uuid4)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["target"]] = "target"
 
 
 @dataclass(config=PydanticConfig)
@@ -393,6 +474,7 @@ class BoardSize:
 
     :param width_mm: The width of the PCB board (in mm).
     :param height_mm: The height of the PCB board (in mm).
+
     """
 
     width_mm: float
@@ -400,12 +482,112 @@ class BoardSize:
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class Pcb(KicadPcbExpr):
+class GeneratedBaseLine(KicadPcbExpr):
+    """
+
+    .. warning::
+        Undocumented in the KiCad file format documentation. Added in 20240108 (KiCad 8).
+
+    """
+
+    pts: list[Pts] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["base_line", "base_line_coupled"]] = (
+        "base_line"
+    )
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class GeneratedBaseLineCoupled(GeneratedBaseLine):
+    """
+
+    .. warning::
+        Undocumented in the KiCad file format documentation. Added in 20240108 (KiCad 8).
+
+    """
+
+    kicad_expr_tag_name = "base_line_coupled"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class GeneratedOrigin(KicadPcbExpr):
+    """
+    .. warning::
+        Undocumented in the KiCad file format documentation. Added in 20240108 (KiCad 8).
+
+    """
+
+    origin: list[XY] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["origin"]] = "origin"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class GeneratedEnd(KicadPcbExpr):
+    """
+    .. warning::
+        Undocumented in the KiCad file format documentation. Added in 20240108 (KiCad 8).
+
+    """
+
+    end: list[XY] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["end"]] = "end"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class Generated(KicadPcbExpr):
+    """
+    .. warning::
+        Undocumented in the KiCad file format documentation. Added in 20240108 (KiCad 8).
+
+    """
+
+    uuid: Annotated[UUID, m("kicad_always_quotes")] = field(default_factory=uuid4)
+    type: Literal["tuning_pattern"] = "tuning_pattern"
+    name: Annotated[str, m("kicad_always_quotes", "kicad_omits_default")] = ""
+    layer: Annotated[CanonicalLayerName, m("kicad_always_quotes")] = "F.Cu"
+    base_line: Optional[GeneratedBaseLine] = None
+    base_line_coupled: Optional[GeneratedBaseLineCoupled] = None
+    corner_radius_percent: float = 0.0
+    origin: GeneratedOrigin = field(default_factory=GeneratedOrigin)
+    end: GeneratedEnd = field(default_factory=GeneratedEnd)
+    initial_side: Annotated[
+        Literal["default", "right", "left"], m("kicad_always_quotes")
+    ] = "default"
+    last_diff_pair_gap: float = 0.0
+    last_netname: Annotated[str, m("kicad_always_quotes")] = ""
+    last_status: Annotated[str, m("kicad_always_quotes")] = ""
+    last_track_width: float = 0.0
+    last_tuning: Annotated[str, m("kicad_always_quotes")] = ""
+    max_amplitude: float = 0.0
+    min_amplitude: float = 0.0
+    min_spacing: float = 0.0
+    override_custom_rules: Annotated[bool, m("kicad_bool_yes_no")] = False
+    rounded: Annotated[bool, m("kicad_bool_yes_no")] = False
+    single_sided: Annotated[bool, m("kicad_bool_yes_no")] = False
+    target_length: float = 0.0
+    target_length_max: float = 0.0
+    target_length_min: float = 0.0
+    target_skew: float = 0.0
+    target_skew_max: float = 0.0
+    target_skew_min: float = 0.0
+    tuning_mode: Annotated[
+        Literal["single", "diff_pair", "diff_pair_skew"], m("kicad_always_quotes")
+    ] = "single"
+    members: list[UUID] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["generated"]] = "generated"
+
+
+SUPPORTED_KICAD_PCB_VERSIONS_TYPE = Literal["20240108", "20221018"]
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class Pcb(KicadPcbExpr, metaclass=CustomizationDataTransformRegistry):
     """
     A KiCad PCB file.
 
     :param version: The version of the PCB file format.
     :param generator: The software generator of the PCB file.
+    :param generator_version: The version of the software generator.
+    :param uuid: The unique identifier for the PCB file.
     :param general: The general settings of the PCB layout.
     :param paper: The paper settings for printing the PCB layout.
     :param title_block: The title block information for the PCB layout.
@@ -427,20 +609,25 @@ class Pcb(KicadPcbExpr):
     :param beziers: A list of Bezier curves in the PCB layout.
     :param gr_bboxes: A list of graphical bounding boxes in the PCB layout.
     :param dimensions: A list of graphical dimensions in the PCB layout.
+    :param effects: The effects settings for the PCB layout.
     :param segments: A list of track segments in the PCB layout.
     :param vias: A list of vias (connections between layers) in the PCB layout.
     :param arcs: A list of arcs in the PCB layout.
     :param groups: A list of groups in the PCB layout.
+    :param generated: A list of generated elements in the PCB layout.
     :param targets: A list of targets in the PCB layout.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("kicad_pcb").
 
+    .. note::
+        The fields `generator_version`, `uuid`, `effects`, and `generated` were added in 20240108 (KiCad 8).
+
     """
 
-    version: Literal["20221018"] = "20221018"
+    version: SUPPORTED_KICAD_PCB_VERSIONS_TYPE = "20240108"
 
     @validator("version")
     @classmethod
-    def check_version(cls, v: Any) -> Literal["20221018"]:
+    def check_version(cls, v: Any) -> SUPPORTED_KICAD_PCB_VERSIONS_TYPE:
         """
         Validator for the 'version' field, ensures that only the stable KiCad 7 PCB file format.
 
@@ -448,14 +635,20 @@ class Pcb(KicadPcbExpr):
         :returns: The validated version value.
         :raises VersionError: If an unsupported version is provided.
         """
-        if v == "20221018":
+
+        if v == "20240108" or v == "20221018":
             return v
         raise VersionError(
-            "Only the stable KiCad 7 PCB file format, i.e. '20221018' is supported. "
-            f"  Got '{v}'. Please open and re-save the file with KiCad 7 if you can."
+            "Only the stable KiCad 7 and KiCad 8 PCB file formats, i.e. ('20240108', and '20221018') are"
+            f" supported. Got '{v}'. Please open and re-save the file with"
+            " KiCad 7 (or a newer version) if you can."
         )
 
-    generator: str = "edea"
+    generator: Annotated[str, m("kicad_always_quotes")] = "edea"
+    generator_version: Annotated[
+        Optional[str], m("kicad_always_quotes", "kicad_omits_default")
+    ] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     general: General = field(default_factory=General)
     paper: Paper = field(default_factory=PaperStandard)
     title_block: Optional[TitleBlock] = None
@@ -469,8 +662,8 @@ class Pcb(KicadPcbExpr):
         lst: SExprList = ["layers"]
         return [lst + [layer_to_list(layer) for layer in layers]]
 
-    @classmethod
     @custom_parser("layers")
+    @classmethod
     def _list_to_layers(cls, exprs: SExprList) -> tuple[list[Layer], SExprList]:
         exp = None
         for e in exprs:
@@ -503,17 +696,18 @@ class Pcb(KicadPcbExpr):
     images: list[Image] = field(default_factory=list)
 
     # Graphics
-    gr_lines: list[GraphicalLineTopLevel] = field(default_factory=list)
+    gr_lines: list[GraphicalLine] = field(default_factory=list)
     gr_text_items: list[GraphicalText] = field(default_factory=list)
     gr_text_boxes: list[GraphicalTextBox] = field(default_factory=list)
-    gr_rects: list[GraphicalRectangleTopLevel] = field(default_factory=list)
-    gr_circles: list[GraphicalCircleTopLevel] = field(default_factory=list)
-    gr_arcs: list[GraphicalArcTopLevel] = field(default_factory=list)
+    gr_rects: list[GraphicalRectangle] = field(default_factory=list)
+    gr_circles: list[GraphicalCircle] = field(default_factory=list)
+    gr_arcs: list[GraphicalArc] = field(default_factory=list)
     gr_curves: list[GraphicalCurve] = field(default_factory=list)
-    gr_polys: list[GraphicalPolygonTopLevel] = field(default_factory=list)
+    gr_polys: list[GraphicalPolygon] = field(default_factory=list)
     beziers: list[GraphicalBezier] = field(default_factory=list)
     gr_bboxes: list[GraphicalBoundingBox] = field(default_factory=list)
     dimensions: list[GraphicalDimension] = field(default_factory=list)
+    effects: Optional[Effects] = None
     # end Graphics
 
     # Tracks
@@ -522,6 +716,7 @@ class Pcb(KicadPcbExpr):
     arcs: list[Arc] = field(default_factory=list)
     # end Tracks
     groups: list[Group] = field(default_factory=list)
+    generated: list[Generated] = field(default_factory=list)
 
     # UNDOCUMENTED: `target`
     targets: list[Target] = field(default_factory=list)
@@ -641,7 +836,8 @@ class Pcb(KicadPcbExpr):
 
 
 class _HasTstamp(Protocol):
-    tstamp: UUID
+    tstamp: Optional[UUID]
+    uuid: Optional[UUID]
 
 
 class _HasNetInt(Protocol):
@@ -655,7 +851,9 @@ def _reassign_nets(net_lookup: dict[int, Net], xs: Sequence[_HasNetInt]) -> None
 
 def _copy_and_group(group: Group, xs: Sequence[_HasTstamp]) -> list:
     for x in xs:
-        group.members.append(x.tstamp)
+        tstamp = x.tstamp or x.uuid
+        assert tstamp is not None  # nosec
+        group.members.append(tstamp)
     return list(deepcopy(xs))
 
 

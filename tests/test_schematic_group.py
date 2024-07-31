@@ -1,6 +1,6 @@
 import pathlib
 import shutil
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -108,7 +108,7 @@ def test_sch_group_write(tmp_path: pathlib.Path):
     shutil.copy(sub_filepath, tmp_sub_filepath)
 
     group = SchematicGroup.load_from_disk(tmp_top_filepath)
-    test_sch_1 = Schematic()
+    test_sch_1 = Schematic(uuid=uuid4())
     group.add_sub_schematic(test_sch_1, output_path="test.kicad_sch")
     group.write_to_disk(tmp_path)
 
@@ -127,7 +127,7 @@ def test_sch_group_write_folder(tmp_path: pathlib.Path):
     shutil.copy(sub_filepath, tmp_sub_filepath)
 
     group = SchematicGroup.load_from_disk(tmp_top_filepath)
-    test_sch_1 = Schematic()
+    test_sch_1 = Schematic(uuid=uuid4())
     group.add_sub_schematic(test_sch_1, output_path="folder/test.kicad_sch")
     group.write_to_disk(tmp_path)
 

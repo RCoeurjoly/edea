@@ -5,7 +5,7 @@ def is_kicad_expr(t: Type) -> bool:
     return hasattr(t, "_is_edea_kicad_expr")
 
 
-def is_kicad_expr_list(t: Type):
+def is_kicad_expr_list(t: Type | str):
     origin = get_origin(t)
     if origin is list:
         sub_types = get_args(t)

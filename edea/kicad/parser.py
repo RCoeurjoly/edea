@@ -7,6 +7,7 @@ import re
 
 from edea._type_utils import get_all_subclasses
 from edea.kicad.base import KicadExpr
+from edea.kicad.common import VersionError
 from edea.kicad.design_rules import DesignRuleSet
 from edea.kicad.pcb import Pcb
 from edea.kicad.s_expr import QuotedStr, SExprList
@@ -38,6 +39,8 @@ def from_list(l_expr: SExprList) -> KicadExpr:
         if tag_name == cls.kicad_expr_tag_name:
             try:
                 result = cls.from_list(l_expr[1:])
+            except (EOFError, VersionError) as e:
+                raise e from None
             except Exception as e:
                 errors.append(e)
             else:

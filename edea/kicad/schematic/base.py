@@ -3,6 +3,8 @@ Provides KicadSchExpr class which we use as a base for all schematic
 related KiCad s-expressions.
 """
 
+from typing import Any, ClassVar
+
 from pydantic import validator
 
 from edea.kicad.base import KicadExpr
@@ -12,6 +14,8 @@ class KicadSchExpr(KicadExpr):
     """
     A KiCad schematic expression.
     """
+
+    kicad_expr_tag_name: ClassVar[Any] = None
 
     @validator("at", pre=True, check_fields=False)
     @classmethod

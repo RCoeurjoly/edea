@@ -1,7 +1,7 @@
 import math
 from dataclasses import field
 from typing import Annotated, ClassVar, Literal, Optional
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import numpy as np
 from pydantic.dataclasses import dataclass
@@ -12,26 +12,13 @@ from edea.kicad._str_enum import StrEnum
 from edea.kicad.common import Effects, Pts, Stroke
 
 from .base import KicadPcbExpr
-from .common import BaseTextBox, CanonicalLayerName, Position, RenderCache
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class LayerKnockout(KicadPcbExpr):
-    """
-    Indicates that the text in a layer should be knocked out.
-
-    `KiCad graphical text <https://dev-docs.kicad.org/en/file-formats/sexpr-intro/index.html#_graphical_text>`_
-
-     :param name: The name of the copper layer to be knocked out
-     :param knockout: Whether the layer is knocked out or not.
-     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("layer").
-    """
-
-    name: Annotated[
-        CanonicalLayerName, m("kicad_always_quotes", "kicad_no_kw")
-    ] = "F.Cu"
-    knockout: Annotated[bool, m("kicad_kw_bool")] = False
-    kicad_expr_tag_name: ClassVar[Literal["layer"]] = "layer"
+from .common import (
+    BaseTextBox,
+    CanonicalLayerName,
+    LayerKnockout,
+    Position,
+    RenderCache,
+)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -45,19 +32,25 @@ class GraphicalText(KicadPcbExpr):
     :param text: The content of the text.
     :param at: The X-Y coordinates of the graphical text element.
     :param layer: The canonical layer the text resides on.
-    :param tstamp: The unique identifier of the text object.
     :param effects: The style of the text.
     :param render_cache: Instance of :py:class:`~edea.kicad.common.RenderCache` object.
+    :param tstamp: The unique identifier of the text object.
+    :param uuid: The unique identifier of the text object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_text").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")] = ""
     at: Position = field(default_factory=Position)
     layer: Optional[LayerKnockout] = None
-    tstamp: UUID = field(default_factory=uuid4)
     effects: Effects = field(default_factory=Effects)
     render_cache: Optional[RenderCache] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_text"]] = "gr_text"
 
 
@@ -71,7 +64,7 @@ class GraphicalTextBox(BaseTextBox):
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_text_box").
     """
 
-    kicad_expr_tag_name: ClassVar[Literal["gr_text_box"]] = "gr_text_box"
+    kicad_expr_tag_name = "gr_text_box"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -88,7 +81,13 @@ class GraphicalLine(KicadPcbExpr):
     :param stroke: Instance of :py:class:`~edea.kicad.common.Stroke` object defining the line style.
     :param layer: The canonical layer the line resides on.
     :param angle: The rotational angle of the line.
+    :param tstamp: The unique identifier of the line object.
+    :param uuid: The unique identifier of the line object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_line").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
@@ -98,6 +97,8 @@ class GraphicalLine(KicadPcbExpr):
     stroke: Optional[Stroke] = None
     layer: Optional[CanonicalLayerName] = None
     angle: Optional[float] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_line"]] = "gr_line"
 
     def envelope(
@@ -122,17 +123,6 @@ class GraphicalLine(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class GraphicalLineTopLevel(GraphicalLine):
-    """
-    A convenience class for a graphical line parsing.
-
-     :param tstamp: The unique identifier (UUID) for the graphical line top level element.
-    """
-
-    tstamp: UUID = field(default_factory=uuid4)
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class GraphicalRectangle(KicadPcbExpr):
     """
     A graphical rectangle.
@@ -147,6 +137,10 @@ class GraphicalRectangle(KicadPcbExpr):
     :param fill: How the rectangle is filled.
     :param layer: The canonical layer the rectangle resides on.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_rect").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
@@ -156,6 +150,9 @@ class GraphicalRectangle(KicadPcbExpr):
     stroke: Optional[Stroke] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
     layer: Optional[CanonicalLayerName] = None
+    net: Optional[int] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_rect"]] = "gr_rect"
 
     def envelope(
@@ -180,19 +177,6 @@ class GraphicalRectangle(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class GraphicalRectangleTopLevel(GraphicalRectangle):
-    """
-    A convenience class for a graphical rectangle parsing.
-
-    :param tstamp: The unique identifier (UUID) for the graphical rectangle top level element.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_rect").
-    """
-
-    tstamp: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["gr_rect"]] = "gr_rect"
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class GraphicalCircle(KicadPcbExpr):
     """
     A graphical circle element.
@@ -206,7 +190,13 @@ class GraphicalCircle(KicadPcbExpr):
     :param width: The line width of the circle.
     :param fill: How the circle is filled
     :param layer: The canonical layer the circle resides on.
+    :param tstamp: The unique identifier of the circle object.
+    :param uuid: The unique identifier of the circle object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_circle").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
@@ -216,6 +206,8 @@ class GraphicalCircle(KicadPcbExpr):
     width: Optional[float] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
     layer: Optional[CanonicalLayerName] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_circle"]] = "gr_circle"
 
     def envelope(
@@ -240,19 +232,6 @@ class GraphicalCircle(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class GraphicalCircleTopLevel(GraphicalCircle):
-    """
-    A convenience class for a graphical circle parsing.
-
-    :param tstamp: The unique identifier (UUID) for the graphical circle top level element.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_circle").
-    """
-
-    tstamp: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["gr_circle"]] = "gr_circle"
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class GraphicalArc(KicadPcbExpr):
     """
     A graphical arc element.
@@ -266,7 +245,17 @@ class GraphicalArc(KicadPcbExpr):
     :param width: The line width of the arc.
     :param stroke: Instance of :py:class:`~edea.kicad.common.Stroke` object defining the line style of the arc's edge.
     :param layer: The canonical layer the arc resides on.
+    :param net: The net number of the arc.
+    :param tstamp: The unique identifier of the arc object.
+    :param uuid: The unique identifier of the arc object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_arc").
+
+    .. note::
+        The `net` field got added in 20240108 (KiCad 8).
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
@@ -276,6 +265,9 @@ class GraphicalArc(KicadPcbExpr):
     width: Optional[float] = None
     stroke: Optional[Stroke] = None
     layer: Optional[CanonicalLayerName] = None
+    net: Optional[int] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_arc"]] = "gr_arc"
 
     def center(self) -> tuple[float, float]:
@@ -368,19 +360,6 @@ class GraphicalArc(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class GraphicalArcTopLevel(GraphicalArc):
-    """
-    A convenience class for a graphical arc parsing.
-
-    :param tstamp: The unique identifier (UUID) for the graphical arc top level element.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_arc").
-    """
-
-    tstamp: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["gr_arc"]] = "gr_arc"
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class GraphicalPolygon(KicadPcbExpr):
     """
     A graphical polygon element.
@@ -393,7 +372,17 @@ class GraphicalPolygon(KicadPcbExpr):
     :param width: The line width of the polygon.
     :param fill: How the polygon is filled.
     :param layer: The canonical layer the polygon resides on.
+    :param net: The net number of the polygon.
+    :param tstamp: The unique identifier of the polygon object.
+    :param uuid: The unique identifier of the polygon object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_poly").
+
+    .. note::
+        The `net` field got added in 20240108 (KiCad 8).
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
@@ -402,6 +391,9 @@ class GraphicalPolygon(KicadPcbExpr):
     width: Optional[float] = None
     fill: Optional[Literal["solid", "yes", "none"]] = None
     layer: Optional[CanonicalLayerName] = None
+    net: Optional[int] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["gr_poly"]] = "gr_poly"
 
     def envelope(
@@ -426,19 +418,6 @@ class GraphicalPolygon(KicadPcbExpr):
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class GraphicalPolygonTopLevel(GraphicalPolygon):
-    """
-    A convenience class for a graphical polygon parsing.
-
-    :param tstamp: The unique identifier (UUID) for the graphical polygon top level element.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_poly").
-    """
-
-    tstamp: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["gr_poly"]] = "gr_poly"
-
-
-@dataclass(config=PydanticConfig, eq=False)
 class GraphicalBezier(KicadPcbExpr):
     """
     A graphical bezier curve element.
@@ -450,15 +429,21 @@ class GraphicalBezier(KicadPcbExpr):
     :param stroke: Instance of :py:class:`~edea.kicad.common.Stroke` object defining the line style of the bezier curve's edge.
     :param layer: The canonical layer the curve resides on.
     :param tstamp: The unique identifier of the curve object.
+    :param uuid: The unique identifier of the curve object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("bezier").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     layer: Optional[CanonicalLayerName] = None
-    tstamp: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["bezier"]] = "bezier"
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["bezier", "gr_curve"]] = "bezier"
 
     def envelope(
         self, min_x: float, max_x: float, min_y: float, max_y: float
@@ -493,7 +478,7 @@ class GraphicalCurve(GraphicalBezier):
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("gr_curve").
     """
 
-    kicad_expr_tag_name: ClassVar[Literal["gr_curve"]] = "gr_curve"
+    kicad_expr_tag_name = "gr_curve"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -642,7 +627,6 @@ class GraphicalDimension(KicadPcbExpr):
     :param locked: Whether the dimension can move or not.
     :param type: The type of dimension (aligned, leader, center, orthogonal, and radial).
     :param layer: The canonical layer the dimension resides on.
-    :param tstamp: The unique identifier of the dimension object.
     :param pts: A list of X-Y coordinates of the dimension.
     :param height: The height of aligned dimensions.
     :param orientation: The rotation angle for orthogonal dimensions.
@@ -650,13 +634,18 @@ class GraphicalDimension(KicadPcbExpr):
     :param gr_text: The dimension text formatting for all dimension types except center dimensions.
     :param format: The dimension formatting for all dimension types except center dimensions.
     :param style: The dimension style information.
+    :param tstamp: The unique identifier of the dimension object.
+    :param uuid: The unique identifier of the dimension object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("dimension").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
     type: Literal["aligned", "leader", "center", "orthogonal", "radial"] = "aligned"
     layer: CanonicalLayerName = "F.Cu"
-    tstamp: UUID = field(default_factory=uuid4)
     pts: Pts = field(default_factory=Pts)
     height: Optional[float] = None
     orientation: Optional[float] = None
@@ -664,4 +653,6 @@ class GraphicalDimension(KicadPcbExpr):
     gr_text: Optional[GraphicalText] = None
     format: Optional[DimensionFormat] = None
     style: DimensionStyle = field(default_factory=DimensionStyle)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["dimension"]] = "dimension"

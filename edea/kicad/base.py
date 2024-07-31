@@ -4,8 +4,7 @@ s-expression related dataclasses.
 """
 
 import dataclasses
-import inspect
-from typing import Any, Callable, ClassVar, Type, TypeVar
+from typing import Any, Callable, ClassVar, Optional, Type, TypeVar
 
 from pydantic.dataclasses import dataclass
 
@@ -17,12 +16,12 @@ from edea.kicad.s_expr import SExprList
 KicadExprClass = TypeVar("KicadExprClass", bound="KicadExpr")
 
 CustomSerializerMethod = Callable[["KicadExpr", Any], list[SExprList]]
-CustomSerializer = Callable[[Any], list[SExprList]]
+CustomSerializer = Callable[["KicadExpr", Any], list[SExprList]]
 
 CustomParserMethod = Callable[
     [Type["KicadExpr"], SExprList, str], tuple[Any, SExprList]
 ]
-CustomParser = Callable[[SExprList], tuple[Any, SExprList]]
+CustomParser = Callable[[Type[KicadExprClass], SExprList], tuple[Any, SExprList]]
 
 
 def custom_serializer(field_name: str):
@@ -57,6 +56,29 @@ def custom_parser(field_name: str):
     return decorator
 
 
+class CustomizationDataTransformRegistry(type):
+    def __new__(cls, name: str, bases: tuple, dct: dict[str, Any]):
+        custom_parsers = {}
+        custom_serializers = {}
+        for attr_value in dct.values():
+            if isinstance(attr_value, classmethod) and hasattr(
+                attr_value, "edea_custom_parser_field_name"
+            ):
+                custom_parsers[attr_value.edea_custom_parser_field_name] = (  # type: ignore
+                    attr_value.__func__
+                )
+            if callable(attr_value) and hasattr(
+                attr_value, "edea_custom_serializer_field_name"
+            ):
+                custom_serializers[attr_value.edea_custom_serializer_field_name] = (
+                    attr_value
+                )
+
+        dct["_edea_custom_parsers"] = custom_parsers
+        dct["_edea_custom_serializers"] = custom_serializers
+        return super().__new__(cls, name, bases, dct)
+
+
 @dataclass
 class KicadExpr:
     """
@@ -65,19 +87,10 @@ class KicadExpr:
     :cvar _is_edea_kicad_expr: A class variable indicating that this class is an EDeA KiCad expression.
     """
 
+    kicad_expr_tag_name: ClassVar
     _is_edea_kicad_expr: ClassVar = True
-
-    @classmethod
-    @property
-    def kicad_expr_tag_name(cls: Type[KicadExprClass]):
-        """
-        The name that KiCad uses for this in its s-expression format. By
-        default this is computed from the Python class name converted to
-        snake_case but it can be overridden.
-
-        :returns: The KiCad expression tag name.
-        """
-        return to_snake_case(cls.__name__)
+    _edea_custom_parsers: ClassVar[Optional[dict[str, CustomParser]]] = None
+    _edea_custom_serializers: ClassVar[Optional[dict[str, CustomSerializer]]] = None
 
     @classmethod
     def from_list(cls: Type[KicadExprClass], exprs: SExprList) -> KicadExprClass:
@@ -113,33 +126,6 @@ class KicadExpr:
             name += f" ({cls.__name__})"
         # pylint: enable=comparison-with-callable
         return name
-
-    def _get_custom_serializers(self) -> dict[str, CustomSerializer]:
-        """
-        Retrieves a dictionary of custom serializer methods associated with the class.
-
-        :returns:  A mapping of field names to their corresponding custom serializer methods.
-        """
-        custom_serializers = {}
-        members = inspect.getmembers(self)
-        for _, method in members:
-            if hasattr(method, "edea_custom_serializer_field_name"):
-                custom_serializers[method.edea_custom_serializer_field_name] = method
-        return custom_serializers
-
-    @classmethod
-    def _get_custom_parsers(cls) -> dict[str, CustomParser]:
-        """
-        Retrieves a dictionary of custom parser methods associated with the class.
-
-        :returns: A Mapping field names to their corresponding custom parser methods.
-        """
-        custom_parsers = {}
-        members = inspect.getmembers(cls)
-        for _, method in members:
-            if hasattr(method, "edea_custom_parser_field_name"):
-                custom_parsers[method.edea_custom_parser_field_name] = method
-        return custom_parsers
 
     @classmethod
     def check_version(cls, v: Any) -> str:

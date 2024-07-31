@@ -23,57 +23,59 @@ def to_list(expr: KicadExpr) -> SExprList:
     return lst + expr.to_list()
 
 
-_special_chars = (
-    " ",
-    "(",
-    ")",
-    '"',
-    "\\",
-    # instead of putting them in quotes, we should probably not allow these
-    # non-printable ascii characters in our strings at all
-    "\x00",
-    "\x01",
-    "\x02",
-    "\x03",
-    "\x04",
-    "\x05",
-    "\x06",
-    "\x07",
-    "\x08",
-    "\x09",
-    "\x0a",
-    "\x0b",
-    "\x0c",
-    "\x0d",
-    "\x0e",
-    "\x0f",
-    "\x10",
-    "\x11",
-    "\x12",
-    "\x13",
-    "\x14",
-    "\x15",
-    "\x16",
-    "\x17",
-    "\x18",
-    "\x19",
-    "\x1a",
-    "\x1b",
-    "\x1c",
-    "\x1d",
-    "\x1e",
-    "\x1f",
-    # non-breaking space
-    "\xa0",
-    # ellipses ("…"), not quite sure why we need to quote this for our
-    # tokenizer but it causes parsing issues if we don't
-    "\x85",
-    # en quad, again not sure why we need to quote
-    "\u2000",
-    # em quad
-    "\u2001",
-    # en space
-    "\u2002",
+_special_chars = set(
+    (
+        " ",
+        "(",
+        ")",
+        '"',
+        "\\",
+        # instead of putting them in quotes, we should probably not allow these
+        # non-printable ascii characters in our strings at all
+        "\x00",
+        "\x01",
+        "\x02",
+        "\x03",
+        "\x04",
+        "\x05",
+        "\x06",
+        "\x07",
+        "\x08",
+        "\x09",
+        "\x0a",
+        "\x0b",
+        "\x0c",
+        "\x0d",
+        "\x0e",
+        "\x0f",
+        "\x10",
+        "\x11",
+        "\x12",
+        "\x13",
+        "\x14",
+        "\x15",
+        "\x16",
+        "\x17",
+        "\x18",
+        "\x19",
+        "\x1a",
+        "\x1b",
+        "\x1c",
+        "\x1d",
+        "\x1e",
+        "\x1f",
+        # non-breaking space
+        "\xa0",
+        # ellipses ("…"), not quite sure why we need to quote this for our
+        # tokenizer but it causes parsing issues if we don't
+        "\x85",
+        # en quad, again not sure why we need to quote
+        "\u2000",
+        # em quad
+        "\u2001",
+        # en space
+        "\u2002",
+    )
 )
 
 
@@ -91,7 +93,7 @@ def from_list_to_str(expr: str | QuotedStr | SExprList) -> str:
     if isinstance(expr, str):
         if expr == "":
             return '""'
-        elif any(c in expr for c in _special_chars):
+        elif _special_chars.intersection(expr):
             return f'"{_escape(expr)}"'
         return expr
     # a lot of newlines to make sure we never exceed kicad's maximum line

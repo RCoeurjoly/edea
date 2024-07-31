@@ -13,10 +13,21 @@ from pydantic.dataclasses import dataclass
 from edea.kicad._config import PydanticConfig
 from edea.kicad._fields import make_meta as m
 from edea.kicad._str_enum import StrEnum
+from edea.kicad.base import CustomizationDataTransformRegistry
 from edea.kicad.color import Color
 from edea.kicad.common import Image, Paper, PaperStandard, TitleBlock, VersionError
 from edea.kicad.schematic.base import KicadSchExpr
-from edea.kicad.schematic.shapes import Arc, Fill, FillColor, FillSimple, Pts, Stroke
+from edea.kicad.schematic.shapes import (
+    Arc,
+    Circle,
+    Fill,
+    FillColor,
+    FillSimple,
+    Polyline,
+    Pts,
+    Rectangle,
+    Stroke,
+)
 from edea.kicad.schematic.symbol import Effects, LibSymbol, Property
 
 
@@ -43,6 +54,7 @@ class DefaultInstance(KicadSchExpr):
     unit: int = 1
     value: Annotated[str, m("kicad_always_quotes")] = ""
     footprint: Annotated[str, m("kicad_always_quotes")] = ""
+    kicad_expr_tag_name: ClassVar[Literal["default_instance"]] = "default_instance"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -102,16 +114,20 @@ class SymbolUse(KicadSchExpr):
     :param mirror: Optional mirroring applied to the symbol.
     :param unit: Which unit in the symbol library definition that the schematic symbol represents.
     :param convert: The conversion factor for the symbol.
+    :param exclude_from_sim: Whether the symbol is excluded from simulation.
     :param in_bom: Whether the symbol should be included in the Bill of Materials or not.
     :param on_board: Whether the symbol is exported to the board via the netlist.
     :param dnp: "Do Not Populate" flag for the symbol.
     :param fields_autoplaced: Whether the symbol fields are automatically placed.
-    :param uuid: id.
+    :param uuid: The unique identifier for the symbol instance.
     :param default_instance: Default component instance associated with the symbol.
     :param properties: A list of property objects associated with the symbol.
     :param pins: A list of :py:class:`PinAssignment` objects defining pin assignments for the symbol.
     :param instances: Nested :py:class:`SymbolUseInstances` object defining symbol usage within hierarchical symbols.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("symbol").
+
+    .. note::
+        The `exclude_from_sim` field was added in 20231120 (KiCad 8).
     """
 
     lib_name: Optional[str] = None
@@ -120,6 +136,9 @@ class SymbolUse(KicadSchExpr):
     mirror: Literal["x", "y", None] = None
     unit: int = 1
     convert: Optional[int] = None
+    exclude_from_sim: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
     in_bom: Annotated[bool, m("kicad_bool_yes_no")] = True
     on_board: Annotated[bool, m("kicad_bool_yes_no")] = True
     dnp: Annotated[bool, m("kicad_bool_yes_no")] = False
@@ -235,6 +254,7 @@ class Wire(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     uuid: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["wire"]] = "wire"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -254,6 +274,7 @@ class Junction(KicadSchExpr):
     diameter: float = 0
     color: Color = (0, 0, 0, 0.0)
     uuid: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["junction"]] = "junction"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -269,6 +290,7 @@ class NoConnect(KicadSchExpr):
 
     at: tuple[float, float]
     uuid: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["no_connect"]] = "no_connect"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -292,7 +314,7 @@ class LocalLabel(KicadSchExpr):
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     properties: list[Property] = field(default_factory=list)
-    kicad_expr_tag_name: ClassVar[Literal["label"]] = "label"
+    kicad_expr_tag_name: ClassVar[Literal["label", "text"]] = "label"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -300,10 +322,18 @@ class Text(LocalLabel):
     """
     A simple text element within a KiCad schematic.
 
+    :param exclude_from_sim: Whether the text is excluded from simulation.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("text").
+
+    .. note::
+        The `exclude_from_sim` field was added in 20231120 (KiCad 8).
+
     """
 
-    kicad_expr_tag_name: ClassVar[Literal["text"]] = "text"
+    exclude_from_sim: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
+    kicad_expr_tag_name = "text"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -314,16 +344,24 @@ class TextBox(KicadSchExpr):
     :param text: The text content of the box.
     :param at: The X-Y coordinates and rotation angle of the text box.
     :param size: The size of the text box.
+    :param exclude_from_sim: Whether the text box is excluded from simulation.
     :param stroke: The line width and style of the text box.
     :param fill: How the text box is filled.
     :param effects: How the text box is displayed.
-    :param uuid: The text box id.
+    :param uuid: The unique identifier for the text box.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("text_box").
+
+    .. note::
+        The `exclude_from_sim` field was added in 20231120 (KiCad 8).
+
     """
 
     text: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     at: tuple[float, float, Literal[0, 90, 180, 270]]
     size: tuple[float, float]
+    exclude_from_sim: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillSimple)
     effects: Effects = field(default_factory=Effects)
@@ -367,6 +405,7 @@ class GlobalLabel(KicadSchExpr):
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     properties: list[Property] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["global_label"]] = "global_label"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -393,6 +432,7 @@ class HierarchicalLabel(KicadSchExpr):
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     properties: list[Property] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["hierarchical_label"]] = "hierarchical_label"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -418,6 +458,7 @@ class NetclassFlag(KicadSchExpr):
     effects: Effects = field(default_factory=Effects)
     uuid: UUID = field(default_factory=uuid4)
     properties: list[Property] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["netclass_flag"]] = "netclass_flag"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -429,6 +470,7 @@ class LibSymbols(KicadSchExpr):
     """
 
     symbols: list[LibSymbol] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["lib_symbols"]] = "lib_symbols"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -465,81 +507,7 @@ class SymbolInstances(KicadSchExpr):
     """
 
     paths: list[SymbolInstancesPath] = field(default_factory=list)
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class PolylineTopLevel(KicadSchExpr):
-    """
-    The polyline top level in a KiCad schematic,
-    which defines one or more graphical lines that may or may not define a polygon.
-
-    :param pts: The list of X-Y coordinates of the line(s) top level.
-    :param stroke: The line width and style of the polygon top level formed by the lines.
-    :param fill: The fill style of the polygon top level formed by the lines.
-    :param uuid: The Unique identifier (UUID) for the polygon top level.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("polyline").
-    """
-
-    pts: Pts = field(default_factory=Pts)
-    stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill | None = field(default=None)
-    uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["polyline"]] = "polyline"
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class RectangleTopLevel(KicadSchExpr):
-    """
-    The rectangle top level in a KiCad schematic.
-
-    :param start: The starting coordinates of the rectangle top level.
-    :param end: The ending coordinates of the rectangle top level.
-    :param stroke: The line width and style of the rectangle top level.
-    :param fill: The fill style of the rectangle top level.
-    :param uuid: The unique identifier (UUID) for the rectangle top level.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("rectangle").
-    """
-
-    start: tuple[float, float]
-    end: tuple[float, float]
-    stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=FillSimple)
-    uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["rectangle"]] = "rectangle"
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class ArcTopLevel(Arc):
-    """
-    The arc top level within a KiCad schematic.
-
-    :param uuid: The unique identifier (UUID) for the arc top level.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("arc").
-    """
-
-    uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["arc"]] = "arc"
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class CircleTopLevel(KicadSchExpr):
-    """
-    The circle top level in a KiCad schematic.
-
-    :param center: The X-Y coordinates of the center of the circle top level.
-    :param radius: The radius of the the circle top level.
-    :param stroke: The line width and style of the circle top level.
-    :param fill: How the circle top level is filled.
-    :param uuid: The unique identifier (UUID) for the circle top level.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("circle").
-    """
-
-    center: tuple[float, float]
-    radius: float
-    stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=FillSimple)
-    uuid: UUID = field(default_factory=uuid4)
-    kicad_expr_tag_name: ClassVar[Literal["circle"]] = "circle"
+    kicad_expr_tag_name: ClassVar[Literal["symbol_instances"]] = "symbol_instances"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -646,6 +614,7 @@ class Sheet(KicadSchExpr):
     properties: list[Property] = field(default_factory=list)
     pins: list[SheetPin] = field(default_factory=list)
     instances: Optional[SubSheetInstances] = None
+    kicad_expr_tag_name: ClassVar[Literal["sheet"]] = "sheet"
 
     @validator("properties")
     @classmethod
@@ -756,6 +725,7 @@ class BusEntry(KicadSchExpr):
     size: tuple[float, float]
     stroke: Stroke = field(default_factory=Stroke)
     uuid: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["bus_entry"]] = "bus_entry"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -774,6 +744,7 @@ class Bus(KicadSchExpr):
     )
     stroke: Stroke = field(default_factory=Stroke)
     uuid: UUID = field(default_factory=uuid4)
+    kicad_expr_tag_name: ClassVar[Literal["bus"]] = "bus"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -790,15 +761,21 @@ class BusAlias(KicadSchExpr):
     members: Annotated[list[str], m("kicad_always_quotes")] = field(
         default_factory=list,
     )
+    kicad_expr_tag_name: ClassVar[Literal["bus_alias"]] = "bus_alias"
+
+
+SUPPORTED_KICAD_SCH_VERSIONS_TYPE = Literal["20231120", "20230121"]
 
 
 @dataclass(config=PydanticConfig, eq=False)
-class Schematic(KicadSchExpr):
+class Schematic(KicadSchExpr, metaclass=CustomizationDataTransformRegistry):
     """
     A KiCad schematic file structure.
 
     :param version: The KiCad schematic file format version.
     :param generator: The schematic file generator software.
+    :param generator_version: The version of the schematic file generator software.
+    :param uuid: The unique identifier (UUID) for the schematic file.
     :param uuid: The unique identifier (UUID) for the schematic file.
     :param paper: The schematic sheet properties.
     :param title_block: Title block information.
@@ -825,39 +802,46 @@ class Schematic(KicadSchExpr):
     :param sheet_instances: Sheet instances.
     :param symbol_instances: Symbol instances within the schematic.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("kicad_sch").
+
+    .. note::
+        The `generator_version`, and `uuid` fields were added in 20231120 (KiCad 8).
+
     """
 
-    version: Literal["20230121"] = "20230121"
+    version: SUPPORTED_KICAD_SCH_VERSIONS_TYPE = "20231120"
 
     @validator("version")
     @classmethod
-    def check_version(cls, v: Any) -> Literal["20230121"]:
+    def check_version(cls, v: Any) -> SUPPORTED_KICAD_SCH_VERSIONS_TYPE:
         """
         Checks KiCad schematic file format version.
 
         :returns v: The version number.
         :raises VersionError: If the version format isn't supported.
         """
-        if v == "20230121":
+        if v == "20230121" or v == "20231120":
             return v
         raise VersionError(
-            "Only the stable KiCad 7 schematic file format i.e. '20230121' is"
+            "Only the stable KiCad 7 and KiCad 8 schematic file formats i.e. ('20230121', and '20231120') are"
             f" supported. Got '{v}'. Please open and re-save the file with"
-            " KiCad 7 if you can."
+            " KiCad 7 (or a newer version) if you can."
         )
 
-    generator: str = "edea"
-    uuid: UUID = field(default_factory=uuid4)
+    generator: Annotated[str, m("kicad_always_quotes")] = "edea"
+    generator_version: Annotated[
+        Optional[str], m("kicad_always_quotes", "kicad_omits_default")
+    ] = None
+    uuid: Optional[UUID] = None
     paper: Paper = field(default_factory=PaperStandard)
     title_block: Optional[TitleBlock] = None
     lib_symbols: LibSymbols = field(default_factory=LibSymbols)
-    arcs: list[ArcTopLevel] = field(default_factory=list)
-    circles: list[CircleTopLevel] = field(default_factory=list)
+    arcs: list[Arc] = field(default_factory=list)
+    circles: list[Circle] = field(default_factory=list)
     sheets: list[Sheet] = field(default_factory=list)
     symbols: list[SymbolUse] = field(default_factory=list)
-    rectangles: list[RectangleTopLevel] = field(default_factory=list)
+    rectangles: list[Rectangle] = field(default_factory=list)
     wires: list[Wire] = field(default_factory=list)
-    polylines: list[PolylineTopLevel] = field(default_factory=list)
+    polylines: list[Polyline] = field(default_factory=list)
     buses: list[Bus] = field(default_factory=list)
     images: list[Image] = field(default_factory=list)
     junctions: list[Junction] = field(default_factory=list)

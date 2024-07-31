@@ -1,6 +1,6 @@
 from dataclasses import field
 from typing import Annotated, ClassVar, Literal, Optional
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from pydantic.dataclasses import dataclass
 
@@ -17,6 +17,7 @@ from .common import (
     Net,
     Position,
     Property,
+    TearDrops,
     Zone,
 )
 from .graphics import (
@@ -47,7 +48,11 @@ class FootprintAttributes(KicadPcbExpr):
     :param exclude_from_bom: The footprint should be excluded when creating bill of materials (BOM) files.
     :param allow_missing_courtyard: Whether to allow missing courtyard or not.
     :param allow_soldermask_bridges: Whether to allow soldermask bridges or not.
+    :param dnp: The footprint is marked as "do not populate".
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("attr").
+
+    .. note::
+        The `dnp` field was added in 20240108 (KiCad 8).
 
     """
 
@@ -57,6 +62,7 @@ class FootprintAttributes(KicadPcbExpr):
     exclude_from_bom: Annotated[bool, m("kicad_kw_bool")] = False
     allow_missing_courtyard: Annotated[bool, m("kicad_kw_bool")] = False
     allow_soldermask_bridges: Annotated[bool, m("kicad_kw_bool")] = False
+    dnp: Annotated[bool, m("kicad_kw_bool")] = False
     kicad_expr_tag_name: ClassVar[Literal["attr"]] = "attr"
 
 
@@ -92,8 +98,17 @@ class FootprintText(KicadPcbExpr):
     :param hide: Whether to hide the text element or not.
     :param effects: How the text is displayed.
     :param tstamp: The unique identifier of the text object.
+    :param uuid: The unique identifier of the text object.
+    :param unlocked: Whether the text is unlocked or not.
     :param render_cache: A `RenderCache` object .
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_text").
+
+    .. note::
+        The `unlocked` field was added in 20240108 (KiCad 8).
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     type: Annotated[Literal["reference", "value", "user"], m("kicad_no_kw")] = "user"
@@ -103,7 +118,11 @@ class FootprintText(KicadPcbExpr):
     layer: LayerKnockout = field(default_factory=LayerKnockout)
     hide: Annotated[bool, m("kicad_kw_bool")] = False
     effects: Effects = field(default_factory=Effects)
-    tstamp: UUID = field(default_factory=uuid4)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    unlocked: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
     render_cache: Optional[RenderCache] = None
     kicad_expr_tag_name: ClassVar[Literal["fp_text"]] = "fp_text"
 
@@ -116,7 +135,7 @@ class FootprintTextBox(BaseTextBox):
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_text_box").
     """
 
-    kicad_expr_tag_name: ClassVar[Literal["fp_text_box"]] = "fp_text_box"
+    kicad_expr_tag_name = "fp_text_box"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -130,7 +149,12 @@ class FootprintLine(KicadPcbExpr):
     :param layer: The canonical layer the line resides on.
     :param width: The line width.
     :param tstamp: The unique identifier of the line object.
+    :param uuid: The unique identifier of the line object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_line").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     start: tuple[float, float]
@@ -138,7 +162,8 @@ class FootprintLine(KicadPcbExpr):
     stroke: Optional[Stroke] = None
     layer: CanonicalLayerName = "F.Cu"
     width: Optional[float] = None
-    tstamp: UUID = field(default_factory=uuid4)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["fp_line"]] = "fp_line"
 
 
@@ -152,10 +177,15 @@ class FootprintRectangle(KicadPcbExpr):
     :param stroke: A `Stroke` object defining outline style.
     :param fill: How the rectangle is filled.
     :param layer: The canonical layer the rectangle resides on.
-    :param tstamp: The unique identifierث of the rectangle object.
     :param width: The line width of the rectangle.
     :param locked: Whether the rectangle cannot be edited.
+    :param tstamp: The unique identifierث of the rectangle object.
+    :param uuid: The unique identifier of the rectangle object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_rect").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     start: tuple[float, float]
@@ -163,9 +193,10 @@ class FootprintRectangle(KicadPcbExpr):
     stroke: Optional[Stroke] = None
     fill: Literal["solid", "none", None] = None
     layer: CanonicalLayerName = "F.Cu"
-    tstamp: UUID = field(default_factory=uuid4)
     width: Optional[float] = None
     locked: Annotated[bool, m("kicad_kw_bool")] = False
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["fp_rect"]] = "fp_rect"
 
 
@@ -180,9 +211,14 @@ class FootprintCircle(KicadPcbExpr):
     :param fill: How the circle is filled.
     :param layer: The canonical layer the circle resides on.
     :param width: The line width of the circle.
-    :param tstamp: The unique identifier of the circle object.
     :param locked: Whether the circle can be edited or not.
+    :param tstamp: The unique identifier of the circle object.
+    :param uuid: The unique identifier of the circle object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_circle").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     center: tuple[float, float]
@@ -191,8 +227,9 @@ class FootprintCircle(KicadPcbExpr):
     fill: Optional[Literal["solid", "none"]] = None
     layer: CanonicalLayerName = "F.Cu"
     width: Optional[float] = None
-    tstamp: UUID = field(default_factory=uuid4)
     locked: Annotated[bool, m("kicad_kw_bool")] = False
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["fp_circle"]] = "fp_circle"
 
 
@@ -206,10 +243,15 @@ class FootprintArc(KicadPcbExpr):
     :param end: The X-Y coordinates of the end position of the arc radius.
     :param stroke: Reference to a `Stroke` object defining the line style of the arc's edge.
     :param layer: The canonical layer the arc resides on.
-    :param tstamp: The unique identifier of the arc object.
     :param width: The line width of the arc.
     :param locked: Whether the arc can be edited or not.
+    :param tstamp: The unique identifier of the arc object.
+    :param uuid: The unique identifier of the arc object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_arc").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     start: tuple[float, float]
@@ -217,9 +259,10 @@ class FootprintArc(KicadPcbExpr):
     end: tuple[float, float]
     stroke: Optional[Stroke] = None
     layer: CanonicalLayerName = "F.Cu"
-    tstamp: UUID = field(default_factory=uuid4)
     width: Optional[float] = None
     locked: Annotated[bool, m("kicad_kw_bool")] = False
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["fp_arc"]] = "fp_arc"
 
 
@@ -234,8 +277,13 @@ class FootprintPolygon(KicadPcbExpr):
     :param fill: How the polygon is filled.
     :param layer: The canonical layer the polygon resides on.
     :param locked: Whether the polygon can be edited or not.
-    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_poly").
     :param tstamp: The unique identifier of the polygon object.
+    :param uuid: The unique identifier of the polygon object.
+    :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_poly").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     pts: Pts
@@ -244,8 +292,9 @@ class FootprintPolygon(KicadPcbExpr):
     fill: Optional[Literal["solid", "none"]] = None
     layer: CanonicalLayerName = "F.Cu"
     locked: Annotated[bool, m("kicad_kw_bool")] = False
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["fp_poly"]] = "fp_poly"
-    tstamp: UUID = field(default_factory=uuid4)
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -255,17 +304,23 @@ class FootprintCurve(KicadPcbExpr):
 
     :param pts: A list of the four X/Y coordinates of each point of the curve.
     :param layer: The canonical layer the curve resides on.
-    :param tstamp: The unique identifier of the curve object.
     :param stroke: Reference to a `Stroke` object defining the line style of the curve's edge.
     :param locked: Whether the curve is locked for editing or not.
+    :param tstamp: The unique identifier of the curve object.
+    :param uuid: The unique identifier of the curve object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("fp_curve").
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     pts: Pts
     layer: CanonicalLayerName
-    tstamp: UUID
     stroke: Optional[Stroke] = None
     locked: Annotated[bool, m("kicad_kw_bool")] = False
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["fp_curve"]] = "fp_curve"
 
 
@@ -492,7 +547,15 @@ class FootprintPad(KicadPcbExpr):
     :param primitives: The drawing objects and options used to define a custom pad.
     :param rect_delta: (Undocumented field) The rectangle pad deltas.
     :param tstamp: The unique identifier of the pad object.
+    :param uuid: The unique identifier of the pad object.
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("pad").
+
+    .. warning::
+        The `rect_delta` field is undocumented in the KiCad file format documentation.
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     number: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
@@ -540,7 +603,9 @@ class FootprintPad(KicadPcbExpr):
     )
     # UNDOCUMENTED: `rect_delta`
     rect_delta: Optional[FootprintPadRectDelta] = None
-    tstamp: UUID = field(default_factory=uuid4)
+    teardrops: Optional[TearDrops] = None
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     kicad_expr_tag_name: ClassVar[Literal["pad"]] = "pad"
 
 
@@ -553,6 +618,7 @@ class FootprintModelCoord(KicadPcbExpr):
     """
 
     xyz: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    kicad_expr_tag_name: ClassVar[Literal["xyz", "offset", "scale", "rotate"]] = "xyz"
 
 
 class FootprintModelOffset(FootprintModelCoord):
@@ -562,7 +628,7 @@ class FootprintModelOffset(FootprintModelCoord):
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("offset").
     """
 
-    kicad_expr_tag_name: ClassVar[Literal["offset"]] = "offset"
+    kicad_expr_tag_name = "offset"
 
 
 class FootprintModelScale(FootprintModelCoord):
@@ -572,7 +638,7 @@ class FootprintModelScale(FootprintModelCoord):
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("scale").
     """
 
-    kicad_expr_tag_name: ClassVar[Literal["scale"]] = "scale"
+    kicad_expr_tag_name = "scale"
 
 
 class FootprintModelRotate(FootprintModelCoord):
@@ -582,13 +648,14 @@ class FootprintModelRotate(FootprintModelCoord):
     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("rotate").
     """
 
-    kicad_expr_tag_name: ClassVar[Literal["rotate"]] = "rotate"
+    kicad_expr_tag_name = "rotate"
 
 
 @dataclass(config=PydanticConfig, eq=False)
 class Footprint3dModel(KicadPcbExpr):
     """
     A 3D model element for footprints in KiCad PCB expressions.
+
 
     `KiCad 3d model <https://dev-docs.kicad.org/en/file-formats/sexpr-intro/index.html#_footprint_3d_model>`_
 
@@ -626,6 +693,7 @@ class Footprint(KicadPcbExpr):
     """
     A footprint in KiCad PCB expressions.
 
+
     `KiCad footprint <https://dev-docs.kicad.org/en/file-formats/sexpr-intro/index.html#_footprint>`_
 
     :param library_link: The library reference of the footprint.
@@ -634,6 +702,7 @@ class Footprint(KicadPcbExpr):
     :param layer: The canonical layer the footprint is placed.
     :param tedit: The last time the footprint was edited.
     :param tstamp: The unique identifier for the footprint.
+    :param uuid: The unique identifier for the footprint.
     :param at: The X-Y coordinates of the footprint placement.
     :param descr: The description of the footprint.
     :param tags: Search tags for the footprint.
@@ -648,6 +717,8 @@ class Footprint(KicadPcbExpr):
     :param zone_connect: How all pads are connected to filled zone.
     :param thermal_width: The thermal relief spoke width used for zone connections for all pads in the footprint.
     :param thermal_gap: The distance from the pad to the zone of thermal relief connections for all pads in the footprint.
+    :param sheetname: The name of the sheet the footprint is associated with.
+    :param sheetfile: The file path of the sheet the footprint is associated with.
     :param attr: The attributes of the footprint.
     :param net_tie_pad_groups: An optional list of net-tie pad groups.
     :param fp_text_items: A list of footprint text elements.
@@ -665,6 +736,12 @@ class Footprint(KicadPcbExpr):
     :param zones: (Undocumented field) List of zones associated with the footprint.
     :param models: A list of 3D models attached to the footprint.
 
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
+    .. note::
+        The fields `sheetname` and `sheetfile` were added in 20240108 (KiCad 8).
+
     """
 
     library_link: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
@@ -672,7 +749,8 @@ class Footprint(KicadPcbExpr):
     placed: Annotated[bool, m("kicad_kw_bool")] = False
     layer: CanonicalLayerName = "F.Cu"
     tedit: Optional[str] = None
-    tstamp: UUID = field(default_factory=uuid4)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     at: Position = field(default_factory=Position)
     descr: Optional[str] = None
     tags: Optional[str] = None
@@ -687,6 +765,8 @@ class Footprint(KicadPcbExpr):
     zone_connect: Optional[ZoneConnection] = None
     thermal_width: Optional[float] = None
     thermal_gap: Optional[float] = None
+    sheetname: Optional[str] = None
+    sheetfile: Optional[str] = None
     attr: Optional[FootprintAttributes] = None
     net_tie_pad_groups: Annotated[list[str], m("kicad_omits_default")] = field(
         default_factory=list,
@@ -707,3 +787,4 @@ class Footprint(KicadPcbExpr):
     # UNDOCUMENTED: `zone`
     zones: list[Zone] = field(default_factory=list)
     models: list[Footprint3dModel] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["footprint"]] = "footprint"

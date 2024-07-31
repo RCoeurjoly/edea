@@ -27,3 +27,6 @@ format.l
 
 # docs build
 /docs/_build
+
+# Profiling results
+prof
