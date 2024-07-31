@@ -3,6 +3,7 @@
   "image": "registry.gitlab.com/edea-dev/ci-runner:latest",
   "features": {
     "ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {},
+    "ghcr.io/devcontainers/features/nix:1": {},
     "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
       "packages": "git-delta,neovim,locales,graphviz"
     }
