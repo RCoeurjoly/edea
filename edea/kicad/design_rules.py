@@ -2,11 +2,10 @@
 """
 
 from dataclasses import field
-from typing import Annotated, Literal, Optional
+from typing import Annotated, ClassVar, Literal, Optional
 
 from pydantic import validator
 from pydantic.dataclasses import dataclass
-from typing_extensions import Self
 
 from edea.kicad._config import PydanticConfig
 from edea.kicad._fields import make_meta as m
@@ -159,6 +158,7 @@ class Rule(KicadExpr):
     layer: Optional[str] = None
     severity: Optional[Severity] = None
     condition: Optional[Annotated[str, m("kicad_always_quotes")]] = ""
+    kicad_expr_tag_name: ClassVar[Literal["rule"]] = "rule"
 
     def __hash__(self) -> int:
         return hash(
@@ -204,6 +204,7 @@ class DesignRuleSet(KicadExpr):
 
     version: Literal["1"] = "1"
     rules: list[Rule] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["design_rules"]] = "design_rules"
 
     def noramlize(self):
         """
@@ -214,7 +215,7 @@ class DesignRuleSet(KicadExpr):
         self.rules = list(dict.fromkeys(self.rules))
         return self
 
-    def extend(self, other: Self):
+    def extend(self, other: "DesignRuleSet"):
         """
         Merge another set of design rules into the current one.
 

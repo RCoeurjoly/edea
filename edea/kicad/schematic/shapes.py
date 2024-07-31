@@ -3,11 +3,13 @@ Dataclasses describing the graphic items found in .kicad_sch files.
 """
 
 from dataclasses import field
-from typing import ClassVar, Literal, Optional
+from typing import Annotated, ClassVar, Literal, Optional
+from uuid import UUID
 
 from pydantic.dataclasses import dataclass
 
 from edea.kicad._config import PydanticConfig
+from edea.kicad._fields import make_meta as m
 from edea.kicad._str_enum import StrEnum
 from edea.kicad.common import Pts, Stroke
 from edea.kicad.schematic.base import KicadSchExpr
@@ -93,11 +95,21 @@ class Polyline(KicadSchExpr):
     :param pts: The list of X-Y coordinates of the line(s).
     :param stroke: The stroke style of the polygon formed by the lines.
     :param fill: How the polygon is filled.
+    :param uuid: The unique identifier of the polyline.
+
+    .. note::
+        The `uuid` field was added in 20231120 (KiCad 8).
+
+    .. note::
+        The `fill` field became optional in 20231120 (KiCad 8).
+
     """
 
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
-    fill: Fill = field(default_factory=FillSimple)
+    fill: Annotated[Optional[Fill], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["polyline"]] = "polyline"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -115,6 +127,7 @@ class Bezier(KicadSchExpr):
     pts: Pts = field(default_factory=Pts)
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillSimple)
+    kicad_expr_tag_name: ClassVar[Literal["bezier"]] = "bezier"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -128,12 +141,18 @@ class Rectangle(KicadSchExpr):
     :param end: The X-Y coordinates of the low right corner of the rectangle.
     :param stroke: The line width and style of the rectangle.
     :param fill: How the rectangle is filled.
+    :param uuid: The unique identifier of the rectangle.
+
+    .. note::
+        The `uuid` field was added in 20231120 (KiCad 8).
     """
 
     start: tuple[float, float]
     end: tuple[float, float]
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillSimple)
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["rectangle"]] = "rectangle"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -147,12 +166,19 @@ class Circle(KicadSchExpr):
     :param radius: The radius of the circle.
     :param stroke: The line width and style of the circle.
     :param fill: How the circle is filled.
+    :param uuid: The unique identifier of the rectangle.
+
+    .. note::
+        The `uuid` field was added in 20231120 (KiCad 8).
+
     """
 
     center: tuple[float, float]
     radius: float
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillSimple)
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["circle"]] = "circle"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -168,6 +194,7 @@ class Radius(KicadSchExpr):
     at: tuple[float, float]
     length: float
     angles: tuple[float, float]
+    kicad_expr_tag_name: ClassVar[Literal["radius"]] = "radius"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -183,6 +210,11 @@ class Arc(KicadSchExpr):
     :param radius: The radius of the arc.
     :param stroke: The stroke style of the arc.
     :param fill: How the arc is filled.
+    :param uuid: The unique identifier of the rectangle.
+
+    .. note::
+        The `uuid` field was added in 20231120 (KiCad 8).
+
     """
 
     start: tuple[float, float]
@@ -191,3 +223,5 @@ class Arc(KicadSchExpr):
     radius: Optional[Radius] = None
     stroke: Stroke = field(default_factory=Stroke)
     fill: Fill = field(default_factory=FillSimple)
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[Literal["arc"]] = "arc"

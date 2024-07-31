@@ -24,7 +24,6 @@ class EdeaModuleMetadata(BaseModel):
     :param count_part: The total number of parts in the module.
     :param count_unique_part: The number of unique parts in the module.
     :param parts: Detailed information about the parts in the module.
-
     """
 
     area_mm: float | None = None

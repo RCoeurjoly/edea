@@ -1,4 +1,4 @@
-"""Load KiCad reports and generate reports from KiCAD files.
+"""Load KiCad reports and generate reports from KiCad files.
 """
 
 import json
@@ -68,7 +68,12 @@ class KicadERCReporter(RCReporter, KicadERCReport):
     """
 
     @staticmethod
-    def _kicad_cli_command():
+    def _kicad_cli_command() -> list[str | pathlib.Path]:
+        """
+        Defines the KiCad CLI command for ERC.
+
+        :returns: List of command-line arguments for ERC in KiCad CLI.
+        """
         return ["sch", "erc"]
 
 
@@ -78,5 +83,10 @@ class KicadDRCReporter(KicadDRCReport, RCReporter):
     """
 
     @staticmethod
-    def _kicad_cli_command():
+    def _kicad_cli_command() -> list[str | pathlib.Path]:
+        """
+        Defines the KiCad CLI command for DRC.
+
+        :returns: List of command-line arguments for DRC in KiCad CLI.
+        """
         return ["pcb", "drc"]

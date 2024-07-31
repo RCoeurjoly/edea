@@ -28,7 +28,7 @@ def get_versions():
 
 def version_label(version: str) -> str:
     if version not in published_versions:
-        return f"{version} (pre-release)"
+        return f"{version} (rc)"
     if version == sorted_versions[0]:
         return f"{version} (latest)"
     return version

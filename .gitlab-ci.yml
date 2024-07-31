@@ -26,16 +26,58 @@ before_script:
 
 test:
   script:
+    - nox -- --doctest-modules edea --cov=edea
     - nox -- --cov=edea
-    - nox -- --doctest-modules edea
     - poetry run coverage report
     - poetry run coverage xml
   coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
   artifacts:
+    when: always
+    paths:
+      - junit.xml
+      - doc-test-junit.xml
     reports:
+      junit: 
+        - junit.xml
+        - doc-test-junit.xml
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
+
+test long running (project, and sch serialization):
+  only:
+    - web
+  script:
+    - git submodule update --init --depth 1
+    - poetry run pytest -k 'load_all_kicad_pro' -n auto --junitxml pro.xml
+    # the serialize test parses and serializes so we just run that
+    - poetry run pytest -k 'serialize_all_sch' -n auto --junitxml sch.xml
+  artifacts:
+    when: always
+    paths:
+      - pro.xml
+      - sch.xml
+    reports:
+      junit: 
+        - pro.xml
+        - sch.xml
+
+test long running (pcb serialization):
+  only:
+    - web
+  script:
+    - git submodule update --init --depth 1
+    # to avoid running out of server space
+    - find tests/kicad_projects/kicad-test-files/ -type f ! -name "*.kicad_pcb" -delete 
+    # the serialize test parses and serializes so we just run that
+    - poetry run pytest -k 'serialize_all_pcb' -n auto --junitxml pcb.xml
+  artifacts:
+    when: always
+    paths:
+      - pcb.xml
+    reports:
+      junit: 
+        - pcb.xml
 
 formatting:
   script:
@@ -58,15 +100,6 @@ bandit:
   script:
     - poetry run bandit -r edea
 
-test-long-running:
-  only:
-    - web
-  script:
-    - git submodule update --init
-    - poetry run pytest -k 'load_all_kicad_pro'
-    # the serialize test parses and serializes so we just run that
-    - poetry run pytest -k 'serialize_all'
-
 release:
   stage: deploy
   script:
@@ -83,10 +116,10 @@ release:
 pages:
   script:
     # download old docs to support multiple versions
-    # - |
-    #   DOWNLOAD_URL='https://gitlab.com/api/v4/projects/35843774/jobs/artifacts/main/download?job=pages'
-    #   curl -L --output old.zip "$DOWNLOAD_URL"
-    #   unzip -q old.zip -d .
+    - |
+      DOWNLOAD_URL='https://gitlab.com/api/v4/projects/35843774/jobs/artifacts/main/download?job=pages'
+      curl -L --output old.zip "$DOWNLOAD_URL"
+      unzip -q old.zip -d .
 
     # build new doccs
     - poetry run sphinx-build -b html docs docs/_build

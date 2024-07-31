@@ -1,6 +1,6 @@
 from dataclasses import field
 from typing import Annotated, ClassVar, Literal, Optional
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from pydantic.dataclasses import dataclass
 
@@ -11,19 +11,6 @@ from edea.kicad.common import Effects, Pts, Stroke
 
 from .base import KicadPcbExpr
 from .layer import CanonicalLayerName, WildCardLayerName
-
-
-@dataclass(config=PydanticConfig, eq=False)
-class Property(KicadPcbExpr):
-    """
-    A property element within a KiCad PCB file.
-
-    :param key: The name of the property and must be unique.
-    :param value: The value of the property.
-    """
-
-    key: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
-    value: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -297,6 +284,9 @@ class Zone(KicadPcbExpr):
     :param polygons: X-Y coordinates of corner points of the polygon outline.
     :param filled_polygons: List of polygons used to fill the zone.
 
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     locked: Annotated[bool, m("kicad_kw_bool")] = False
@@ -308,7 +298,8 @@ class Zone(KicadPcbExpr):
     ] = field(
         default_factory=list,
     )
-    tstamp: UUID = field(default_factory=uuid4)
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
     name: Optional[str] = None
     hatch: tuple[Hatch, float] = (Hatch.None_, 0)
     priority: int | None = None
@@ -324,6 +315,7 @@ class Zone(KicadPcbExpr):
     )
     polygons: list[Polygon] = field(default_factory=list)
     filled_polygons: list[ZoneFillPolygon] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["zone"]] = "zone"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -337,12 +329,18 @@ class Group(KicadPcbExpr):
     :param locked: Whether the group is locked for editing or not.
     :param id: The unique identifier (UUID) for the group element.
     :param members: A list of unique identifiers of the objects belonging to the group.
+
+    .. note::
+        The `id` field got renamed to `uuid` in 20240108 (KiCad 8).
+
     """
 
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
     locked: Annotated[bool, m("kicad_kw_bool")] = False
-    id: UUID = field(default_factory=uuid4)
+    id: Optional[UUID] = None
+    uuid: Optional[UUID] = None
     members: list[UUID] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["group"]] = "group"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -358,6 +356,7 @@ class RenderCache(KicadPcbExpr):
     name: Annotated[str, m("kicad_no_kw")]
     number: Annotated[float, m("kicad_no_kw")]
     polygons: list[Polygon] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["render_cache"]] = "render_cache"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -371,12 +370,18 @@ class BaseTextBox(KicadPcbExpr):
     :param end: The ending X-Y coordinates of the text box.
     :param pts: The reference to a `Pts` object defining the text box outline.
     :param layer: The canonical layer the text box resides on.
-    :param tstamp: The unique identifier (UUID) for the text box element.
     :param effects: Reference to an `Effects` object defining text effects.
     :param render_cache: Reference to a `RenderCache` element for potentially cached rendering.
     :param angle: The rotation angle for the text box.
     :param stroke: Reference to a `stroke` object defining the text outline style.
     :param hide: Whether the text box is hidden or not.
+    :param border: Whether the text box has a border or not.
+    :param tstamp: The unique identifier (UUID) for the text box element.
+    :param uuid: The unique identifier (UUID) for the text box element.
+
+    .. note::
+        The `tstamp` field got renamed to `uuid` in 20240108 (KiCad 8).
+
 
     """
 
@@ -386,12 +391,19 @@ class BaseTextBox(KicadPcbExpr):
     end: Optional[tuple[float, float]] = None
     pts: Optional[Pts] = None
     layer: CanonicalLayerName = "F.Cu"
-    tstamp: UUID = field(default_factory=uuid4)
     effects: Effects = field(default_factory=Effects)
     render_cache: Optional[RenderCache] = None
     angle: Optional[float] = None
     stroke: Optional[Stroke] = None
     hide: Annotated[bool, m("kicad_kw_bool")] = False
+    border: Annotated[Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")] = (
+        None
+    )
+    tstamp: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    uuid: Annotated[Optional[UUID], m("kicad_omits_default")] = None
+    kicad_expr_tag_name: ClassVar[
+        Literal["base_textbox", "fp_text_box", "gr_text_box"]
+    ] = "base_textbox"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -405,6 +417,7 @@ class Net(KicadPcbExpr):
 
     number: Annotated[int, m("kicad_no_kw")]
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
+    kicad_expr_tag_name: ClassVar[Literal["net"]] = "net"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -415,12 +428,96 @@ class Image(KicadPcbExpr):
     `KiCad image <https://dev-docs.kicad.org/en/file-formats/sexpr-intro/index.html#_images>`_
 
     :param at: The X-Y coordinates of the image.
+    :param uuid: The unique identifier (UUID) for the image element.
     :param layer: The associated board layer of the image using one canonical layer name.
     :param scale: The scale factor of the image..
     :param data: The image data in the portable network graphics format (PNG) encoded with MIME type base64.
+    :param locked: Whether the image is locked for editing or not.
+
+    .. note::
+        The fields `uuid` and `locked` were added in 20240108 (KiCad 8).
+
     """
 
     at: tuple[float, float]
+    uuid: Optional[UUID] = None
     layer: CanonicalLayerName = "F.Cu"
     scale: Optional[float] = None
     data: list[str] = field(default_factory=list)
+    locked: Annotated[Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")] = (
+        None
+    )
+    kicad_expr_tag_name: ClassVar[Literal["image"]] = "image"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class TearDrops(KicadPcbExpr):
+    """
+    The teardrops settings within a KiCad PCB file.
+
+    :param best_length_ratio: The best length ratio for the teardrops.
+    :param max_length: The maximum length for the teardrops.
+    :param best_width_ratio: The best width ratio for the teardrops.
+    :param max_width: The maximum width for the teardrops.
+    :param curve_points: The number of curve points for the teardrops.
+    :param filter_ratio: The filter ratio for the teardrops.
+    :param enabled: Whether the teardrops are enabled or not.
+    :param allow_two_segments: Whether two segments are allowed for the teardrops or not.
+    :param prefer_zone_connections: Whether zone connections are preferred for the teardrops or not.
+
+    """
+
+    best_length_ratio: float
+    max_length: float
+    best_width_ratio: float
+    max_width: float
+    curve_points: int
+    filter_ratio: float
+    enabled: Annotated[bool, m("kicad_bool_yes_no")]
+    allow_two_segments: Annotated[bool, m("kicad_bool_yes_no")]
+    prefer_zone_connections: Annotated[bool, m("kicad_bool_yes_no")]
+    kicad_expr_tag_name: ClassVar[Literal["teardrops"]] = "teardrops"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class LayerKnockout(KicadPcbExpr):
+    """
+    Indicates that the text in a layer should be knocked out.
+
+    `kicad graphical text <https://dev-docs.kicad.org/en/file-formats/sexpr-intro/index.html#_graphical_text>`_
+
+     :param name: The name of the copper layer to be knocked out
+     :param knockout: Whether the layer is knocked out or not.
+     :cvar kicad_expr_tag_name: The KiCad expression tag name for this element ("layer").
+    """
+
+    name: Annotated[CanonicalLayerName, m("kicad_always_quotes", "kicad_no_kw")] = (
+        "F.Cu"
+    )
+    knockout: Annotated[bool, m("kicad_kw_bool")] = False
+    kicad_expr_tag_name: ClassVar[Literal["layer"]] = "layer"
+
+
+@dataclass(config=PydanticConfig, eq=False)
+class Property(KicadPcbExpr):
+    """
+    A property element within a KiCad PCB file.
+
+    :param key: The name of the property and must be unique.
+    :param value: The value of the property.
+    """
+
+    key: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
+    value: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
+    at: Optional[Position] = None
+    layer: Optional[LayerKnockout] = None
+    effects: Optional[Effects] = None
+    render_cache: Optional[RenderCache] = None
+    uuid: Optional[UUID] = None
+    hide: Annotated[Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")] = (
+        None
+    )
+    unlocked: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
+    kicad_expr_tag_name: ClassVar[Literal["property"]] = "property"

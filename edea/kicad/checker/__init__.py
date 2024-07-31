@@ -1,4 +1,4 @@
-"""Proxies for the KiCAD design rule checkers.
+"""Proxies for the KiCad design rule checkers.
 """
 
 import datetime

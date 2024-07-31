@@ -3,7 +3,7 @@ Dataclasses describing the symbols found in "lib_symbols" of .kicad_sch files.
 """
 
 from dataclasses import field
-from typing import Annotated, ClassVar, Literal
+from typing import Annotated, ClassVar, Literal, Optional
 
 from pydantic.dataclasses import dataclass
 
@@ -126,9 +126,9 @@ class PinAlternate(KicadSchExpr):
     """
 
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
-    electrical_type: Annotated[
-        PinElectricalType, m("kicad_no_kw")
-    ] = PinElectricalType.UNSPECIFIED
+    electrical_type: Annotated[PinElectricalType, m("kicad_no_kw")] = (
+        PinElectricalType.UNSPECIFIED
+    )
     graphic_style: Annotated[PinGraphicStyle, m("kicad_no_kw")] = PinGraphicStyle.LINE
     kicad_expr_tag_name: ClassVar[Literal["alternate"]] = "alternate"
 
@@ -146,9 +146,9 @@ class Pin(KicadSchExpr):
     :param alternates: A list of :py:class:`PinAlternate`.
     """
 
-    electrical_type: Annotated[
-        PinElectricalType, m("kicad_no_kw")
-    ] = PinElectricalType.UNSPECIFIED
+    electrical_type: Annotated[PinElectricalType, m("kicad_no_kw")] = (
+        PinElectricalType.UNSPECIFIED
+    )
     graphic_style: Annotated[PinGraphicStyle, m("kicad_no_kw")] = PinGraphicStyle.LINE
     at: tuple[float, float, Literal[0, 90, 180, 270]] = (0, 0, 0)
     length: float = 0
@@ -156,6 +156,7 @@ class Pin(KicadSchExpr):
     name: PinName = field(default_factory=PinName)
     number: PinNumber = field(default_factory=PinNumber)
     alternates: list[PinAlternate] = field(default_factory=list)
+    kicad_expr_tag_name: ClassVar[Literal["pin"]] = "pin"
 
 
 @dataclass(config=PydanticConfig, eq=False)
@@ -246,6 +247,7 @@ class SubSymbol(KicadSchExpr):
     """
 
     name: Annotated[str, m("kicad_no_kw", "kicad_always_quotes")]
+    unit_name: Annotated[Optional[str], m("kicad_always_quotes")] = None
     polylines: list[Polyline] = field(default_factory=list)
     text_items: list[SymbolGraphicText] = field(default_factory=list)
     rectangles: list[Rectangle] = field(default_factory=list)
@@ -290,6 +292,9 @@ class LibSymbol(KicadSchExpr):
     pin_names: Annotated[PinNameSettings, m("kicad_omits_default")] = field(
         default_factory=PinNameSettings,
     )
+    exclude_from_sim: Annotated[
+        Optional[bool], m("kicad_bool_yes_no", "kicad_omits_default")
+    ] = None
     in_bom: Annotated[bool, m("kicad_bool_yes_no")] = True
     on_board: Annotated[bool, m("kicad_bool_yes_no")] = True
     pins: list[Pin] = field(default_factory=list)

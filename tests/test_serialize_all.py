@@ -143,3 +143,5 @@ def test_serialize_all_pcb_files(pcb_path, tmp_path_factory):
 
     # to make sure we don't run out of space
     shutil.rmtree(tmp_dir)
+    if os.getenv("GITLAB_CI") is not None:
+        os.remove(pcb_path)

@@ -285,14 +285,14 @@ class DesignSettings(BaseModel):
     apply_defaults_to_field: Optional[bool]
     apply_defaults_to_shapes: Optional[bool]
     apply_defaults_to_fp_text: Optional[bool]
-    defaults: Defaults
+    defaults: Optional[Defaults]
     diff_pair_dimensions: list
     drc_exclusions: list
     meta: Optional[Meta]
     rule_severities: Optional[dict[str, Any]]
     rule_severitieslegacy_courtyards_overlap: Optional[bool]
     rule_severitieslegacy_no_courtyard_defined: Optional[bool]
-    rules: Rules
+    rules: Optional[Rules]
     teardrop_options: Optional[list[TeardropOption]]
     teardrop_parameters: Optional[list[TeardropParameter]]
     track_widths: list[float]
@@ -312,8 +312,8 @@ class Board(BaseModel):
     """
 
     field_3dviewports: Optional[list] = Field(default=None, alias="3dviewports")
-    design_settings: DesignSettings
-    layer_presets: list
+    design_settings: Optional[DesignSettings]
+    layer_presets: Optional[list]
     viewports: Optional[list]
 
 
@@ -376,21 +376,21 @@ class Class(BaseModel):
     :param wire_width: The width of wires.
     """
 
-    bus_width: int
+    bus_width: Optional[int]
     clearance: float
     diff_pair_gap: float
     diff_pair_via_gap: float
     diff_pair_width: float
-    line_style: int
+    line_style: Optional[int]
     microvia_diameter: float
     microvia_drill: float
     name: str
-    pcb_color: str
-    schematic_color: str
+    pcb_color: Optional[str]
+    schematic_color: Optional[str]
     track_width: float
     via_diameter: float
     via_drill: float
-    wire_width: int
+    wire_width: Optional[int]
 
 
 class NetclassPattern(BaseModel):
@@ -452,7 +452,7 @@ class Pcbnew(BaseModel):
 
     """
 
-    last_paths: LastPaths
+    last_paths: Optional[LastPaths]
     page_layout_descr_file: str
 
 
@@ -590,13 +590,13 @@ class KicadProject(BaseModel):
 
     board: Board
     boards: list
-    cvpcb: Cvpcb
+    cvpcb: Optional[Cvpcb]
     erc: Optional[Erc]
     libraries: Libraries
     meta: Meta
     net_settings: NetSettings
     pcbnew: Pcbnew
-    schematic: ProjectSchematic
+    schematic: Optional[ProjectSchematic]
     sheets: list[ProjectSheet]
     text_variables: dict[str, Any]
 

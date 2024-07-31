@@ -31,8 +31,7 @@ cli.add_typer(add.cli, name="add")
 
 
 @cli.callback()
-def cli_root():
-    ...
+def cli_root(): ...
 
 
 def _format_violation(
@@ -50,9 +49,7 @@ def _format_violation(
     body = (
         f"\n{num_err} errors" + f", {num_warn} warnings \n"
         if num_warn > 0
-        else "\n" + f"{num_ignore} ignored \n"
-        if num_ignore > 0
-        else ""
+        else "\n" + f"{num_ignore} ignored \n" if num_ignore > 0 else ""
     )
     for v in vs:
         if v.severity == Severity.error:
