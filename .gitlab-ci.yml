@@ -105,14 +105,14 @@ pages:
 
 build:nix:
   # https://docs.cachix.org/continuous-integration-setup/gitlab
-  # image: docker.nix-community.org/nixpkgs/cachix-flakes
+  image: docker.nix-community.org/nixpkgs/cachix-flakes
   allow_failure: true 
 
   before_script:
     # We should only execute a single command in this phase, so this overrides the global before_script
-    - mkdir -p "$HOME/.config/nix"
-    - echo 'experimental-features = nix-command flakes' > "$HOME/.config/nix/nix.conf"
-    - nix profile install nixpkgs#cachix  
+    # - mkdir -p "$HOME/.config/nix"
+    # - echo 'experimental-features = nix-command flakes' > "$HOME/.config/nix/nix.conf"
+    # - nix profile install nixpkgs#cachix  
     - cachix authtoken $CACHIX_TOKEN
 
   cache: [] 
