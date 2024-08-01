@@ -110,6 +110,7 @@ build:nix:
 
   before_script:
     # We should only execute a single command in this phase, so this overrides the global before_script
+    -farthisisn;ta caocamdnaisdauhfwduthqepui tpuih
     - mkdir -p "$HOME/.config/nix"
     - echo 'experimental-features = nix-command flakes' > "$HOME/.config/nix/nix.conf"
     - nix profile install nixpkgs#cachix  
