@@ -1,33 +1,25 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
   "name": "edea",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "image": "registry.gitlab.com/edea-dev/ci-runner:latest",
-
-  // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
-    "ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {}
+    "ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {},
+    "ghcr.io/devcontainers/features/nix:1": {},
+    "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+      "packages": "git-delta,neovim,locales,graphviz"
+    }
   },
-
-  // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  // "forwardPorts": [],
-
-  // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "poetry install",
-
-  // Configure tool-specific properties.
+  "forwardPorts": [8000],
+  "postCreateCommand": "locale-gen en_US.UTF-8 && git config --global --add safe.directory /workspaces/edea && poetry install",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "ms-python.black-formatter",
         "ms-vscode.live-server",
-        "tamasfe.even-better-toml"
+        "tamasfe.even-better-toml",
+        "chrischinchilla.vale-vscode"
       ]
     }
   },
-
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "root"
 }

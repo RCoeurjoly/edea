@@ -3,7 +3,9 @@ from typing import Type, get_args
 from hypothesis import strategies as st
 
 from edea.kicad.schematic import (
-    Property,
+    Property as SchProperty,
+)
+from edea.kicad.schematic import (
     Sheet,
     SubSheetInstanceProject,
     SymbolUse,
@@ -44,7 +46,7 @@ def _non_empty_project(project_type: Type) -> st.SearchStrategy:
 def _sheet_with_name_and_file(sheet_type: Type[Sheet]) -> st.SearchStrategy:
     # sheets need a name and file property
     def prop_with_key(key) -> st.SearchStrategy:
-        return st.builds(Property, key=st.sampled_from([key]))
+        return st.builds(SchProperty, key=st.sampled_from([key]))
 
     def sheet_props() -> st.SearchStrategy:
         props = st.one_of(prop_with_key("Sheetname"), prop_with_key("Sheetfile"))
@@ -58,7 +60,7 @@ def _sheet_with_name_and_file(sheet_type: Type[Sheet]) -> st.SearchStrategy:
 def _symbol_use_with_ref_and_value(sheet_type: Type[SymbolUse]) -> st.SearchStrategy:
     # symbols need a reference and value property
     def prop_with_key(key) -> st.SearchStrategy:
-        return st.builds(Property, key=st.sampled_from([key]))
+        return st.builds(SchProperty, key=st.sampled_from([key]))
 
     def sheet_props() -> st.SearchStrategy:
         props = st.one_of(prop_with_key("Reference"), prop_with_key("Value"))

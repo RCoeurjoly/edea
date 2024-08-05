@@ -3,11 +3,20 @@ from __future__ import annotations
 import dataclasses
 from reprlib import Repr
 from types import UnionType
-from typing import TYPE_CHECKING, Any, Literal, Type, Union, get_args, get_origin
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Optional,
+    Type,
+    Union,
+    get_args,
+    get_origin,
+)
 
 from pydantic import ValidationError
 
-from edea.kicad._fields import get_meta, get_type, is_optional
+from edea.kicad._fields import get_type, has_meta_tag, is_optional
 from edea.kicad.is_kicad_expr import is_kicad_expr, is_kicad_expr_list
 from edea.kicad.s_expr import QuotedStr, SExprAtom, SExprList
 
@@ -28,10 +37,10 @@ def from_list(cls: Type[KicadExprClass], exprs: SExprList) -> KicadExprClass:
         cls.check_version(version)
 
     fields = dataclasses.fields(cls)
-    custom_parsers = cls._get_custom_parsers()
+    custom_parsers = cls._edea_custom_parsers
 
     try:
-        parsed_kwargs, exprs = _parse(fields, exprs, custom_parsers)
+        parsed_kwargs, exprs = _parse(cls, fields, exprs, custom_parsers)
     except ValidationError as e:
         raise ValueError(f"{cls._name_for_errors()} -> {e}") from e
     except (TypeError, ValueError) as e:
@@ -65,9 +74,10 @@ def from_list(cls: Type[KicadExprClass], exprs: SExprList) -> KicadExprClass:
 
 
 def _parse(
+    cls: Type[KicadExprClass],
     fields: tuple[dataclasses.Field, ...],
     exprs: SExprList,
-    custom_parsers: dict[str, CustomParser],
+    custom_parsers: Optional[dict[str, CustomParser]],
 ) -> tuple[ParsedKwargs, SExprList]:
     """
     The core parsing logic that goes through all fields and tries to get values
@@ -78,7 +88,7 @@ def _parse(
     # pylint: disable=too-many-statements
     parsed_kwargs = {}
     for field in fields:
-        if get_meta(field, "exclude_from_files"):
+        if has_meta_tag(field, "exclude_from_files"):
             continue
         if len(exprs) == 0:
             index = fields.index(field)
@@ -89,13 +99,13 @@ def _parse(
                 )
             break
 
-        if field.name in custom_parsers:
+        if custom_parsers is not None and field.name in custom_parsers:
             custom_parser = custom_parsers[field.name]
-            parsed_kwargs[field.name], rest = custom_parser(exprs)
+            parsed_kwargs[field.name], rest = custom_parser(cls, exprs)
             exprs = rest
             continue
 
-        if get_meta(field, "kicad_kw_bool"):
+        if has_meta_tag(field, "kicad_kw_bool"):
             if (
                 isinstance(exprs[0], SExprAtom)
                 # we can have text fields next to kw_bool fields so
@@ -110,7 +120,7 @@ def _parse(
                 parsed_kwargs[field.name] = False
             continue
 
-        if get_meta(field, "kicad_kw_bool_empty"):
+        if has_meta_tag(field, "kicad_kw_bool_empty"):
             if (
                 isinstance(exprs[0], list)
                 and len(exprs[0]) > 0
@@ -129,7 +139,7 @@ def _parse(
             exprs = rest
             continue
 
-        no_kw = get_meta(field, "kicad_no_kw")
+        no_kw = has_meta_tag(field, "kicad_no_kw")
 
         if no_kw and is_optional(field):
             if isinstance(exprs[0], SExprAtom):

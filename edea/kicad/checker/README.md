@@ -1,4 +1,4 @@
-# Generating the the data model
+# Generating the data model
 
 ```shell
 poetry run datamodel-codegen --url https://gitlab.com/kicad/code/kicad/-/raw/master/resources/schemas/drc.v1.json \

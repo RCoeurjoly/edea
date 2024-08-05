@@ -1,13 +1,16 @@
 """
-Provides our KicadPcbExpr class which we use as a base for all our PCB
+Provides KicadPcbExpr class which we use as a base for all PCB
 related KiCad s-expressions.
-
-SPDX-License-Identifier: EUPL-1.2
 """
 
+from typing import Any, ClassVar
 
 from edea.kicad.base import KicadExpr
 
 
 class KicadPcbExpr(KicadExpr):
-    pass
+    """
+    A KiCad PCB expression.
+    """
+
+    kicad_expr_tag_name: ClassVar[Any] = None

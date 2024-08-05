@@ -1,3 +1,19 @@
+"""
+.. data:: SExprAtom
+    :noindex:
+    :type: typing.TypeAliasType
+    :value:  str | QuotedStr
+    
+    Type alias for s-expression atom.
+
+.. data:: SExprList
+    :noindex:
+    :type: typing.TypeAliasType
+    :value: list[Union[SExprAtom, "SExprList"]]
+    
+    Type alias for recursive s-expression list.
+"""
+
 from typing import Union
 
 

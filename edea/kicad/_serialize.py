@@ -5,7 +5,7 @@ from types import UnionType
 from typing import TYPE_CHECKING, Type, Union, get_args, get_origin
 
 from edea._type_utils import get_full_seq_type
-from edea.kicad._fields import get_meta, get_type
+from edea.kicad._fields import get_type, has_meta_tag
 from edea.kicad.is_kicad_expr import is_kicad_expr, is_kicad_expr_list
 from edea.kicad.number import is_number, number_to_str
 from edea.kicad.s_expr import QuotedStr, SExprList
@@ -19,22 +19,22 @@ def to_list(kicad_expr: KicadExpr) -> SExprList:
     # it's a class method in practice so accessing ._properties is ok
     # pylint: disable=protected-access
     sexpr = []
-    custom_serializers = kicad_expr._get_custom_serializers()
+    custom_serializers = kicad_expr._edea_custom_serializers
     fields = dataclasses.fields(kicad_expr)
     for field in fields:
         value = getattr(kicad_expr, field.name)
-        if field.name in custom_serializers:
+        if custom_serializers is not None and field.name in custom_serializers:
             serializer = custom_serializers[field.name]
-            sexpr += serializer(value)
+            sexpr += serializer(kicad_expr, value)
         else:
             sexpr += _serialize_field(field, value)
     return sexpr
 
 
 def _serialize_field(field: dataclasses.Field, value) -> SExprList:
-    if get_meta(field, "exclude_from_files") or value is None:
+    if has_meta_tag(field, "exclude_from_files") or value is None:
         return []
-    if get_meta(field, "kicad_omits_default"):
+    if has_meta_tag(field, "kicad_omits_default"):
         # KiCad doesn't put anything in the s-expression if this field is at
         # its default value, so we don't either.
         default = field.default
@@ -44,25 +44,25 @@ def _serialize_field(field: dataclasses.Field, value) -> SExprList:
         if value == default:
             return []
 
-    in_quotes = get_meta(field, "kicad_always_quotes")
+    in_quotes = has_meta_tag(field, "kicad_always_quotes")
 
-    if get_meta(field, "kicad_no_kw"):
+    if has_meta_tag(field, "kicad_no_kw"):
         field_type = get_type(field)
         # It's just the value, not an expression, i.e. a positional argument.
         return [_value_to_str(field_type, value, in_quotes)]
 
-    if get_meta(field, "kicad_kw_bool_empty"):
+    if has_meta_tag(field, "kicad_kw_bool_empty"):
         # It's a keyword boolean but for some reason it's inside brackets, like
         # `(fields_autoplaced)`
         return [[field.name]] if value else []
 
-    if get_meta(field, "kicad_kw_bool"):
+    if has_meta_tag(field, "kicad_kw_bool"):
         # It's a keyword who's presence signifies a boolean `True`, e.g. hide is
         # `hide=True`. Here we just return the keyword so just "hide" in our
         # example.
         return [field.name] if value else []
 
-    if get_meta(field, "kicad_bool_yes_no"):
+    if has_meta_tag(field, "kicad_bool_yes_no"):
         # KiCad uses "yes" and "no" to indicate this boolean value
         return [[field.name, "yes" if value else "no"]]
 

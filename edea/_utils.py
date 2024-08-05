@@ -1,7 +1,5 @@
 """
 Miscellaneous utility methods that don't fit anywhere else.
-
-SPDX-License-Identifier: EUPL-1.2
 """
 
 import re

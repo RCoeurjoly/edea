@@ -1,7 +1,3 @@
-"""
-SPDX-License-Identifier: EUPL-1.2
-"""
-
 from types import UnionType
 from typing import Type, Union, get_args, get_origin
 

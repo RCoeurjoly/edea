@@ -1,7 +1,5 @@
 """
 edea command line tool
-
-SPDX-License-Identifier: EUPL-1.2
 """
 
 import importlib.metadata
@@ -33,8 +31,7 @@ cli.add_typer(add.cli, name="add")
 
 
 @cli.callback()
-def cli_root():
-    ...
+def cli_root(): ...
 
 
 def _format_violation(
@@ -52,9 +49,7 @@ def _format_violation(
     body = (
         f"\n{num_err} errors" + f", {num_warn} warnings \n"
         if num_warn > 0
-        else "\n" + f"{num_ignore} ignored \n"
-        if num_ignore > 0
-        else ""
+        else "\n" + f"{num_ignore} ignored \n" if num_ignore > 0 else ""
     )
     for v in vs:
         if v.severity == Severity.error:
@@ -130,7 +125,7 @@ def check(
 
     rich.print(
         f"Design rules checked for [bright_cyan]{result.source}[/bright_cyan] \n"
-        f"using Kicad [bright_magenta]{result.version}[/bright_magenta]"
+        f"using KiCad [bright_magenta]{result.version}[/bright_magenta]"
         f" at [bright_magenta]{result.timestamp}[/bright_magenta]."
     )
 
@@ -165,6 +160,7 @@ def version():
     Print the version of edea.
 
     .. code-block:: bash
+
         edea version
     """
 

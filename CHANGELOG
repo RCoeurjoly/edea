@@ -1,11 +1,18 @@
-# Changelog
-
-All notable changes to this project will be documented in this file.
+# CHANGELOG
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+
+## [0.8.1] - 2024-07-29
+
+### Fixed
+
+- Missing runtime dependencies in the `pyproject.toml` file. [!84](https://gitlab.com/edea-dev/edea/-/merge_requests/84)
+
+### Added
+
+- Full dcoumentation. [!84](https://gitlab.com/edea-dev/edea/-/merge_requests/84)
 
 ## [0.8.0] - 2024-05-12
 
@@ -14,15 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Parsing and serializing rules.
 
 ### Added
-- `edea add module` command in the CLI.
-- `edea add rules` command in the CLI.
-- More tests to the CLI.
+- `edea add module` command in the command line interface.
+- `edea add rules` command in the command line interface.
+- More tests to the command line interface.
 
 ## [0.7.3] - 2024-02-26
 
 ### Fixed
 
-- Loading `DRC` and `ERC` reports from json files.
+- Loading `DRC` and `ERC` reports from JSON files.
 
 
 ## [0.7.2] - 2024-02-24

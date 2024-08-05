@@ -1,7 +1,5 @@
 """
 Config for EDeA Pydantic dataclasses.
-
-SPDX-License-Identifier: EUPL-1.2
 """
 
 
